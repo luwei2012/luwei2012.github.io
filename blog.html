@@ -13,6 +13,51 @@ License URL: http://creativecommons.org/licenses/by/3.0/
     <link href="css/style.css" rel="stylesheet" type="text/css" media="all"/>
     <link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
 </head>
+
+<script type="text/javascript" src="js/jquery.min.js"></script>
+<script>
+    var currentPageIndex = 1;
+
+    function scrollTo(el, offeset) {
+        pos = el ? el.offset().top : 0;
+        jQuery('html,body').animate({
+            scrollTop: pos + (offeset ? offeset : 0)
+        }, 'slow');
+    }
+
+    function next() {
+        for (var index = 0; index < 3; index++) {
+            containerName = "#blog_container" + index;
+            path = "Blogs/" + (currentPageIndex++) + "/piece.html";
+            $(containerName).load(path);
+        }
+        scrollTo($('.single-header'), 0);
+    }
+
+    function last() {
+        scrollTo($('.single-header'), 0);
+    }
+
+    function goPage(pageIndex) {
+        currentPageIndex = (pageIndex - 1) * 3 + 1;
+        for (var index = 0; index < 3; index++) {
+            containerName = "#blog_container" + index;
+            path = "Blogs/" + (currentPageIndex++) + "/piece.html";
+            $(containerName).load(path);
+        }
+        $(window).scrollTop;
+        scrollTo($('.single-header'), 0);
+    }
+
+    $(document).ready(function () {
+        for (var index = 0; index < 3; index++) {
+            containerName = "#blog_container" + index;
+            path = "Blogs/" + (currentPageIndex++) + "/piece.html";
+            $(containerName).load(path);
+        }
+    });
+</script>
+
 <body>
 <div class="single-header">
     <div class="wrap">
@@ -43,99 +88,21 @@ License URL: http://creativecommons.org/licenses/by/3.0/
             <div class="wrapper_single">
                 <h4 class="m_2">blog</h4>
 
-                <div class="wrapper_top">
-                    <div class="grid_1 alpha">
-                        <div class="date">
-										<span>
-											02
-										</span>
-                            Feb 2014
-                        </div>
-                    </div>
-                    <div class="cont span_2_of_single">
-                        <h4 class="blog_title"><a href="single.html">Praes vestib</a></h4>
+                <div class="wrapper_top" id="blog_container0">
 
-                        <div class="blog_info">Posted by
-                            <a href="#">Admin</a> in Admin <a href="#">General</a>
-                        </div>
-                        <a href="single.html"><img class="m_img" src="images/b1.jpg" alt=""/></a>
-                        <h5 class="m_head"><a href="#">Lorem ipsum dolor sit amet, consectetuer</a></h5>
-
-                        <p class="m_para">Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy
-                            nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat. Ut wisi enim ad minim
-                            veniam, quis nostrud exerci tation ullamcorper suscipit lobortis nisl ut aliquip ex ea
-                            commodo consequat. Duis autem vel eum iriure dolor in hendrerit in vulputate velit esse
-                            molestie consequat, vel illum dolore eu feugiat nulla facilisis at vero eros et accumsan et
-                            iusto odio dignissim qui blandit praesent luptatum zzril delenit augue duis dolore te
-                            feugait nulla facilisi.</p>
-                        <a href="#" class="arrow_btn">More</a>
-                    </div>
-                    <div class="clear"></div>
                 </div>
-                <div class="wrapper_top">
-                    <div class="grid_1 alpha">
-                        <div class="date">
-										<span>
-											02
-										</span>
-                            Feb 2014
-                        </div>
-                    </div>
-                    <div class="cont span_2_of_single">
-                        <h4 class="blog_title"><a href="single.html">Praes vestib</a></h4>
+                <div class="wrapper_top" id="blog_container1">
 
-                        <div class="blog_info">Posted by
-                            <a href="#">Admin</a> in Admin <a href="#">General</a>
-                        </div>
-                        <a href="single.html"><img class="m_img" src="images/b2.jpg" alt=""/></a>
-                        <h5 class="m_head"><a href="#">Lorem ipsum dolor sit amet, consectetuer</a></h5>
-
-                        <p class="m_para">Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy
-                            nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat. Ut wisi enim ad minim
-                            veniam, quis nostrud exerci tation ullamcorper suscipit lobortis nisl ut aliquip ex ea
-                            commodo consequat. Duis autem vel eum iriure dolor in hendrerit in vulputate velit esse
-                            molestie consequat, vel illum dolore eu feugiat nulla facilisis at vero eros et accumsan et
-                            iusto odio dignissim qui blandit praesent luptatum zzril delenit augue duis dolore te
-                            feugait nulla facilisi.</p>
-                        <a href="#" class="arrow_btn">More</a>
-                    </div>
-                    <div class="clear"></div>
                 </div>
-                <div class="wrapper_top">
-                    <div class="grid_1 alpha">
-                        <div class="date">
-										<span>
-											02
-										</span>
-                            Feb 2014
-                        </div>
-                    </div>
-                    <div class="cont span_2_of_single">
-                        <h4 class="blog_title"><a href="single.html">Praes vestib</a></h4>
+                <div class="wrapper_top" id="blog_container2">
 
-                        <div class="blog_info">Posted by
-                            <a href="#">Admin</a> in Admin <a href="#">General</a>
-                        </div>
-                        <a href="single.html"><img class="m_img" src="images/b3.jpg" alt=""/></a>
-                        <h5 class="m_head"><a href="#">Lorem ipsum dolor sit amet, consectetuer</a></h5>
-
-                        <p class="m_para">Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy
-                            nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat. Ut wisi enim ad minim
-                            veniam, quis nostrud exerci tation ullamcorper suscipit lobortis nisl ut aliquip ex ea
-                            commodo consequat. Duis autem vel eum iriure dolor in hendrerit in vulputate velit esse
-                            molestie consequat, vel illum dolore eu feugiat nulla facilisis at vero eros et accumsan et
-                            iusto odio dignissim qui blandit praesent luptatum zzril delenit augue duis dolore te
-                            feugait nulla facilisi.</p>
-                        <a href="#" class="arrow_btn">More</a>
-                    </div>
-                    <div class="clear"></div>
                 </div>
                 <div class="pagination pagination__posts">
                     <ul>
-                        <li class="active"><a href="#">1</a></li>
-                        <li><a href="" class="inactive">2</a></li>
-                        <li class="next"><a href="">Next</a></li>
-                        <li class="last"><a href="">Last</a></li>
+                        <li class="active"><a href="javascript:goPage(1)">1</a></li>
+                        <li><a href="javascript:goPage(2)" class="inactive">2</a></li>
+                        <li class="next"><a href="javascript:next()">Next</a></li>
+                        <li class="last"><a href="javascript:last()">Last</a></li>
                     </ul>
                 </div>
             </div>
