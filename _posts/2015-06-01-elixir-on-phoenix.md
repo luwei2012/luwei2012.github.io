@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "Elixir on Phoenix,Hello World!"
+title: "Elixir on Phoenix"
 modified:
 categories: 
 description: "Elixir on Phoenix学习起航，程序猿看世界."
