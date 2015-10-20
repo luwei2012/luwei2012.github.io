@@ -4,13 +4,70 @@
 <generator uri="https://github.com/mojombo/jekyll">Jekyll</generator>
 <link rel="self" type="application/atom+xml" href="/feed.xml" />
 <link rel="alternate" type="text/html" href="" />
-<updated>2015-06-01T15:18:12+08:00</updated>
+<updated>2015-08-15T12:34:42+08:00</updated>
 <id>/</id>
 <author>
   <name>陆 伟</name>
   <uri>/</uri>
   <email>1071932819@qq.com</email>
 </author>
+
+
+<entry>
+  <title type="html"><![CDATA[Material Design]]></title>
+ <link rel="alternate" type="text/html" href="/androids/material-design/" />
+  <id>/androids/material-design</id>
+  <published>2015-06-01T13:59:49+08:00</published>
+  <updated>2015-06-01T13:59:49+08:00</updated>
+  <author>
+    <name>陆 伟</name>
+    <uri></uri>
+    <email>1071932819@qq.com</email>
+  </author>
+  <content type="html">
+    &lt;h3 id=&quot;elixir-on-phoenix&quot;&gt;为什么要学习Elixir on Phoenix？&lt;/h3&gt;
+
+&lt;figure&gt;
+    
+    &lt;a href=&quot;/images/phoenix-vs-rails.png&quot;&gt;&lt;img src=&quot;/images/phoenix-vs-rails.png&quot; alt=&quot;&quot; /&gt;&lt;/a&gt;
+    
+    &lt;figcaption&gt;Elixir on Phoenix vs Ruby on Rails&lt;/figcaption&gt;
+&lt;/figure&gt;
+
+&lt;p&gt;这里有一篇&lt;a href=&quot;http://www.littlelines.com/blog/2014/07/08/elixir-vs-ruby-showdown-phoenix-vs-rails/&quot;&gt;帖子&lt;/a&gt;，对比了Ruby on Rails和Elixir on Phoenix。
+我学过的服务器语言和框架不多，在学校的时候做过一段时间SSH框架，当时写的时候感觉挺屌的， 需要配置一大堆的Spring action，还有hybridization，从数据库里面取出来就是对象，很方便。
+进了生命里第一家公司后，我接触到了Ruby on Rails。然后才发现SSH框架简直就是老爷爷玩的东西。(PS:不谈什么效率，小公司目标受众顶天了100万级别)
+十分钟写好一个五脏俱全的服务器，简直是敏捷开发的大杀器啊。很可惜的是Ruby on Rails的效率确实不高，所以当我看到了跟它很像的Elixir on Phoenix的时候 ，
+我顿时觉得Elixir on Phoenix这个框架必然会取代Ruby on Rails甚至其他一些老牌框架和语言。因为Elixir是基于Erlang写的，有点像Node-js，都是面向过程的语言。&lt;/p&gt;
+
+&lt;p&gt;安装Elixir和Phoenix 步骤不赘述了 网上一搜一大堆.
+程序员看世界，第一步，写一个Hello world程序。&lt;/p&gt;
+
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-html&quot; data-lang=&quot;html&quot;&gt;mix phoenix.new hello_phoenix&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;p&gt;看起来跟Ruby on Rails一样一样的,需要注意的是，看它官网的说明，你需要先安装node-js，然后在提示&lt;/p&gt;
+
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-html&quot; data-lang=&quot;html&quot;&gt;Fetch and install dependencies? [Yn]&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;p&gt;的时候，你必须输入Y，否则程序运行起来后会报错.
+写到这里我发现我卡在了&lt;/p&gt;
+
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-html&quot; data-lang=&quot;html&quot;&gt;* running mix deps.get&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;p&gt;我以为是网络问题，Ctrl+C强制退出去，删了挂上VPN重新来一遍，然后还是卡在那儿不动。。。 草,什么鬼。无奈我换了一种姿势，首先运行&lt;/p&gt;
+
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-html&quot; data-lang=&quot;html&quot;&gt;mix phoenix.new hello_phoenix
+Fetch and install dependencies? [Yn] n
+We are all set! Run your Phoenix application:
+$ cd hello_world
+$ mix deps.get
+$ mix phoenix.server&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;p&gt;按照提示一步步做，然后成了。。。。。。心中十万个草泥马奔腾而过，劳资满心欢喜的想学习这个框架，结果一上来就给劳资出了这么个Bug，后面还玩得动么。。。&lt;/p&gt;
+
+    &lt;p&gt;&lt;a href=&quot;/androids/material-design/&quot;&gt;Material Design&lt;/a&gt; was originally published by 陆 伟 at &lt;a href=&quot;&quot;&gt;Life is a Struggle&lt;/a&gt; on June 01, 2015.&lt;/p&gt;
+  </content>
+</entry>
 
 
 <entry>
