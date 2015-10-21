@@ -4,7 +4,7 @@
 <generator uri="https://github.com/mojombo/jekyll">Jekyll</generator>
 <link rel="self" type="application/atom+xml" href="/feed.xml" />
 <link rel="alternate" type="text/html" href="" />
-<updated>2015-08-15T12:34:42+08:00</updated>
+<updated>2015-10-21T14:37:18+08:00</updated>
 <id>/</id>
 <author>
   <name>陆 伟</name>
@@ -14,68 +14,210 @@
 
 
 <entry>
-  <title type="html"><![CDATA[Material Design]]></title>
- <link rel="alternate" type="text/html" href="/androids/material-design/" />
-  <id>/androids/material-design</id>
-  <published>2015-06-01T13:59:49+08:00</published>
-  <updated>2015-06-01T13:59:49+08:00</updated>
+  <title type="html"><![CDATA[MBXPageViewController的两点优化修改]]></title>
+ <link rel="alternate" type="text/html" href="/ios/structure/mbxpageviewcontroller/" />
+  <id>/ios/structure/mbxpageviewcontroller</id>
+  <published>2015-10-20T19:21:56+08:00</published>
+  <updated>2015-10-20T19:21:56+08:00</updated>
   <author>
     <name>陆 伟</name>
     <uri></uri>
     <email>1071932819@qq.com</email>
   </author>
   <content type="html">
-    &lt;h3 id=&quot;elixir-on-phoenix&quot;&gt;为什么要学习Elixir on Phoenix？&lt;/h3&gt;
-
+    &lt;h3 id=&quot;mbxpageviewcontroller&quot;&gt;MBXPageViewController是什么？&lt;/h3&gt;
 &lt;figure&gt;
-    
-    &lt;a href=&quot;/images/phoenix-vs-rails.png&quot;&gt;&lt;img src=&quot;/images/phoenix-vs-rails.png&quot; alt=&quot;&quot; /&gt;&lt;/a&gt;
-    
-    &lt;figcaption&gt;Elixir on Phoenix vs Ruby on Rails&lt;/figcaption&gt;
+	&lt;img src=&quot;/images/IOS/structure/MBXPageViewController/scrollDelegateBefore.gif&quot; alt=&quot;项目实例&quot; /&gt;
+	&lt;figcaption&gt;泛艺术客户端.&lt;/figcaption&gt;
+&lt;/figure&gt;
+&lt;p&gt;这里是&lt;a href=&quot;https://github.com/Moblox/MBXPageViewController&quot;&gt;原作者的主页&lt;/a&gt;，Moblox也是参照的其他作者的源代码改的，为了集成更多的样式。
+这个控件是我一个同事集成到项目中来的，集成后UI那边添加了两个需求：1.点击title上面的按钮需要让当前页面滚动到顶部 2.title下面的tabIndicator需要跟页面同步滑动。
+于是我不得不去研究了下MBXPageViewController的源码。&lt;/p&gt;
+
+&lt;p&gt;MBXPageViewController是仿照RKSwipeBetweenViewControllers写的，通过源码可以看出并不是一个完成品，因为RKSwipeBetweenViewControllers是支持tabIndicator与页面同步滑动的。
+所以第二个问题就简单了，把MBXPageViewController完成就可以了。&lt;/p&gt;
+
+&lt;p&gt;首先我对比了MBXPageViewController和RKSwipeBetweenViewControllers的优缺点。虽然MBXPageViewController的watch和fork远低于RKSwipeBetweenViewControllers，
+MBXPageViewController的使用还是远远比RKSwipeBetweenViewControllers简单清晰，而且能适应更多的特殊UI情况。&lt;/p&gt;
+
+&lt;p&gt;使用MBXPageViewController.&lt;/p&gt;
+
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-html&quot; data-lang=&quot;html&quot;&gt;MBXPageViewController *MBXPageController = [MBXPageViewController new];
+MBXPageController.MBXDataSource = self;
+MBXPageController.MBXDataDelegate = self;
+[MBXPageController reloadPages];&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;p&gt;很简单易懂，有可能有人不理解，为什么没有看到addChildViewController或者addSubview之类的方法？其实这些都封装在了[MBXPageController reloadPages]方法里面
+进去看源码就会发现：&lt;/p&gt;
+
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-html&quot; data-lang=&quot;html&quot;&gt;- (void)loadControllerAndView
+{
+    NSAssert([[self MBXDataSource] isKindOfClass:[UIViewController class]], @&amp;quot;This needs to be implemented in a class that inherits from UIViewController&amp;quot;);
+    [(UIViewController *)[self MBXDataSource] addChildViewController:self];
+    [[[self MBXDataSource] MBXPageContainer] addSubview:self.view];
+}&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;ul&gt;
+&lt;li&gt;addChildViewController我的理解就是重新设置子controller的父controller，也就是层级关系，防止后面再Push或者Present新窗口的时候出错&lt;/li&gt;
+&lt;li&gt;addSubview就更加直观了不需要多解释，没有这句话咱们就没有View可以显示了。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;需要注意的是[[self MBXDataSource] MBXPageContainer]这个方法，他是MBXDataSource协议里必选的方法
+说到这里就必须说说为什么我认为MBXPageViewController的使用远远比RKSwipeBetweenViewControllers简单清晰，就是因为两个协议：&lt;/p&gt;
+
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-html&quot; data-lang=&quot;html&quot;&gt;@protocol MBXPageControllerDataSource &lt;span class=&quot;nt&quot;&gt;&amp;lt;NSObject&amp;gt;&lt;/span&gt;
+@required
+- (NSArray *)MBXPageButtons;
+- (NSArray *)MBXPageControllers;
+- (UIView *)MBXPageContainer;
+@end
+
+@protocol MBXPageControllerDataDelegate &lt;span class=&quot;nt&quot;&gt;&amp;lt;NSObject&amp;gt;&lt;/span&gt;
+@optional
+- (void)MBXPageChangedToIndex:(NSInteger)index;
+@end&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;ul&gt;
+&lt;li&gt;MBXPageButtons 就是标题栏上面的按钮，需要注意的是MBXPageViewController并不管按钮的显示，MBXPageViewController只负责帮我们绑定按钮的触摸事件，
+    显示正确的对应的页面&lt;/li&gt;
+&lt;li&gt;MBXPageControllers 这个就是咱们页面的数组了。&lt;/li&gt;
+&lt;li&gt;MBXPageContainer 是页面的容器，只需要返回MBXPageViewController所在的UIViewController的container就行。&lt;/li&gt;
+&lt;li&gt;MBXPageChangedToIndex 是一个提供给用户更新按钮状态的方法，当页面索引改变后就会触发这个方法，用户应该在这里跟新title
+    上面按钮和tabIndicator的状态.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;整个协议的完整实现大概应该是这个样子：&lt;/p&gt;
+
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-html&quot; data-lang=&quot;html&quot;&gt;#pragma mark - MBXPageViewController Data Source
+
+- (NSArray *)MBXPageButtons
+{
+    return @[self.button1, self.button2, self.button3];
+}
+
+- (UIView *)MBXPageContainer
+{
+    return self.container;
+}
+
+- (NSArray *)MBXPageControllers
+{
+    // You can Load a VC directly from Storyboard
+    UIStoryboard* mainStoryboard = [UIStoryboard storyboardWithName:@&amp;quot;Main&amp;quot; bundle:nil];
+
+    UIViewController *demo  = [mainStoryboard instantiateViewControllerWithIdentifier:@&amp;quot;firstController&amp;quot;];
+    UIViewController *demo2  = [mainStoryboard instantiateViewControllerWithIdentifier:@&amp;quot;secondController&amp;quot;];
+
+    // Or Load it from a xib file
+    UIViewController *demo3 = [UIViewController new];
+    demo3.view = [[[NSBundle mainBundle] loadNibNamed:@&amp;quot;View&amp;quot; owner:self options:nil] objectAtIndex:0];
+
+    // Or create it programatically
+    UIViewController *demo4 = [[UIViewController alloc] init];
+    demo4.view.backgroundColor = [UIColor orangeColor];
+
+    UILabel *fromLabel = [[UILabel alloc]initWithFrame:CGRectMake( (self.view.frame.size.width - 130)/2 , 40, 130, 40)];
+    fromLabel.text = @&amp;quot;Fourth Controller&amp;quot;;
+
+    [demo4.view addSubview:fromLabel];
+
+    // The order matters.
+    return @[demo,demo2, demo3];
+}&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;p&gt;怎么样，是不是非常简单清晰。下面需要解决的就是我们UI提出的需求问题了，也很简单，修改绑定button的事件：&lt;/p&gt;
+
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-html&quot; data-lang=&quot;html&quot;&gt;- (void)controllerModeLogicForDestination:(NSInteger)destination
+{
+    __weak __typeof(&lt;span class=&quot;err&quot;&gt;&amp;amp;&lt;/span&gt;*self)weakSelf = self;
+    NSInteger tempIndex = _currentPageIndex;
+    // Check to see which way are you going (Left -&amp;gt; Right or Right -&amp;gt; Left)
+    if (destination &amp;gt; tempIndex) {
+        for (int i = (int)tempIndex+1; i&lt;span class=&quot;err&quot;&gt;&amp;lt;&lt;/span&gt;=destination; i++) {
+            [self setPageControllerForIndex:i direction:UIPageViewControllerNavigationDirectionForward currentMBXViewController:weakSelf destionation:destination];
+        }
+    }
+
+    // Right -&amp;gt; Left
+    else if (destination &lt;span class=&quot;nt&quot;&gt;&amp;lt; tempIndex&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;na&quot;&gt;for&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;i =&lt;/span&gt;&lt;span class=&quot;err&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s&quot;&gt;(int)tempIndex-1;&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;i&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;= destination; i--) {
+            [self setPageControllerForIndex:i direction:UIPageViewControllerNavigationDirectionReverse currentMBXViewController:weakSelf destionation:destination];
+        }
+    }else{
+        [weakSelf updateCurrentPageIndex:tempIndex];
+    }
+}&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;p&gt;只加了一句[weakSelf updateCurrentPageIndex:tempIndex];然后我们可以自己在updateCurrentPageIndex方法里判断，如果当前索引跟传入的索引相同则当成点击事件来处理，否则则是页面切换事件，需要跟新button的状态，
+这样我们就解决了第一个问题。第二个问题比较复杂，我到现在都还没完成搞清楚why，只知道要这么做。
+我们先把MBXPageControllerDataDelegate协议拓展一下，添加两个方法：&lt;/p&gt;
+
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-html&quot; data-lang=&quot;html&quot;&gt;@protocol MBXPageControllerDataDelegate &lt;span class=&quot;nt&quot;&gt;&amp;lt;NSObject&amp;gt;&lt;/span&gt;
+@optional
+- (void)MBXPageChangedToIndex:(NSInteger)index;
+- (void)MBXPageSelectdViewOffset:(CGFloat)offset;
+- (CGFloat)MBXPageTabIndicatorStartOffset:(NSInteger)tabIndex;
+@end&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;ul&gt;
+&lt;li&gt;MBXPageTabIndicatorStartOffset返回tabIndex被选中时的tabIndicator的X坐标。别问我为什么要这么做，我也是一知半解。&lt;/li&gt;
+&lt;li&gt;MBXPageSelectdViewOffset就是事实跟新tabIndicator的X坐标的方法，offset就是X的新坐标。这两个接口有了之后就需要判断在那里加了。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;通过分析源码可以看到有个很诡异的事情：&lt;/p&gt;
+
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-html&quot; data-lang=&quot;html&quot;&gt;-  (void)syncScrollView
+{
+    for (UIView* view in _pageController.view.subviews){
+        if([view isKindOfClass:[UIScrollView class]])
+        {
+            _pageScrollView = (UIScrollView *)view;
+            _pageScrollView.delegate = self;
+        }
+    }
+}&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;p&gt;_pageScrollView.delegate = self;可以整个代码里并没有实现ScrollDelegate的方法，我对比了一下RKSwipeBetweenViewControllers才发现原作者并没有copy这个delegate，原因可能是他的项目里当时不需要这个特性。
+很显然我们需要实现这个ScrollDelegate，并在滑动过程中同步调用MBXPageSelectdViewOffset来跟新tabIndicator的X坐标：&lt;/p&gt;
+
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-html&quot; data-lang=&quot;html&quot;&gt;#pragma mark - scroll view delegate
+//It extracts the xcoordinate from the center point and instructs the selection bar to move accordingly
+-(void)scrollViewDidScroll:(UIScrollView *)scrollView{
+    if ([self MBXDataDelegate]
+        &lt;span class=&quot;err&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt; [self.MBXDataDelegate respondsToSelector:@selector(MBXPageSelectdViewOffset:)]
+        &lt;span class=&quot;err&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt; [self.MBXDataDelegate respondsToSelector:@selector(MBXPageTabIndicatorStartOffset:)]) {
+//        CGFloat offsetPercent = scrollView.contentOffset.x / scrollView.contentSize.width;
+//        [self.MBXDataDelegate MBXPageSelectdViewOffset:offsetPercent];
+//        NSLog(@&amp;quot;Scrolled percentage: %f   %f&amp;quot;, scrollView.contentOffset.x,scrollView.contentSize.width);
+        CGFloat xFromCenter = self.view.frame.size.width-scrollView.contentOffset.x; //%%% positive for right swipe, negative for left
+
+        //%%% checks to see what page you are on and adjusts the xCoor accordingly.
+        //i.e. if you&amp;#39;re on the second page, it makes sure that the bar starts from the frame.origin.x of the
+        //second tab instead of the beginning
+        NSInteger xCoor = [self.MBXDataDelegate MBXPageTabIndicatorStartOffset:self.currentPageIndex];
+        [self.MBXDataDelegate MBXPageSelectdViewOffset:(xCoor-xFromCenter/[self.viewControllerArray count])];;
+    }
+}&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;p&gt;必须得承认，如果没有看RKSwipeBetweenViewControllers我到死都不可能完成这个方法。了解pageController这个容器的都知道，这个容器为了节省内容，会在他认为合适的时候把看不到的子controller移除。
+这可真是个要命的特性，我刚开始的想法理所当然的认为scrollView.contentOffset.x/scrollView.contentSize.width就是滚动的比例，然后根据这个比例来更新咱们的tabIndicator。可是当我
+把scrollView.contentOffset.x和scrollView.contentSize.width打印出来后我傻眼了，简直混乱的不要不要的，完全不对头。之后在一段时间的探索后我猛然发现，原来RKSwipeBetweenViewControllers有
+同步跟新tabIndicator这个特性。。。
+下面是最后的效果图：&lt;/p&gt;
+&lt;figure&gt;
+	&lt;img src=&quot;/images/IOS/structure/MBXPageViewController/scrollDelegateAfter.gif&quot; alt=&quot;项目实例&quot; /&gt;
+	&lt;figcaption&gt;泛艺术客户端.&lt;/figcaption&gt;
 &lt;/figure&gt;
 
-&lt;p&gt;这里有一篇&lt;a href=&quot;http://www.littlelines.com/blog/2014/07/08/elixir-vs-ruby-showdown-phoenix-vs-rails/&quot;&gt;帖子&lt;/a&gt;，对比了Ruby on Rails和Elixir on Phoenix。
-我学过的服务器语言和框架不多，在学校的时候做过一段时间SSH框架，当时写的时候感觉挺屌的， 需要配置一大堆的Spring action，还有hybridization，从数据库里面取出来就是对象，很方便。
-进了生命里第一家公司后，我接触到了Ruby on Rails。然后才发现SSH框架简直就是老爷爷玩的东西。(PS:不谈什么效率，小公司目标受众顶天了100万级别)
-十分钟写好一个五脏俱全的服务器，简直是敏捷开发的大杀器啊。很可惜的是Ruby on Rails的效率确实不高，所以当我看到了跟它很像的Elixir on Phoenix的时候 ，
-我顿时觉得Elixir on Phoenix这个框架必然会取代Ruby on Rails甚至其他一些老牌框架和语言。因为Elixir是基于Erlang写的，有点像Node-js，都是面向过程的语言。&lt;/p&gt;
-
-&lt;p&gt;安装Elixir和Phoenix 步骤不赘述了 网上一搜一大堆.
-程序员看世界，第一步，写一个Hello world程序。&lt;/p&gt;
-
-&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-html&quot; data-lang=&quot;html&quot;&gt;mix phoenix.new hello_phoenix&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
-
-&lt;p&gt;看起来跟Ruby on Rails一样一样的,需要注意的是，看它官网的说明，你需要先安装node-js，然后在提示&lt;/p&gt;
-
-&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-html&quot; data-lang=&quot;html&quot;&gt;Fetch and install dependencies? [Yn]&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
-
-&lt;p&gt;的时候，你必须输入Y，否则程序运行起来后会报错.
-写到这里我发现我卡在了&lt;/p&gt;
-
-&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-html&quot; data-lang=&quot;html&quot;&gt;* running mix deps.get&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
-
-&lt;p&gt;我以为是网络问题，Ctrl+C强制退出去，删了挂上VPN重新来一遍，然后还是卡在那儿不动。。。 草,什么鬼。无奈我换了一种姿势，首先运行&lt;/p&gt;
-
-&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-html&quot; data-lang=&quot;html&quot;&gt;mix phoenix.new hello_phoenix
-Fetch and install dependencies? [Yn] n
-We are all set! Run your Phoenix application:
-$ cd hello_world
-$ mix deps.get
-$ mix phoenix.server&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
-
-&lt;p&gt;按照提示一步步做，然后成了。。。。。。心中十万个草泥马奔腾而过，劳资满心欢喜的想学习这个框架，结果一上来就给劳资出了这么个Bug，后面还玩得动么。。。&lt;/p&gt;
-
-    &lt;p&gt;&lt;a href=&quot;/androids/material-design/&quot;&gt;Material Design&lt;/a&gt; was originally published by 陆 伟 at &lt;a href=&quot;&quot;&gt;Life is a Struggle&lt;/a&gt; on June 01, 2015.&lt;/p&gt;
+    &lt;p&gt;&lt;a href=&quot;/ios/structure/mbxpageviewcontroller/&quot;&gt;MBXPageViewController的两点优化修改&lt;/a&gt; was originally published by 陆 伟 at &lt;a href=&quot;&quot;&gt;Life is a Struggle&lt;/a&gt; on October 20, 2015.&lt;/p&gt;
   </content>
 </entry>
 
 
 <entry>
   <title type="html"><![CDATA[Elixir on Phoenix]]></title>
- <link rel="alternate" type="text/html" href="/elixir-on-phoenix/" />
-  <id>/elixir-on-phoenix</id>
-  <published>2015-06-01T13:59:49+08:00</published>
-  <updated>2015-06-01T13:59:49+08:00</updated>
+ <link rel="alternate" type="text/html" href="/elixir/phoenix/elixir-on-phoenix/" />
+  <id>/elixir/phoenix/elixir-on-phoenix</id>
+  <published>2015-10-20T19:16:31+08:00</published>
+  <updated>2015-10-20T19:16:31+08:00</updated>
   <author>
     <name>陆 伟</name>
     <uri></uri>
@@ -86,7 +228,7 @@ $ mix phoenix.server&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 
 &lt;figure&gt;
     
-    &lt;a href=&quot;/images/phoenix-vs-rails.png&quot;&gt;&lt;img src=&quot;/images/phoenix-vs-rails.png&quot; alt=&quot;&quot; /&gt;&lt;/a&gt;
+    &lt;a href=&quot;/images/elixir/phoenix/phoenix-vs-rails.png&quot;&gt;&lt;img src=&quot;/images/elixir/phoenix/phoenix-vs-rails.png&quot; alt=&quot;&quot; /&gt;&lt;/a&gt;
     
     &lt;figcaption&gt;Elixir on Phoenix vs Ruby on Rails&lt;/figcaption&gt;
 &lt;/figure&gt;
@@ -122,7 +264,7 @@ $ mix phoenix.server&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 
 &lt;p&gt;按照提示一步步做，然后成了。。。。。。心中十万个草泥马奔腾而过，劳资满心欢喜的想学习这个框架，结果一上来就给劳资出了这么个Bug，后面还玩得动么。。。&lt;/p&gt;
 
-    &lt;p&gt;&lt;a href=&quot;/elixir-on-phoenix/&quot;&gt;Elixir on Phoenix&lt;/a&gt; was originally published by 陆 伟 at &lt;a href=&quot;&quot;&gt;Life is a Struggle&lt;/a&gt; on June 01, 2015.&lt;/p&gt;
+    &lt;p&gt;&lt;a href=&quot;/elixir/phoenix/elixir-on-phoenix/&quot;&gt;Elixir on Phoenix&lt;/a&gt; was originally published by 陆 伟 at &lt;a href=&quot;&quot;&gt;Life is a Struggle&lt;/a&gt; on October 20, 2015.&lt;/p&gt;
   </content>
 </entry>
 

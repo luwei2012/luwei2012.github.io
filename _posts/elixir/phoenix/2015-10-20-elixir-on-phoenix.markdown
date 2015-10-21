@@ -2,19 +2,19 @@
 layout: post
 title: "Elixir on Phoenix"
 modified:
-categories: 
+categories: elixir/phoenix
 description: "Elixir on Phoenix学习起航，程序猿看世界."
 tags: [Elixir on Phoenix]
 image:
   feature: photo01.jpg
   credit:
   creditlink:
-date: 2015-06-01T13:59:49+08:00
+date: 2015-10-20T19:16:31+08:00
 ---
 
 ### 为什么要学习Elixir on Phoenix？
 {% capture images %}
-	/images/phoenix-vs-rails.png
+    /images/elixir/phoenix/phoenix-vs-rails.png
 {% endcapture %}
 {% include gallery images=images caption="Elixir on Phoenix vs Ruby on Rails" cols=1 %}
 这里有一篇<a href="http://www.littlelines.com/blog/2014/07/08/elixir-vs-ruby-showdown-phoenix-vs-rails/">帖子</a>，对比了Ruby on Rails和Elixir on Phoenix。
