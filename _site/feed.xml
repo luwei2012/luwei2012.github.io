@@ -4,7 +4,7 @@
 <generator uri="https://github.com/mojombo/jekyll">Jekyll</generator>
 <link rel="self" type="application/atom+xml" href="/feed.xml" />
 <link rel="alternate" type="text/html" href="" />
-<updated>2015-10-24T15:24:24+08:00</updated>
+<updated>2015-10-24T15:25:43+08:00</updated>
 <id>/</id>
 <author>
   <name>陆 伟</name>
@@ -185,7 +185,7 @@
     &lt;h3 id=&quot;mbxpageviewcontroller&quot;&gt;MBXPageViewController是什么？&lt;/h3&gt;
 &lt;figure&gt;
 	&lt;img src=&quot;/images/IOS/structure/MBXPageViewController/scrollDelegateBefore.gif&quot; alt=&quot;项目实例&quot; /&gt;
-	&lt;figcaption&gt;泛艺术客户端.&lt;/figcaption&gt;
+	&lt;figcaption&gt;&lt;a href=&quot;https://www.9panart.com/html/passport/passport_login.html?ran=19406317709945142&quot;&gt;泛艺术客户端.&lt;/a&gt;&lt;/figcaption&gt;
 &lt;/figure&gt;
 &lt;p&gt;这里是&lt;a href=&quot;https://github.com/Moblox/MBXPageViewController&quot;&gt;原作者的主页&lt;/a&gt;，Moblox也是参照的其他作者的源代码改的，为了集成更多的样式。
 这个控件是我一个同事集成到项目中来的，集成后UI那边添加了两个需求：1.点击title上面的按钮需要让当前页面滚动到顶部 2.title下面的tabIndicator需要跟页面同步滑动。
@@ -361,7 +361,7 @@ MBXPageController.MBXDataDelegate = self;
 下面是最后的效果图：&lt;/p&gt;
 &lt;figure&gt;
 	&lt;img src=&quot;/images/IOS/structure/MBXPageViewController/scrollDelegateAfter.gif&quot; alt=&quot;项目实例&quot; /&gt;
-	&lt;figcaption&gt;泛艺术客户端.&lt;/figcaption&gt;
+	&lt;figcaption&gt;&lt;a href=&quot;https://www.9panart.com/html/passport/passport_login.html?ran=19406317709945142&quot;&gt;泛艺术客户端.&lt;/a&gt;&lt;/figcaption&gt;
 &lt;/figure&gt;
 
     &lt;p&gt;&lt;a href=&quot;/ios/structure/mbxpageviewcontroller/&quot;&gt;MBXPageViewController的两点优化修改&lt;/a&gt; was originally published by 陆 伟 at &lt;a href=&quot;&quot;&gt;Life is a Struggle&lt;/a&gt; on October 20, 2015.&lt;/p&gt;
