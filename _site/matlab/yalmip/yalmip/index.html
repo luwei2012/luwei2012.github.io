@@ -5,25 +5,25 @@
 <!--[if gt IE 8]><!--> <html class="no-js" lang="en"><!--<![endif]-->
 <head>
 <meta charset="utf-8">
-<title>Elixir on Phoenix &#8211; Life is a Struggle</title>
-<meta name="description" content="Elixir on Phoenix学习起航，程序猿看世界.">
-<meta name="keywords" content="Elixir on Phoenix">
+<title>Yalmip的使用 &#8211; Life is a Struggle</title>
+<meta name="description" content="Describe your website here.">
+<meta name="keywords" content="">
 
 
 
 <!-- Open Graph -->
 <meta property="og:locale" content="en_US">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Elixir on Phoenix">
-<meta property="og:description" content="Elixir on Phoenix学习起航，程序猿看世界.">
-<meta property="og:url" content="/elixir/phoenix/elixir-on-phoenix/">
+<meta property="og:title" content="Yalmip的使用">
+<meta property="og:description" content="Describe your website here.">
+<meta property="og:url" content="/matlab/yalmip/yalmip/">
 <meta property="og:site_name" content="Life is a Struggle">
 
 
 
 
 
-<link rel="canonical" href="/elixir/phoenix/elixir-on-phoenix/">
+<link rel="canonical" href="/matlab/yalmip/yalmip/">
 <link href="/feed.xml" type="application/atom+xml" rel="alternate" title="Life is a Struggle Feed">
 
 <!-- http://t.co/dKP3o1e -->
@@ -59,7 +59,7 @@
 
 </head>
 
-<body id="post" class="feature">
+<body id="post" >
 
 <!--[if lt IE 9]><div class="upgrade"><strong><a href="http://whatbrowser.org/">Your browser is quite old!</strong> Why not upgrade to a different browser to better enjoy this site?</a></div><![endif]-->
 <nav id="dl-menu" class="dl-menuwrapper" role="navigation">
@@ -109,22 +109,15 @@
 
 
 
-<div class="entry-header">
-  
-  <div class="entry-image">
-    <img src="/images/photo01.jpg" alt="Elixir on Phoenix">
-  </div><!-- /.entry-image -->
-</div><!-- /.entry-header -->
-
 
 <div id="main" role="main">
   <article class="hentry">
     <header class="header-title">
       <div class="header-title-wrap">
         
-          <h1 class="entry-title"><a href="/elixir/phoenix/elixir-on-phoenix/" rel="bookmark" title="Elixir on Phoenix">Elixir on Phoenix</a></h1>
+          <h1 class="entry-title"><a href="/matlab/yalmip/yalmip/" rel="bookmark" title="Yalmip的使用">Yalmip的使用</a></h1>
         
-        <h2><span class="entry-date date published"><time datetime="2015-10-20T19:16:31+08:00">October 20, 2015</time></span></h2>
+        <h2><span class="entry-date date published"><time datetime="2015-10-22T17:10:17+08:00">October 22, 2015</time></span></h2>
         
         <p class="entry-reading-time">
           <i class="fa fa-clock-o"></i>
@@ -135,54 +128,16 @@
       </div><!-- /.header-title-wrap -->
     </header>
     <div class="entry-content">
-      <h3 id="elixir-on-phoenix">为什么要学习Elixir on Phoenix？</h3>
-
-<figure>
-    
-    <a href="/images/elixir/phoenix/phoenix-vs-rails.png"><img src="/images/elixir/phoenix/phoenix-vs-rails.png" alt="" /></a>
-    
-    <figcaption>Elixir on Phoenix vs Ruby on Rails</figcaption>
-</figure>
-
-<p>这里有一篇<a href="http://www.littlelines.com/blog/2014/07/08/elixir-vs-ruby-showdown-phoenix-vs-rails/">帖子</a>，对比了Ruby on Rails和Elixir on Phoenix。
-我学过的服务器语言和框架不多，在学校的时候做过一段时间SSH框架，当时写的时候感觉挺屌的， 需要配置一大堆的Spring action，还有hybridization，从数据库里面取出来就是对象，很方便。
-进了生命里第一家公司后，我接触到了Ruby on Rails。然后才发现SSH框架简直就是老爷爷玩的东西。(PS:不谈什么效率，小公司目标受众顶天了100万级别)
-十分钟写好一个五脏俱全的服务器，简直是敏捷开发的大杀器啊。很可惜的是Ruby on Rails的效率确实不高，所以当我看到了跟它很像的Elixir on Phoenix的时候 ，
-我顿时觉得Elixir on Phoenix这个框架必然会取代Ruby on Rails甚至其他一些老牌框架和语言。因为Elixir是基于Erlang写的，有点像Node-js，都是面向过程的语言。</p>
-
-<p>安装Elixir和Phoenix 步骤不赘述了 网上一搜一大堆.
-程序员看世界，第一步，写一个Hello world程序。</p>
-
-<div class="highlight"><pre><code class="language-html" data-lang="html">mix phoenix.new hello_phoenix</code></pre></div>
-
-<p>看起来跟Ruby on Rails一样一样的,需要注意的是，看它官网的说明，你需要先安装node-js，然后在提示</p>
-
-<div class="highlight"><pre><code class="language-html" data-lang="html">Fetch and install dependencies? [Yn]</code></pre></div>
-
-<p>的时候，你必须输入Y，否则程序运行起来后会报错.
-写到这里我发现我卡在了</p>
-
-<div class="highlight"><pre><code class="language-html" data-lang="html">* running mix deps.get</code></pre></div>
-
-<p>我以为是网络问题，Ctrl+C强制退出去，删了挂上VPN重新来一遍，然后还是卡在那儿不动。。。 草,什么鬼。无奈我换了一种姿势，首先运行</p>
-
-<div class="highlight"><pre><code class="language-html" data-lang="html">mix phoenix.new hello_phoenix
-Fetch and install dependencies? [Yn] n
-We are all set! Run your Phoenix application:
-$ cd hello_world
-$ mix deps.get
-$ mix phoenix.server</code></pre></div>
-
-<p>按照提示一步步做，然后成了。。。。。。心中十万个草泥马奔腾而过，劳资满心欢喜的想学习这个框架，结果一上来就给劳资出了这么个Bug，后面还玩得动么。。。</p>
+      
 
       <footer class="entry-meta">
-        <span class="entry-tags"><a href="/tags/#Elixir on Phoenix" title="Pages tagged Elixir on Phoenix" class="tag"><span class="term">Elixir on Phoenix</span></a></span>
+        <span class="entry-tags"></span>
         
         <div class="social-share">
   <ul class="socialcount socialcount-small inline-list">
-    <li class="facebook"><a href="https://www.facebook.com/sharer/sharer.php?u=/elixir/phoenix/elixir-on-phoenix/" title="Share on Facebook"><span class="count"><i class="fa fa-facebook-square"></i> Like</span></a></li>
-    <li class="twitter"><a href="https://twitter.com/intent/tweet?text=/elixir/phoenix/elixir-on-phoenix/" title="Share on Twitter"><span class="count"><i class="fa fa-twitter-square"></i> Tweet</span></a></li>
-    <li class="googleplus"><a href="https://plus.google.com/share?url=/elixir/phoenix/elixir-on-phoenix/" title="Share on Google Plus"><span class="count"><i class="fa fa-google-plus-square"></i> +1</span></a></li>
+    <li class="facebook"><a href="https://www.facebook.com/sharer/sharer.php?u=/matlab/yalmip/yalmip/" title="Share on Facebook"><span class="count"><i class="fa fa-facebook-square"></i> Like</span></a></li>
+    <li class="twitter"><a href="https://twitter.com/intent/tweet?text=/matlab/yalmip/yalmip/" title="Share on Twitter"><span class="count"><i class="fa fa-twitter-square"></i> Tweet</span></a></li>
+    <li class="googleplus"><a href="https://plus.google.com/share?url=/matlab/yalmip/yalmip/" title="Share on Google Plus"><span class="count"><i class="fa fa-google-plus-square"></i> +1</span></a></li>
   </ul>
 </div><!-- /.social-share -->
       </footer>
@@ -191,23 +146,23 @@ $ mix phoenix.server</code></pre></div>
     <div class="read-more">
   
     <div class="read-more-header">
-      <a href="" class="read-more-btn">Read More</a>
+      <a href="/matlab/fmincon/fmincon/" class="read-more-btn">Read More</a>
     </div><!-- /.read-more-header -->
     <div class="read-more-content">
-      <h3><a href="/matlab/yalmip/yalmip/" title="Yalmip的使用">Yalmip的使用</a></h3>
-      <p>&hellip; <a href="/matlab/yalmip/yalmip/">Continue reading</a></p>
+      <h3><a href="/matlab/fmincon/fmincon/" title="Fmincon的使用">Fmincon的使用</a></h3>
+      <p>&hellip; <a href="/matlab/fmincon/fmincon/">Continue reading</a></p>
     </div><!-- /.read-more-content -->
   
   <div class="read-more-list">
     
       <div class="list-item">
-        <h4><a href="/matlab/fmincon/fmincon/" title="Fmincon的使用">Fmincon的使用</a></h4>
+        <h4><a href="/ios/record/scrollview/" title="关于ScrollView的学习">关于ScrollView的学习</a></h4>
         <span>Published on October 22, 2015</span>
       </div><!-- /.list-item -->
     
       <div class="list-item">
-        <h4><a href="/ios/record/scrollview/" title="关于ScrollView的学习">关于ScrollView的学习</a></h4>
-        <span>Published on October 22, 2015</span>
+        <h4><a href="/ios/structure/mbxpageviewcontroller/" title="MBXPageViewController的两点优化修改">MBXPageViewController的两点优化修改</a></h4>
+        <span>Published on October 20, 2015</span>
       </div><!-- /.list-item -->
     
   </div><!-- /.read-more-list -->
