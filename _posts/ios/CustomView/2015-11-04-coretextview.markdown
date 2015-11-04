@@ -6,7 +6,7 @@ categories: IOS/CustomView
 description: "竖排文字显示"
 tags: [Vertical Text]
 image:
-  feature: /images/IOS/CustomView/coreTextView.png
+  feature: /IOS/CustomView/coreTextView.png
   credit:
   creditlink:
 comments:
