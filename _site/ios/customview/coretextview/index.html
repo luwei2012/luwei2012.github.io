@@ -129,7 +129,7 @@
         <p class="entry-reading-time">
           <i class="fa fa-clock-o"></i>
           
-          Reading time ~2 minutes
+          Reading time ~1 minute
         </p><!-- /.entry-reading-time -->
         
       </div><!-- /.header-title-wrap -->
@@ -162,7 +162,8 @@
 
 <p>1.创建CTFrameRef的时候需要添加一个属性kCTFrameProgressionAttributeName</p>
 
-<div class="highlight"><pre><code class="language-html" data-lang="html">/*!
+<pre class="brush:cpp">
+/*!
 	@const		kCTFrameProgressionAttributeName
 	@abstract	Specifies progression for a frame.
 	
@@ -176,9 +177,10 @@
 CTFrameRef frame = CTFramesetterCreateFrame(framesetter,
                                             CFRangeMake(0, 0),
                                             path,
-                                            (CFDictionaryRef)@{(id)kCTFrameProgressionAttributeName: @(kCTFrameProgressionRightToLeft)});</code></pre></div>
-
-<div class="highlight"><pre><code class="language-html" data-lang="html">/*!
+                                            (CFDictionaryRef)@{(id)kCTFrameProgressionAttributeName: @(kCTFrameProgressionRightToLeft)});
+</pre>
+<pre class="brush:cpp">
+/*!
     @enum		CTFrameProgression
     @abstract	These constants specify frame progression types.
 
@@ -202,15 +204,15 @@ typedef CF_ENUM(uint32_t, CTFrameProgression) {
     kCTFrameProgressionTopToBottom  = 0,
     kCTFrameProgressionRightToLeft  = 1,
     kCTFrameProgressionLeftToRight  = 2
-}</code></pre></div>
-
+}
+</pre>
 <p>至此我们就能控制文本的行变列。</p>
 
 <p>2.让汉字保持竖向</p>
 
 <p>添加了kCTFrameProgressionAttributeName属性后其实就相当于把绘制区域顺时针旋转了90°，汉字躺下了。。。因此我们需要为每个汉字额外设置一些样式：</p>
-
-<div class="highlight"><pre><code class="language-html" data-lang="html">/*!
+<pre class="brush:cpp">
+/*!
     @const      kCTVerticalFormsAttributeName
     @abstract   Controls glyph orientation.
 
@@ -222,13 +224,14 @@ typedef CF_ENUM(uint32_t, CTFrameProgression) {
 extern const CFStringRef kCTVerticalFormsAttributeName CT_AVAILABLE(10_5, 4_3);
 NSMutableAttributedString *attrStr = [[NSMutableAttributedString alloc] initWithString:self.text attributes:nil];
 
-for (int i = 0; i <span class="nt">&lt; attrStr.length</span><span class="err">;</span> <span class="na">i</span><span class="err">++)</span> <span class="err">{</span>
-    <span class="na">if</span> <span class="err">([</span><span class="na">self</span> <span class="na">isChinese:self</span><span class="err">.</span><span class="na">text</span> <span class="na">index:i</span><span class="err">])</span> <span class="err">{</span>
-        <span class="err">[</span><span class="na">attrStr</span> <span class="na">addAttribute:</span><span class="err">(</span><span class="na">id</span><span class="err">)</span><span class="na">kCTVerticalFormsAttributeName</span>
-                        <span class="na">value:</span><span class="err">@</span><span class="na">YES</span>
-                        <span class="na">range:NSMakeRange</span><span class="err">(</span><span class="na">i</span><span class="err">,</span> <span class="na">1</span><span class="err">)];</span> 
-    <span class="err">}</span>
-<span class="err">}</span></code></pre></div>
+for (int i = 0; i &lt; attrStr.length; i++) {
+    if ([self isChinese:self.text index:i]) {
+        [attrStr addAttribute:(id)kCTVerticalFormsAttributeName
+                        value:@YES
+                        range:NSMakeRange(i, 1)]; 
+    }
+}
+</pre>
 
 <p>这两步处理完之后我们的文本就能够竖向显示了，只是字母跟汉字不会右对齐。但是到这里我们才刚开始。</p>
 
@@ -237,42 +240,50 @@ for (int i = 0; i <span class="nt">&lt; attrStr.length</span><span class="err">;
 
 <p>1.获取画布并设置好坐标系</p>
 
-<div class="highlight"><pre><code class="language-html" data-lang="html">//获取画布句柄
+<pre class="brush:cpp">
+//获取画布句柄
 CGContextRef context = UIGraphicsGetCurrentContext();
 //颠倒窗口 坐标计算使用的mac下的坐标系 跟ios的坐标系正好颠倒
 CGContextSetTextMatrix(context, CGAffineTransformIdentity);
 CGContextTranslateCTM(context, 0, self.bounds.size.height);
-CGContextScaleCTM(context, 1.0, -1.0);</code></pre></div>
+CGContextScaleCTM(context, 1.0, -1.0);
+</pre>
 
 <p>2.生成需要绘制的内容</p>
 
-<div class="highlight"><pre><code class="language-html" data-lang="html">//生成富文本的信息 具体不懂  反正这是core text绘制的必须流程和对象
-CTFramesetterRef framesetter = CTFramesetterCreateWithAttributedString((__bridge CFAttributedStringRef)self.attributedText);</code></pre></div>
-
+<pre class="brush:cpp">
+//生成富文本的信息 具体不懂  反正这是core text绘制的必须流程和对象
+CTFramesetterRef framesetter = CTFramesetterCreateWithAttributedString((__bridge CFAttributedStringRef)self.attributedText);
+</pre>
 <p>这里的attributedText就是一个富文本对象，我们可以设置行间距、字间距、颜色和字体等等一系列属性。</p>
 
 <p>3.生成绘制区域</p>
 
-<div class="highlight"><pre><code class="language-html" data-lang="html">//这一步生成合适的绘制区域
-CGPathRef path = [self createPathWithLines];</code></pre></div>
-
+<pre class="brush:cpp">
+//这一步生成合适的绘制区域
+CGPathRef path = [self createPathWithLines];
+</pre>
 <p>createPathWithLines方法我们后面要讲，最简单的实现就是把整个self.bound作为绘制区域，就跟卢克的博客里写的一样</p>
 
 <p>4.绘制</p>
 
-<div class="highlight"><pre><code class="language-html" data-lang="html">// Create a frame for this column and draw it.
+<pre class="brush:cpp">
+// Create a frame for this column and draw it.
 CTFrameRef frame = CTFramesetterCreateFrame(framesetter,
                                             CFRangeMake(0, 0),
-                                            path,<span class="nt">&lt;/br&gt;</span>
+                                            path,
                                             (CFDictionaryRef)@{(id)kCTFrameProgressionAttributeName: @(kCTFrameProgressionRightToLeft)});
-CTFrameDraw(frame, context);</code></pre></div>
+CTFrameDraw(frame, context);
+</pre>
 
 <p>5.释放内存</p>
 
-<div class="highlight"><pre><code class="language-html" data-lang="html">//释放内存
+<pre class="brush:cpp">
+//释放内存
 CFRelease(frame);
 CFRelease(path);
-CFRelease(framesetter);</code></pre></div>
+CFRelease(framesetter);
+</pre>
 
 <p>由此可见想要实现居中显示，我们只需要计算出正确的绘制区域就行了。其实不光是居中，你想要啥对齐效果都可以通过设置绘制区域来达到。
 计算绘制区域的方法可以参见<a href="https://github.com/luwei2012/CoreTextView">我的代码</a>都有详细的注释。</p>
@@ -332,28 +343,9 @@ CFRelease(framesetter);</code></pre></div>
 
 
 
-
-    <script type="text/javascript">
-        /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
-        var disqus_shortname = 'luwei'; // required: replace example with your forum shortname
-
-        /* * * DON'T EDIT BELOW THIS LINE * * */
-        (function() {
-            var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
-            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
-            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
-        })();
-
-        /* * * DON'T EDIT BELOW THIS LINE * * */
-        (function () {
-            var s = document.createElement('script'); s.async = true;
-            s.type = 'text/javascript';
-            s.src = '//' + disqus_shortname + '.disqus.com/count.js';
-            (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
-        }());
-    </script>
-    <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
-    <a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+<script type="text/javascript">
+  SyntaxHighlighter.all()
+</script>
 	        
 
 </body>

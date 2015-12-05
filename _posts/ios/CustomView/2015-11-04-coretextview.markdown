@@ -42,7 +42,7 @@ date: 2015-11-04T11:39:43+08:00
 
 1.创建CTFrameRef的时候需要添加一个属性kCTFrameProgressionAttributeName 
 
-{% highlight html %}
+<pre class="brush:cpp">
 /*!
 	@const		kCTFrameProgressionAttributeName
 	@abstract	Specifies progression for a frame.
@@ -58,8 +58,8 @@ CTFrameRef frame = CTFramesetterCreateFrame(framesetter,
                                             CFRangeMake(0, 0),
                                             path,
                                             (CFDictionaryRef)@{(id)kCTFrameProgressionAttributeName: @(kCTFrameProgressionRightToLeft)});
-{% endhighlight %}
-{% highlight html %}
+</pre>
+<pre class="brush:cpp">
 /*!
     @enum		CTFrameProgression
     @abstract	These constants specify frame progression types.
@@ -85,13 +85,13 @@ typedef CF_ENUM(uint32_t, CTFrameProgression) {
     kCTFrameProgressionRightToLeft  = 1,
     kCTFrameProgressionLeftToRight  = 2
 }
-{% endhighlight %}
+</pre>
 至此我们就能控制文本的行变列。
 
 2.让汉字保持竖向
 
 添加了kCTFrameProgressionAttributeName属性后其实就相当于把绘制区域顺时针旋转了90°，汉字躺下了。。。因此我们需要为每个汉字额外设置一些样式：
-{% highlight html %}
+<pre class="brush:cpp">
 /*!
     @const      kCTVerticalFormsAttributeName
     @abstract   Controls glyph orientation.
@@ -111,7 +111,7 @@ for (int i = 0; i < attrStr.length; i++) {
                         range:NSMakeRange(i, 1)]; 
     }
 }
-{% endhighlight %}
+</pre>
 
 这两步处理完之后我们的文本就能够竖向显示了，只是字母跟汉字不会右对齐。但是到这里我们才刚开始。
 
@@ -120,50 +120,50 @@ for (int i = 0; i < attrStr.length; i++) {
 
 1.获取画布并设置好坐标系
 
-{% highlight html %}
+<pre class="brush:cpp">
 //获取画布句柄
 CGContextRef context = UIGraphicsGetCurrentContext();
 //颠倒窗口 坐标计算使用的mac下的坐标系 跟ios的坐标系正好颠倒
 CGContextSetTextMatrix(context, CGAffineTransformIdentity);
 CGContextTranslateCTM(context, 0, self.bounds.size.height);
 CGContextScaleCTM(context, 1.0, -1.0);
-{% endhighlight %}
+</pre>
 
 2.生成需要绘制的内容
 
-{% highlight html %}
+<pre class="brush:cpp">
 //生成富文本的信息 具体不懂  反正这是core text绘制的必须流程和对象
 CTFramesetterRef framesetter = CTFramesetterCreateWithAttributedString((__bridge CFAttributedStringRef)self.attributedText);
-{% endhighlight %}
+</pre>
 这里的attributedText就是一个富文本对象，我们可以设置行间距、字间距、颜色和字体等等一系列属性。
 
 3.生成绘制区域
 
-{% highlight html %}
+<pre class="brush:cpp">
 //这一步生成合适的绘制区域
 CGPathRef path = [self createPathWithLines];
-{% endhighlight %}
+</pre>
 createPathWithLines方法我们后面要讲，最简单的实现就是把整个self.bound作为绘制区域，就跟卢克的博客里写的一样
 
 4.绘制
 
-{% highlight html %}
+<pre class="brush:cpp">
 // Create a frame for this column and draw it.
 CTFrameRef frame = CTFramesetterCreateFrame(framesetter,
                                             CFRangeMake(0, 0),
                                             path,</br>
                                             (CFDictionaryRef)@{(id)kCTFrameProgressionAttributeName: @(kCTFrameProgressionRightToLeft)});
 CTFrameDraw(frame, context);
-{% endhighlight %}
+</pre>
 
 5.释放内存
 
-{% highlight html %}
+<pre class="brush:cpp">
 //释放内存
 CFRelease(frame);
 CFRelease(path);
 CFRelease(framesetter);
-{% endhighlight %}
+</pre>
 
 由此可见想要实现居中显示，我们只需要计算出正确的绘制区域就行了。其实不光是居中，你想要啥对齐效果都可以通过设置绘制区域来达到。
 计算绘制区域的方法可以参见<a href="https://github.com/luwei2012/CoreTextView">我的代码</a>都有详细的注释。

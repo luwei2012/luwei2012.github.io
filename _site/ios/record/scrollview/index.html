@@ -132,9 +132,9 @@
 于是才决定写个demo好好研究下ScrollView。</p>
 
 <h3 id="scrollview">ScrollView的探究过程</h3>
-<p>ScrollView的特性相信大家都知道，有几个非常重要的属性：frame，contentSize，contentOffset，contentInset</p>
-
-<div class="highlight"><pre><code class="language-html" data-lang="html">-(UIScrollView *)scrollView{
+<p>ScrollView的特性相信大家都知道，有几个非常重要的属性：frame，contentSize，contentOffset，contentInset
+    &lt;pre class="brush:cpp"&gt;
+    -(UIScrollView *)scrollView{
         if (_scrollView == nil) {
             _scrollView                 = [[UIScrollView alloc] init];
             _scrollView.delegate        = self;
@@ -151,31 +151,32 @@
                 make.top.equalTo(self.view.mas_top);
                 make.right.equalTo(self.view.mas_right);
                 make.bottom.equalTo(self.view.mas_bottom);
-            }];
+            }];</p>
 
-        }
+<pre><code>    }
 
-        return _scrollView;
+    return _scrollView;
+}
+-(UIView *)containerView{
+    if (_containerView == nil) {
+        _containerView = [[UIView alloc] init];
+        [self.scrollView addSubview:_containerView];
+        [_containerView mas_makeConstraints:^(MASConstraintMaker *make) {
+            make.left.equalTo(self.view.mas_left);
+            make.top.equalTo(@(0));
+            make.right.equalTo(self.view.mas_right);
+            make.height.equalTo(@(SCREEN_HEIGHT * 2));
+        }];
+        self.scrollView.contentSize = CGSizeMake(SCREEN_WIDTH, SCREEN_HEIGHT * 2);
     }
-    -(UIView *)containerView{
-        if (_containerView == nil) {
-            _containerView = [[UIView alloc] init];
-            [self.scrollView addSubview:_containerView];
-            [_containerView mas_makeConstraints:^(MASConstraintMaker *make) {
-                make.left.equalTo(self.view.mas_left);
-                make.top.equalTo(@(0));
-                make.right.equalTo(self.view.mas_right);
-                make.height.equalTo(@(SCREEN_HEIGHT * 2));
-            }];
-            self.scrollView.contentSize = CGSizeMake(SCREEN_WIDTH, SCREEN_HEIGHT * 2);
-        }
-        return _containerView;
-    }
-    -(void)viewDidAppear:(BOOL)animated{
-        [super viewDidAppear:animated];
-         NSLog(@&quot;%f %f&quot;,self.containerView.frame.origin.x,self.containerView.frame.origin.y);
-    }</code></pre></div>
-
+    return _containerView;
+}
+-(void)viewDidAppear:(BOOL)animated{
+    [super viewDidAppear:animated];
+     NSLog(@"%f %f",self.containerView.frame.origin.x,self.containerView.frame.origin.y);
+}
+&lt;/pre&gt;
+</code></pre>
 <ul>
 <li>
     contentInset:之所以首先说contentInset这个属性是因为我自己就被网上很多不负责任的言论坑过。contentInset只是contentSize的四个边增加了一块区域，仅此而已。
@@ -282,28 +283,9 @@
 
 
 
-
-    <script type="text/javascript">
-        /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
-        var disqus_shortname = 'luwei'; // required: replace example with your forum shortname
-
-        /* * * DON'T EDIT BELOW THIS LINE * * */
-        (function() {
-            var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
-            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
-            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
-        })();
-
-        /* * * DON'T EDIT BELOW THIS LINE * * */
-        (function () {
-            var s = document.createElement('script'); s.async = true;
-            s.type = 'text/javascript';
-            s.src = '//' + disqus_shortname + '.disqus.com/count.js';
-            (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
-        }());
-    </script>
-    <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
-    <a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+<script type="text/javascript">
+  SyntaxHighlighter.all()
+</script>
 	        
 
 </body>

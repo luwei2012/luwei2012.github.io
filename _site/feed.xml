@@ -4,7 +4,7 @@
 <generator uri="https://github.com/mojombo/jekyll">Jekyll</generator>
 <link rel="self" type="application/atom+xml" href="/feed.xml" />
 <link rel="alternate" type="text/html" href="" />
-<updated>2015-12-04T21:01:29+08:00</updated>
+<updated>2015-12-05T16:57:52+08:00</updated>
 <id>/</id>
 <author>
   <name>陆 伟</name>
@@ -38,27 +38,27 @@
 &lt;h3 id=&quot;id&quot;&gt;什么是id&lt;/h3&gt;
 &lt;p&gt;要对一个类序列化首先需要知道IOS里面对象的结构。我们知道C里面是没有类的，只有结构体。C++在C的结构体基础上提出了类的概念和结构，OC也是如此，
 OC的类就是结构体。在OC里面的对象都可以使用id类型来表示，A *a也可以写成 id a。那么id是什么呢，id在objc.h中定义如下：&lt;/p&gt;
-
-&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-html&quot; data-lang=&quot;html&quot;&gt;//A pointer to an instance of a class.
-typedef struct objc_object *id;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
-
+&lt;pre class=&quot;brush:cpp&quot;&gt;
+//A pointer to an instance of a class.
+typedef struct objc_object *id;
+&lt;/pre&gt;
 &lt;p&gt;就像注释中所说的这样id是指向一个objc_object结构体的指针。objc_object在objc.h中的定义：&lt;/p&gt;
-
-&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-html&quot; data-lang=&quot;html&quot;&gt;//Represents an instance of a class.
+&lt;pre class=&quot;brush:cpp&quot;&gt;
+//Represents an instance of a class.
 struct objc_object
 {
     Class isa;
-}&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
-
+}
+&lt;/pre&gt;
 &lt;p&gt;这个时候我们知道OBjective-C中的object在最后会被转换成C的结构体，而在这个struct中有一个isa指针，指向它的类别Class(C是大写的):&lt;/p&gt;
-
-&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-html&quot; data-lang=&quot;html&quot;&gt;//Represents an instance of a class.
+&lt;pre class=&quot;brush:cpp&quot;&gt;
+//Represents an instance of a class.
 //An opaque type that represents an Objective-C class
-typedef struct objc_class *Class;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
-
+typedef struct objc_class *Class;
+&lt;/pre&gt;
 &lt;p&gt;我们可以看到，Class本身也是指向一个C的structobjc_class:&lt;/p&gt;
-
-&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-html&quot; data-lang=&quot;html&quot;&gt;struct objc_class
+&lt;pre class=&quot;brush:cpp&quot;&gt;
+struct objc_class
 {
     Class isa OBJC_ISA_AVAILABILITY;
 
@@ -71,18 +71,19 @@ typedef struct objc_class *Class;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
     struct objc_method_list **methodLists;
     struct objc_cache *cache;
     struct objc_protocol_list *protocols; 
-};&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
-
+};
+&lt;/pre&gt;
 &lt;p&gt;该结构中，isa指向所属的Class,super_class指向父类别。在objc_runtime_new.h中，我们发现objc_class有如下定义：&lt;/p&gt;
-
-&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-html&quot; data-lang=&quot;html&quot;&gt;struct object_class : objc_object
+&lt;pre class=&quot;brush:cpp&quot;&gt;
+struct object_class : objc_object
 {
     //Class ISA
     Class superclass;
 
     ...
     ...
-}&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+}
+&lt;/pre&gt;
 
 &lt;h3 id=&quot;meta-class&quot;&gt;什么是Meta Class&lt;/h3&gt;
 &lt;p&gt;根据上面的描述，我们可以把Meta Class理解为一个Class对象的class。简单的说：&lt;/p&gt;
@@ -114,38 +115,38 @@ typedef struct objc_class *Class;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 &lt;li&gt;根据该对象类型的属性和方法字典来实例化一个对象，并设置好值，这个就是我们要得结果了&lt;/li&gt; 
 &lt;/ul&gt;
 &lt;p&gt;YYModel的序列化过程也是这样，首先有一个YYClassInfo对象来储存class信息：&lt;/p&gt;
-
-&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-html&quot; data-lang=&quot;html&quot;&gt;+ (instancetype)classInfoWithClass:(Class)cls {
+&lt;pre class=&quot;brush:cpp&quot;&gt;
++ (instancetype)classInfoWithClass:(Class)cls {
     if (!cls) return nil;
     static CFMutableDictionaryRef classCache;
     static CFMutableDictionaryRef metaCache;
     static dispatch_once_t onceToken;
     static OSSpinLock lock;
-    dispatch_once(&lt;span class=&quot;err&quot;&gt;&amp;amp;&lt;/span&gt;onceToken, ^{
-        classCache = CFDictionaryCreateMutable(CFAllocatorGetDefault(), 0, &lt;span class=&quot;err&quot;&gt;&amp;amp;&lt;/span&gt;kCFTypeDictionaryKeyCallBacks, &lt;span class=&quot;ni&quot;&gt;&amp;amp;kCFTypeDictionaryValueCallBacks);&lt;/span&gt;
-        metaCache = CFDictionaryCreateMutable(CFAllocatorGetDefault(), 0, &lt;span class=&quot;err&quot;&gt;&amp;amp;&lt;/span&gt;kCFTypeDictionaryKeyCallBacks, &lt;span class=&quot;ni&quot;&gt;&amp;amp;kCFTypeDictionaryValueCallBacks);&lt;/span&gt;
+    dispatch_once(&amp;amp;onceToken, ^{
+        classCache = CFDictionaryCreateMutable(CFAllocatorGetDefault(), 0, &amp;amp;kCFTypeDictionaryKeyCallBacks, &amp;amp;kCFTypeDictionaryValueCallBacks);
+        metaCache = CFDictionaryCreateMutable(CFAllocatorGetDefault(), 0, &amp;amp;kCFTypeDictionaryKeyCallBacks, &amp;amp;kCFTypeDictionaryValueCallBacks);
         lock = OS_SPINLOCK_INIT;
     });
-    OSSpinLockLock(&lt;span class=&quot;ni&quot;&gt;&amp;amp;lock);&lt;/span&gt;
+    OSSpinLockLock(&amp;amp;lock);
     YYClassInfo *info = CFDictionaryGetValue(class_isMetaClass(cls) ? metaCache : classCache, (__bridge const void *)(cls));
-    if (info &lt;span class=&quot;err&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt; info-&amp;gt;_needUpdate) {
+    if (info &amp;amp;&amp;amp; info-&amp;gt;_needUpdate) {
         [info _update];
     }
-    OSSpinLockUnlock(&lt;span class=&quot;ni&quot;&gt;&amp;amp;lock);&lt;/span&gt;
+    OSSpinLockUnlock(&amp;amp;lock);
     if (!info) {
         info = [[YYClassInfo alloc] initWithClass:cls];
         if (info) {
-            OSSpinLockLock(&lt;span class=&quot;ni&quot;&gt;&amp;amp;lock);&lt;/span&gt;
+            OSSpinLockLock(&amp;amp;lock);
             CFDictionarySetValue(info.isMeta ? metaCache : classCache, (__bridge const void *)(cls), (__bridge const void *)(info));
-            OSSpinLockUnlock(&lt;span class=&quot;ni&quot;&gt;&amp;amp;lock);&lt;/span&gt;
+            OSSpinLockUnlock(&amp;amp;lock);
         }
     }
     return info;
-}&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
-
+}
+&lt;/pre&gt;
 &lt;p&gt;可以看到所有出现的class定义都会储存在一个全局静态字典classCache和metaCache中。我们再看一个YYClassInfo包含那些数据呢：&lt;/p&gt;
-
-&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-html&quot; data-lang=&quot;html&quot;&gt;/**
+&lt;pre class=&quot;brush:cpp&quot;&gt;
+/**
  Class information for a class.
  */
 @interface YYClassInfo : NSObject
@@ -155,88 +156,59 @@ typedef struct objc_class *Class;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 @property (nonatomic, assign, readonly) BOOL isMeta;
 @property (nonatomic, strong, readonly) NSString *name;
 @property (nonatomic, strong, readonly) YYClassInfo *superClassInfo;
-@property (nonatomic, strong, readonly) NSDictionary *ivarInfos;     ///&lt;span class=&quot;nt&quot;&gt;&amp;lt; key:NSString&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;ivar&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;),&lt;/span&gt;     &lt;span class=&quot;na&quot;&gt;value:YYClassIvarInfo&lt;/span&gt;
-&lt;span class=&quot;err&quot;&gt;@&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;property&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;nonatomic&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;strong&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;readonly&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;NSDictionary&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;methodInfos&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;;&lt;/span&gt;   &lt;span class=&quot;err&quot;&gt;///&amp;lt;&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;key:NSString&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;selector&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;),&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;value:YYClassMethodInfo&lt;/span&gt;
-&lt;span class=&quot;err&quot;&gt;@&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;property&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;nonatomic&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;strong&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;readonly&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;NSDictionary&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;propertyInfos&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;///&amp;lt;&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;key:NSString&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;property&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;),&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;value:YYClassPropertyInfo&lt;/span&gt;
-&lt;span class=&quot;err&quot;&gt;@&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;end&lt;/span&gt;
-&lt;span class=&quot;err&quot;&gt;/**&lt;/span&gt;
- &lt;span class=&quot;na&quot;&gt;Instance&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;variable&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;information&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;.&lt;/span&gt;
- &lt;span class=&quot;err&quot;&gt;*/&lt;/span&gt;
-&lt;span class=&quot;err&quot;&gt;@&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;interface&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;YYClassIvarInfo&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;NSObject&lt;/span&gt;
-&lt;span class=&quot;err&quot;&gt;@&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;property&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;nonatomic&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;assign&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;readonly&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;Ivar&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;ivar&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;;&lt;/span&gt;
-&lt;span class=&quot;err&quot;&gt;@&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;property&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;nonatomic&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;strong&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;readonly&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;NSString&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;name&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;///&amp;lt;&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;Ivar&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;&amp;#39;&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;s&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;name&lt;/span&gt;
-&lt;span class=&quot;err&quot;&gt;@&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;property&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;nonatomic&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;assign&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;readonly&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;ptrdiff_t&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;offset&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;///&amp;lt;&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;Ivar&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;&amp;#39;&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;s&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;offset&lt;/span&gt;
-&lt;span class=&quot;err&quot;&gt;@&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;property&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;nonatomic&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;strong&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;readonly&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;NSString&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;typeEncoding&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;///&amp;lt;&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;Ivar&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;&amp;#39;&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;s&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;type&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;encoding&lt;/span&gt;
-&lt;span class=&quot;err&quot;&gt;@&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;property&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;nonatomic&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;assign&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;readonly&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;YYEncodingType&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;type&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;///&amp;lt;&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;Ivar&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;&amp;#39;&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;s&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;type&lt;/span&gt; 
-&lt;span class=&quot;err&quot;&gt;@&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;end&lt;/span&gt;
-&lt;span class=&quot;err&quot;&gt;/**&lt;/span&gt;
- &lt;span class=&quot;na&quot;&gt;Method&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;information&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;.&lt;/span&gt;
- &lt;span class=&quot;err&quot;&gt;*/&lt;/span&gt;
-&lt;span class=&quot;err&quot;&gt;@&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;interface&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;YYClassMethodInfo&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;NSObject&lt;/span&gt;
-&lt;span class=&quot;err&quot;&gt;@&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;property&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;nonatomic&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;assign&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;readonly&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;Method&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;method&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;;&lt;/span&gt;
-&lt;span class=&quot;err&quot;&gt;@&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;property&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;nonatomic&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;strong&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;readonly&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;NSString&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;name&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;///&amp;lt;&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;method&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;name&lt;/span&gt;
-&lt;span class=&quot;err&quot;&gt;@&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;property&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;nonatomic&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;assign&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;readonly&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;SEL&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;sel&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;///&amp;lt;&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;method&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;&amp;#39;&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;s&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;selector&lt;/span&gt;
-&lt;span class=&quot;err&quot;&gt;@&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;property&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;nonatomic&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;assign&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;readonly&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;IMP&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;imp&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;///&amp;lt;&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;method&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;&amp;#39;&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;s&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;implementation&lt;/span&gt;
-&lt;span class=&quot;err&quot;&gt;@&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;property&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;nonatomic&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;strong&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;readonly&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;NSString&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;typeEncoding&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;///&amp;lt;&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;method&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;&amp;#39;&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;s&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;parameter&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;and&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;types&lt;/span&gt;
-&lt;span class=&quot;err&quot;&gt;@&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;property&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;nonatomic&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;strong&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;readonly&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;NSString&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;returnTypeEncoding&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;///&amp;lt;&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;value&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;&amp;#39;&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;s&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;type&lt;/span&gt;
-&lt;span class=&quot;err&quot;&gt;@&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;property&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;nonatomic&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;strong&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;readonly&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;NSArray&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;argumentTypeEncodings&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;///&amp;lt;&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;array&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;of&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;arguments&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;&amp;#39;&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;type&lt;/span&gt;
-&lt;span class=&quot;err&quot;&gt;@&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;end&lt;/span&gt;
-&lt;span class=&quot;err&quot;&gt;/**&lt;/span&gt;
- &lt;span class=&quot;na&quot;&gt;Property&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;information&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;.&lt;/span&gt;
- &lt;span class=&quot;err&quot;&gt;*/&lt;/span&gt;
-&lt;span class=&quot;err&quot;&gt;@&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;interface&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;YYClassPropertyInfo&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;NSObject&lt;/span&gt;
-&lt;span class=&quot;err&quot;&gt;@&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;property&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;nonatomic&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;assign&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;readonly&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;objc_property_t&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;property&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;;&lt;/span&gt;
-&lt;span class=&quot;err&quot;&gt;@&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;property&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;nonatomic&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;strong&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;readonly&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;NSString&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;name&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;///&amp;lt;&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;property&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;&amp;#39;&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;s&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;name&lt;/span&gt;
-&lt;span class=&quot;err&quot;&gt;@&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;property&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;nonatomic&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;assign&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;readonly&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;YYEncodingType&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;type&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;///&amp;lt;&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;property&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;&amp;#39;&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;s&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;type&lt;/span&gt;
-&lt;span class=&quot;err&quot;&gt;@&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;property&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;nonatomic&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;strong&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;readonly&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;NSString&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;typeEncoding&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;///&amp;lt;&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;property&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;&amp;#39;&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;s&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;encoding&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;value&lt;/span&gt;
-&lt;span class=&quot;err&quot;&gt;@&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;property&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;nonatomic&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;strong&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;readonly&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;NSString&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;ivarName&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;///&amp;lt;&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;property&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;&amp;#39;&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;s&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;ivar&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;name&lt;/span&gt;
-&lt;span class=&quot;err&quot;&gt;@&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;property&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;nonatomic&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;assign&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;readonly&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;Class&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;cls&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;///&amp;lt;&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;may&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;be&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;nil&lt;/span&gt;
-&lt;span class=&quot;err&quot;&gt;@&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;property&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;nonatomic&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;strong&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;readonly&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;NSString&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;getter&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;///&amp;lt;&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;getter&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;nonnull&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;)&lt;/span&gt;
-&lt;span class=&quot;err&quot;&gt;@&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;property&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;nonatomic&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;strong&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;readonly&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;NSString&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;setter&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;///&amp;lt;&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;setter&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;nonnull&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;)&lt;/span&gt;
-&lt;span class=&quot;err&quot;&gt;@&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;end&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
-
+@property (nonatomic, strong, readonly) NSDictionary *ivarInfos;     ///&amp;lt; key:NSString(ivar),     value:YYClassIvarInfo
+@property (nonatomic, strong, readonly) NSDictionary *methodInfos;   ///&amp;lt; key:NSString(selector), value:YYClassMethodInfo
+@property (nonatomic, strong, readonly) NSDictionary *propertyInfos; ///&amp;lt; key:NSString(property), value:YYClassPropertyInfo
+@end
+/**
+ Instance variable information.
+ */
+@interface YYClassIvarInfo : NSObject
+@property (nonatomic, assign, readonly) Ivar ivar;
+@property (nonatomic, strong, readonly) NSString *name; ///&amp;lt; Ivar&#39;s name
+@property (nonatomic, assign, readonly) ptrdiff_t offset; ///&amp;lt; Ivar&#39;s offset
+@property (nonatomic, strong, readonly) NSString *typeEncoding; ///&amp;lt; Ivar&#39;s type encoding
+@property (nonatomic, assign, readonly) YYEncodingType type; ///&amp;lt; Ivar&#39;s type 
+@end
+/**
+ Method information.
+ */
+@interface YYClassMethodInfo : NSObject
+@property (nonatomic, assign, readonly) Method method;
+@property (nonatomic, strong, readonly) NSString *name; ///&amp;lt; method name
+@property (nonatomic, assign, readonly) SEL sel; ///&amp;lt; method&#39;s selector
+@property (nonatomic, assign, readonly) IMP imp; ///&amp;lt; method&#39;s implementation
+@property (nonatomic, strong, readonly) NSString *typeEncoding; ///&amp;lt; method&#39;s parameter and return types
+@property (nonatomic, strong, readonly) NSString *returnTypeEncoding; ///&amp;lt; return value&#39;s type
+@property (nonatomic, strong, readonly) NSArray *argumentTypeEncodings; ///&amp;lt; array of arguments&#39; type
+@end
+/**
+ Property information.
+ */
+@interface YYClassPropertyInfo : NSObject
+@property (nonatomic, assign, readonly) objc_property_t property;
+@property (nonatomic, strong, readonly) NSString *name; ///&amp;lt; property&#39;s name
+@property (nonatomic, assign, readonly) YYEncodingType type; ///&amp;lt; property&#39;s type
+@property (nonatomic, strong, readonly) NSString *typeEncoding; ///&amp;lt; property&#39;s encoding value
+@property (nonatomic, strong, readonly) NSString *ivarName; ///&amp;lt; property&#39;s ivar name
+@property (nonatomic, assign, readonly) Class cls; ///&amp;lt; may be nil
+@property (nonatomic, strong, readonly) NSString *getter; ///&amp;lt; getter (nonnull)
+@property (nonatomic, strong, readonly) NSString *setter; ///&amp;lt; setter (nonnull)
+@end
+&lt;/pre&gt;
 &lt;p&gt;我只截取了属性定义的部分。YYClassInfo储存了一个类里面所有的属性和方法字典，并保存了_cls、_superCls和_metaCls的签名。
 主要使用了OC的class_copyMethodList、class_copyPropertyList和class_copyIvarList方法，动过cls签名获取了类的信息。
-当然，说起来好像很简单，实际需要你对OC的底层非常了解，知道objc_method、objc_ivar和objc_property的定义，知道Type Encodings和Declared Properties这些信息，才能真的解析出我们需要的信息。&lt;/p&gt;
-
-&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-html&quot; data-lang=&quot;html&quot;&gt;+ (instancetype)classInfoWithClass:(Class)cls {
-    if (!cls) return nil;
-    static CFMutableDictionaryRef classCache;
-    static CFMutableDictionaryRef metaCache;
-    static dispatch_once_t onceToken;
-    static OSSpinLock lock;
-    dispatch_once(&lt;span class=&quot;err&quot;&gt;&amp;amp;&lt;/span&gt;onceToken, ^{
-        classCache = CFDictionaryCreateMutable(CFAllocatorGetDefault(), 0, &lt;span class=&quot;err&quot;&gt;&amp;amp;&lt;/span&gt;kCFTypeDictionaryKeyCallBacks, &lt;span class=&quot;ni&quot;&gt;&amp;amp;kCFTypeDictionaryValueCallBacks);&lt;/span&gt;
-        metaCache = CFDictionaryCreateMutable(CFAllocatorGetDefault(), 0, &lt;span class=&quot;err&quot;&gt;&amp;amp;&lt;/span&gt;kCFTypeDictionaryKeyCallBacks, &lt;span class=&quot;ni&quot;&gt;&amp;amp;kCFTypeDictionaryValueCallBacks);&lt;/span&gt;
-        lock = OS_SPINLOCK_INIT;
-    });
-    OSSpinLockLock(&lt;span class=&quot;ni&quot;&gt;&amp;amp;lock);&lt;/span&gt;
-    YYClassInfo *info = CFDictionaryGetValue(class_isMetaClass(cls) ? metaCache : classCache, (__bridge const void *)(cls));
-    if (info &lt;span class=&quot;err&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt; info-&amp;gt;_needUpdate) {
-        [info _update];
-    }
-    OSSpinLockUnlock(&lt;span class=&quot;ni&quot;&gt;&amp;amp;lock);&lt;/span&gt;
-    if (!info) {
-        info = [[YYClassInfo alloc] initWithClass:cls];
-        if (info) {
-            OSSpinLockLock(&lt;span class=&quot;ni&quot;&gt;&amp;amp;lock);&lt;/span&gt;
-            CFDictionarySetValue(info.isMeta ? metaCache : classCache, (__bridge const void *)(cls), (__bridge const void *)(info));
-            OSSpinLockUnlock(&lt;span class=&quot;ni&quot;&gt;&amp;amp;lock);&lt;/span&gt;
-        }
-    }
-    return info;
-}&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
-
-&lt;p&gt;可以看到所有出现的class定义都会储存在一个全局静态字典classCache和metaCache中。我们再看一个YYClassInfo包含那些数据呢：&lt;/p&gt;
-
-&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-html&quot; data-lang=&quot;html&quot;&gt;类的数据结构
+当然，说起来好像很简单，实际需要你对OC的底层非常了解，知道objc_method、objc_ivar和objc_property的定义，知道Type Encodings和Declared Properties这些信息，才能真的解析出我们需要的信息。
+这里我找到了OC里面关于上面那些结构体的定义：&lt;/p&gt;
+&lt;pre class=&quot;brush:cpp&quot;&gt;
+类的数据结构
 
 Class(指针)
 
 typedef struct objc_class *Class;
        
 /*
-  这是由编译器为每个类产生的数据结构,这个结构定义了一个类.这个结构是通过编译器在执行时产生,在运行时发送消息时使用.因此,一些成员改变了类型.编译器产生&amp;quot;char* const&amp;quot;类型的字符串指针替代了下面的成员变量&amp;quot;super_class&amp;quot;
+  这是由编译器为每个类产生的数据结构,这个结构定义了一个类.这个结构是通过编译器在执行时产生,在运行时发送消息时使用.因此,一些成员改变了类型.编译器产生&quot;char* const&quot;类型的字符串指针替代了下面的成员变量&quot;super_class&quot;
 */
 struct objc_class {
   struct objc_class*  class_pointer;    /* 指向元类的指针. */
@@ -349,18 +321,19 @@ struct objc_super
 {
   id    self;        /* 消息的接受者  */
   Class super_class; /* 接受者的父类  */
-};&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+};
 
-&lt;p&gt;有了上面这些信息相信所有人都知道作者的代码都在干嘛了，具体不表。反正到此为止，我们已经有了class的定义。理论上下一步就可以解析了，但是作者额外多了一步，定制了映射关系。出现了一个新的class属性映射的类的定义：&lt;/p&gt;
-
-&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-html&quot; data-lang=&quot;html&quot;&gt;/// A class info in object model.
+&lt;/pre&gt;
+&lt;p&gt;有了上面这些信息相信所有人都知道作者的代码都在干嘛了，具体不表。反正到此为止，我们已经有了class的定义。理论上下一步就可以解析了，但是作者额外多了一步，定制了映射关系。出现了一个新的class属性映射关系类的定义：&lt;/p&gt;
+&lt;pre class=&quot;brush:cpp&quot;&gt;
+/// A class info in object model.
 @interface _YYModelMeta : NSObject {
 @public
     /// Key:mapped key and key path, Value:_YYModelPropertyInfo.
     NSDictionary *_mapper;
-    /// Array&lt;span class=&quot;nt&quot;&gt;&amp;lt;_YYModelPropertyInfo&amp;gt;&lt;/span&gt;, all property meta of this model.
+    /// Array&lt;_yymodelpropertyinfo&gt;, all property meta of this model.
     NSArray *_allPropertyMetas;
-    /// Array&lt;span class=&quot;nt&quot;&gt;&amp;lt;_YYModelPropertyInfo&amp;gt;&lt;/span&gt;, property meta which is mapped to a key path.
+    /// Array&lt;_yymodelpropertyinfo&gt;, property meta which is mapped to a key path.
     NSArray *_keyPathPropertyMetas;
     /// The number of mapped key (and key path), same to _mapper.count.
     NSUInteger _keyMappedCount;
@@ -370,12 +343,12 @@ struct objc_super
     BOOL _hasCustomTransformFromDictonary;
     BOOL _hasCustomTransformToDictionary;
 }
-@end&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+@end
 
-&lt;p&gt;上面的YYClassInfo更像是一个抽象的模板，只是告诉我们类里面有这些属性和方法，没有告诉我们怎么去解析。_YYModelMeta这个类就是告诉我们怎么去解析的。
-同样的所有_YYModelMeta都缓存在了一个全局静态字典里面。_YYModelMeta通过YYClassInfo的信息来实例化：&lt;/p&gt;
-
-&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-html&quot; data-lang=&quot;html&quot;&gt;- (instancetype)initWithClass:(Class)cls {
+上面的YYClassInfo更像是一个抽象的模板，只是告诉我们类里面有这些属性和方法，没有告诉我们怎么去解析。_YYModelMeta这个类就是告诉我们怎么去解析的。
+同样的所有_YYModelMeta都缓存在了一个全局静态字典里面。_YYModelMeta通过YYClassInfo的信息来实例化：
+&lt;pre class=&quot;brush:cpp&quot;&gt;
+- (instancetype)initWithClass:(Class)cls {
     YYClassInfo *classInfo = [YYClassInfo classInfoWithClass:cls];
     if (!classInfo) return nil;
     self = [super init];
@@ -383,7 +356,7 @@ struct objc_super
     // Get black list
     NSSet *blacklist = nil;
     if ([cls respondsToSelector:@selector(modelPropertyBlacklist)]) {
-        NSArray *properties = [(id&lt;span class=&quot;nt&quot;&gt;&amp;lt;YYModel&amp;gt;&lt;/span&gt;)cls modelPropertyBlacklist];
+        NSArray *properties = [(id&lt;yymodel&gt;)cls modelPropertyBlacklist];
         if (properties) {
             blacklist = [NSSet setWithArray:properties];
         }
@@ -392,16 +365,16 @@ struct objc_super
     // Get white list
     NSSet *whitelist = nil;
     if ([cls respondsToSelector:@selector(modelPropertyWhitelist)]) {
-        NSArray *properties = [(id&lt;span class=&quot;nt&quot;&gt;&amp;lt;YYModel&amp;gt;&lt;/span&gt;)cls modelPropertyWhitelist];
+        NSArray *properties = [(id&lt;yymodel&gt;)cls modelPropertyWhitelist];
         if (properties) {
             whitelist = [NSSet setWithArray:properties];
         }
     }
     
-    // Get container property&amp;#39;s generic class
+    // Get container property&#39;s generic class
     NSDictionary *genericMapper = nil;
     if ([cls respondsToSelector:@selector(modelContainerPropertyGenericClass)]) {
-        genericMapper = [(id&lt;span class=&quot;nt&quot;&gt;&amp;lt;YYModel&amp;gt;&lt;/span&gt;)cls modelContainerPropertyGenericClass];
+        genericMapper = [(id&lt;yymodel&gt;)cls modelContainerPropertyGenericClass];
         if (genericMapper) {
             NSMutableDictionary *tmp = genericMapper.mutableCopy;
             [genericMapper enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
@@ -424,16 +397,16 @@ struct objc_super
     // Create all property metas.
     NSMutableDictionary *allPropertyMetas = [NSMutableDictionary new];
     YYClassInfo *curClassInfo = classInfo;
-    while (curClassInfo &lt;span class=&quot;err&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt; curClassInfo.superCls != nil) { // recursive parse super class, but ignore root class (NSObject/NSProxy)
+    while (curClassInfo &amp;amp;&amp;amp; curClassInfo.superCls != nil) { // recursive parse super class, but ignore root class (NSObject/NSProxy)
         for (YYClassPropertyInfo *propertyInfo in curClassInfo.propertyInfos.allValues) {
             if (!propertyInfo.name) continue;
-            if (blacklist &lt;span class=&quot;err&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt; [blacklist containsObject:propertyInfo.name]) continue;
-            if (whitelist &lt;span class=&quot;err&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt; ![whitelist containsObject:propertyInfo.name]) continue;
+            if (blacklist &amp;amp;&amp;amp; [blacklist containsObject:propertyInfo.name]) continue;
+            if (whitelist &amp;amp;&amp;amp; ![whitelist containsObject:propertyInfo.name]) continue;
             _YYModelPropertyMeta *meta = [_YYModelPropertyMeta metaWithClassInfo:classInfo
                                                                     propertyInfo:propertyInfo
                                                                          generic:genericMapper[propertyInfo.name]];
             if (!meta || !meta-&amp;gt;_name) continue;
-            if (!meta-&amp;gt;_getter &lt;span class=&quot;err&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt; !meta-&amp;gt;_setter) continue;
+            if (!meta-&amp;gt;_getter &amp;amp;&amp;amp; !meta-&amp;gt;_setter) continue;
             if (allPropertyMetas[meta-&amp;gt;_name]) continue;
             allPropertyMetas[meta-&amp;gt;_name] = meta;
         }
@@ -445,11 +418,11 @@ struct objc_super
     NSMutableDictionary *mapper = [NSMutableDictionary new];
     NSMutableArray *keyPathPropertyMetas = [NSMutableArray new];
     if ([cls respondsToSelector:@selector(modelCustomPropertyMapper)]) {
-        NSDictionary *customMapper = [(id &lt;span class=&quot;nt&quot;&gt;&amp;lt;YYModel&amp;gt;&lt;/span&gt;)cls modelCustomPropertyMapper];
+        NSDictionary *customMapper = [(id &lt;yymodel&gt;)cls modelCustomPropertyMapper];
         [customMapper enumerateKeysAndObjectsUsingBlock:^(NSString *propertyName, NSString *mappedToKey, BOOL *stop) {
             _YYModelPropertyMeta *propertyMeta = allPropertyMetas[propertyName];
             if (propertyMeta) {
-                NSArray *keyPath = [mappedToKey componentsSeparatedByString:@&amp;quot;.&amp;quot;];
+                NSArray *keyPath = [mappedToKey componentsSeparatedByString:@&quot;.&quot;];
                 propertyMeta-&amp;gt;_mappedToKey = mappedToKey;
                 if (keyPath.count &amp;gt; 1) {
                     propertyMeta-&amp;gt;_mappedToKeyPath = keyPath;
@@ -481,32 +454,32 @@ struct objc_super
     _hasCustomTransformToDictionary = ([cls instancesRespondToSelector:@selector(modelCustomTransformToDictionary:)]);
     
     return self;
-}&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+}
 
-&lt;p&gt;翻译成伪代码就是：&lt;/p&gt;
+翻译成伪代码就是：
 &lt;ul&gt;
 &lt;li&gt;1.获取属性的白名单、黑名单和解析的key-value映射表。&lt;/li&gt;
 &lt;li&gt;2.根据这些信息生成Json字典里的key和类定义中的映射关系，保存在一个map中。&lt;/li&gt;  
-&lt;/ul&gt;
-&lt;p&gt;白名单的作用就是如果存在白名单则在实例化的时候只管白名单里面的属性，_YYModelMeta里面也只保存白名单里面的属性映射。黑名单的作用就是过滤掉黑名单里面的属性，其他的属性映射都保存。
+&lt;/ul&gt; 
+白名单的作用就是如果存在白名单则在实例化的时候只管白名单里面的属性，_YYModelMeta里面也只保存白名单里面的属性映射。黑名单的作用就是过滤掉黑名单里面的属性，其他的属性映射都保存。
 当然一般简单地序列化是不需要这些个定制化的东西的，作者还额外实现了一些特殊属性的特殊映射关系，比如一些类定义里面的字典或者数组该如何实例化，我们就需要知道这些数组和字典里面储存的是
 什么类型的value，作者通过modelContainerPropertyGenericClass这个接口，让用户自己来设置。作者还额外提供了一个接口modelCustomPropertyMapper，顾名思义，某些属性的名字跟
-json字典中的key不一样或者本身就需要映射到跟属性不同名的key上，用户就可以通过这个接口返回一个字典来设置：&lt;/p&gt;
-
-&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-html&quot; data-lang=&quot;html&quot;&gt;/**
+json字典中的key不一样或者本身就需要映射到跟属性不同名的key上，用户就可以通过这个接口返回一个字典来设置：
+&lt;pre class=&quot;brush:cpp&quot;&gt;
+/**
  Custom property mapper.
  
- @discussion If the key in JSON/Dictionary does not match to the model&amp;#39;s property name,
+ @discussion If the key in JSON/Dictionary does not match to the model&#39;s property name,
  implements this method and returns the additional mapper.
  
  Example:
     
     json: 
         {
-            &amp;quot;n&amp;quot;:&amp;quot;Harry Pottery&amp;quot;,
-            &amp;quot;p&amp;quot;: 256,
-            &amp;quot;ext&amp;quot; : {
-                &amp;quot;desc&amp;quot; : &amp;quot;A book written by J.K.Rowing.&amp;quot;
+            &quot;n&quot;:&quot;Harry Pottery&quot;,
+            &quot;p&quot;: 256,
+            &quot;ext&quot; : {
+                &quot;desc&quot; : &quot;A book written by J.K.Rowing.&quot;
             }
         }
  
@@ -519,49 +492,49 @@ json字典中的key不一样或者本身就需要映射到跟属性不同名的k
  
         @implementation YYBook
         + (NSDictionary *)modelCustomPropertyMapper {
-            return @{@&amp;quot;name&amp;quot; : @&amp;quot;n&amp;quot;,
-                     @&amp;quot;page&amp;quot; : @&amp;quot;p&amp;quot;,
-                     @&amp;quot;desc&amp;quot; : @&amp;quot;ext.desc&amp;quot;};
+            return @{@&quot;name&quot; : @&quot;n&quot;,
+                     @&quot;page&quot; : @&quot;p&quot;,
+                     @&quot;desc&quot; : @&quot;ext.desc&quot;};
         }
         @end
  
  @return A custom mapper for properties.
  */
-+ (NSDictionary *)modelCustomPropertyMapper;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
-
-&lt;p&gt;在生成映射表的时候有个问题，那就是一个key只能对应一个value，加入类A中的属性B、C都要对应到json字典中的KeyB字段，则这个映射表是没办法实现的，
-这也是为什么作者在_YYModelPropertyMeta的定义中添加_YYModelPropertyMeta *_next;这个属性。_YYModelPropertyMeta的完整定义如下:&lt;/p&gt;
-
-&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-html&quot; data-lang=&quot;html&quot;&gt;/// A property info in object model.
++ (NSDictionary *)modelCustomPropertyMapper;
+&lt;/pre&gt;
+在生成映射表的时候有个问题，那就是一个key只能对应一个value，加入类A中的属性B、C都要对应到json字典中的KeyB字段，则这个映射表是没办法实现的，
+这也是为什么作者在_YYModelPropertyMeta的定义中添加_YYModelPropertyMeta *_next;这个属性。_YYModelPropertyMeta的完整定义如下:
+&lt;pre class=&quot;brush:cpp&quot;&gt;
+/// A property info in object model.
 @interface _YYModelPropertyMeta : NSObject {
 @public
-    NSString *_name;             ///&lt;span class=&quot;nt&quot;&gt;&amp;lt; property&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;&amp;#39;&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;s&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;name&lt;/span&gt;
-    &lt;span class=&quot;na&quot;&gt;YYEncodingType&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;_type&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;;&lt;/span&gt;        &lt;span class=&quot;err&quot;&gt;///&amp;lt;&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;property&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;&amp;#39;&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;s&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;type&lt;/span&gt;
-    &lt;span class=&quot;na&quot;&gt;YYEncodingNSType&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;_nsType&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;;&lt;/span&gt;    &lt;span class=&quot;err&quot;&gt;///&amp;lt;&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;property&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;&amp;#39;&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;s&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;Foundation&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;type&lt;/span&gt;
-    &lt;span class=&quot;na&quot;&gt;BOOL&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;_isCNumber&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;;&lt;/span&gt;             &lt;span class=&quot;err&quot;&gt;///&amp;lt;&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;is&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;c&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;number&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;type&lt;/span&gt;
-    &lt;span class=&quot;na&quot;&gt;Class&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;_cls&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;;&lt;/span&gt;                  &lt;span class=&quot;err&quot;&gt;///&amp;lt;&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;property&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;&amp;#39;&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;s&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;class&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;or&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;nil&lt;/span&gt;
-    &lt;span class=&quot;na&quot;&gt;Class&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;_genericCls&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;;&lt;/span&gt;           &lt;span class=&quot;err&quot;&gt;///&amp;lt;&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;container&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;&amp;#39;&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;s&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;generic&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;class&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;or&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;nil&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;threr&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;&amp;#39;&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;s&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;no&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;generic&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;class&lt;/span&gt;
-    &lt;span class=&quot;na&quot;&gt;SEL&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;_getter&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;;&lt;/span&gt;                 &lt;span class=&quot;err&quot;&gt;///&amp;lt;&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;getter&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;or&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;nil&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;the&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;instances&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;cannot&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;respond&lt;/span&gt;
-    &lt;span class=&quot;na&quot;&gt;SEL&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;_setter&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;;&lt;/span&gt;                 &lt;span class=&quot;err&quot;&gt;///&amp;lt;&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;setter&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;or&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;nil&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;the&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;instances&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;cannot&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;respond&lt;/span&gt;
+    NSString *_name;             ///&amp;lt; property&#39;s name
+    YYEncodingType _type;        ///&amp;lt; property&#39;s type
+    YYEncodingNSType _nsType;    ///&amp;lt; property&#39;s Foundation type
+    BOOL _isCNumber;             ///&amp;lt; is c number type
+    Class _cls;                  ///&amp;lt; property&#39;s class, or nil
+    Class _genericCls;           ///&amp;lt; container&#39;s generic class, or nil if threr&#39;s no generic class
+    SEL _getter;                 ///&amp;lt; getter, or nil if the instances cannot respond
+    SEL _setter;                 ///&amp;lt; setter, or nil if the instances cannot respond
     
-    &lt;span class=&quot;na&quot;&gt;NSString&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;_mappedToKey&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;;&lt;/span&gt;      &lt;span class=&quot;err&quot;&gt;///&amp;lt;&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;the&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;key&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;mapped&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;to&lt;/span&gt;
-    &lt;span class=&quot;na&quot;&gt;NSArray&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;_mappedToKeyPath&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;;&lt;/span&gt;   &lt;span class=&quot;err&quot;&gt;///&amp;lt;&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;the&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;key&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;path&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;mapped&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;to&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;nil&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;the&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;name&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;is&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;not&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;key&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;path&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;)&lt;/span&gt;
-    &lt;span class=&quot;na&quot;&gt;_YYModelPropertyMeta&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;_next&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;///&amp;lt;&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;next&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;meta&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;there&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;are&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;multiple&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;properties&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;mapped&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;to&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;the&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;same&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;key&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;.&lt;/span&gt;
-&lt;span class=&quot;err&quot;&gt;}&lt;/span&gt;
-&lt;span class=&quot;err&quot;&gt;@&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;end&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
-
-&lt;p&gt;我们已经知道了YYClassInfo和_YYModelMeta的关系，那么_YYModelPropertyMeta和YYClassPropertyInfo是什么关系呢？我们看到YYClassPropertyInfo中
-保存的是属性的原始模板信息，而且代码里有一段：&lt;/p&gt;
-
-&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-html&quot; data-lang=&quot;html&quot;&gt;_YYModelPropertyMeta *meta = [_YYModelPropertyMeta metaWithClassInfo:classInfo
+    NSString *_mappedToKey;      ///&amp;lt; the key mapped to
+    NSArray *_mappedToKeyPath;   ///&amp;lt; the key path mapped to (nil if the name is not key path)
+    _YYModelPropertyMeta *_next; ///&amp;lt; next meta if there are multiple properties mapped to the same key.
+}
+@end
+&lt;/pre&gt;
+我们已经知道了YYClassInfo和_YYModelMeta的关系，那么_YYModelPropertyMeta和YYClassPropertyInfo是什么关系呢？我们看到YYClassPropertyInfo中
+保存的是属性的原始模板信息，而且代码里有一段：
+&lt;pre class=&quot;brush:cpp&quot;&gt;
+_YYModelPropertyMeta *meta = [_YYModelPropertyMeta metaWithClassInfo:classInfo
                                                                     propertyInfo:propertyInfo
-                                                                         generic:genericMapper[propertyInfo.name]];&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
-
-&lt;p&gt;可以看到_YYModelPropertyMeta是通过YYClassPropertyInfo模板生成的，_YYModelPropertyMeta里面保存的信息相对于YYClassPropertyInfo来说更少也更针对，
-_YYModelPropertyMeta把YYClassPropertyInfo中的get和set方法名转化成了SEL类型的对象，我学OC不长，也不知道该怎么称呼SEL对象，叫方法选择器？Whatever。。。
-习惯了C++的朋友直接理解成函数地址也行，习惯了Window的消息分发机制的也可以理解为接受消息的对象，反正得到这个之后想要设置属性的值就只需要调用OC的发送消息接口就行了，比如下面的代码：&lt;/p&gt;
-
-&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-html&quot; data-lang=&quot;html&quot;&gt;/**
+                                                                         generic:genericMapper[propertyInfo.name]];
+&lt;/pre&gt;
+可以看到_YYModelPropertyMeta是通过YYClassPropertyInfo模板生成的，_YYModelPropertyMeta里面保存的信息相对于YYClassPropertyInfo来说更少也更针对，
+_YYModelPropertyMeta把YYClassPropertyInfo中的get和set方法名转化成了SEL类型的对象，我学OC时间不长，也不知道该怎么称呼SEL对象，叫方法选择器？Whatever。。。
+习惯了C++的朋友直接理解成函数地址也行，习惯了Window的消息分发机制的也可以理解为接受消息的对象，反正得到这个之后想要设置属性的值就只需要调用OC的发送消息接口就行了，比如下面的代码：
+&lt;pre class=&quot;brush:cpp&quot;&gt;
+/**
  Set number to property.
  @discussion Caller should hold strong reference to the parameters before this function returns.
  @param model Should not be nil.
@@ -571,7 +544,7 @@ _YYModelPropertyMeta把YYClassPropertyInfo中的get和set方法名转化成了SE
 static force_inline void ModelSetNumberToProperty(__unsafe_unretained id model,
                                                   __unsafe_unretained NSNumber *num,
                                                   __unsafe_unretained _YYModelPropertyMeta *meta) {
-    switch (meta-&amp;gt;_type &lt;span class=&quot;err&quot;&gt;&amp;amp;&lt;/span&gt; YYEncodingTypeMask) {
+    switch (meta-&amp;gt;_type &amp;amp; YYEncodingTypeMask) {
         case YYEncodingTypeBool: {
             ((void (*)(id, SEL, bool))(void *) objc_msgSend)((id)model, meta-&amp;gt;_setter, num.boolValue);
         } break;
@@ -616,77 +589,77 @@ static force_inline void ModelSetNumberToProperty(__unsafe_unretained id model,
         } break;
         default: break;
     }
-}&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
-
-&lt;p&gt;当然_YYModelPropertyMeta跟YYClassPropertyInfo的关系也是一个我们解析时使用的映射表，一个只是属性模板。
+}
+&lt;/pre&gt;
+当然_YYModelPropertyMeta跟YYClassPropertyInfo的关系也是一个我们解析时使用的映射表，一个只是属性模板。
 到这里我不产生了疑问：YYClassIvarInfo和YYClassMethodInfo对应的映射表呢？YYClassMethodInfo不需要映射，因为他不是属性，不需要赋值，但是YYClassIvarInfo
 就不一样了，他表示一个实例变量。但是我们看作者的代码里前前后后好像就没YYClassIvarInfo的事儿。什么才是实例变量呢？一个类里面的实例变量是什么呢？不是属性么？一大串问号。。。。。
-我们都知道OC的定义可以像下面这么写：&lt;/p&gt;
-
-&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-html&quot; data-lang=&quot;html&quot;&gt;@interface A : NSObject{
+我们都知道OC的定义可以像下面这么写：
+&lt;pre class=&quot;brush:cpp&quot;&gt;
+@interface A : NSObject{
     NSString *_name;
 }
 @property (nonatomic, strong) NSString *name;
 @end
 @implementation A
 @synthesize name = _name;
-@end&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
-
-&lt;p&gt;或者：&lt;/p&gt;
-
-&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-html&quot; data-lang=&quot;html&quot;&gt;@interface A : NSObject{
+@end
+&lt;/pre&gt;
+或者：
+&lt;pre class=&quot;brush:cpp&quot;&gt;
+@interface A : NSObject{
     NSString *name;
 }
 @property (nonatomic, strong) NSString *name;
 @implementation A
 @synthesize name;
-@end&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
-
-&lt;p&gt;或者&lt;/p&gt;
-
-&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-html&quot; data-lang=&quot;html&quot;&gt;@interface A : NSObject
+@end
+&lt;/pre&gt;
+或者
+&lt;pre class=&quot;brush:cpp&quot;&gt;
+@interface A : NSObject
 @property (nonatomic, strong) NSString *name;
 @implementation A
 @synthesize name;
-@end&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+@end
+&lt;/pre&gt;
+区别是什么呢？看知乎大神的回答：
 
-&lt;p&gt;区别是什么呢？看知乎大神的回答：&lt;/p&gt;
-
-&lt;p&gt;著作权归作者所有。
+著作权归作者所有。
 商业转载请联系作者获得授权，非商业转载请注明出处。
 作者：RefuseBT
 链接：http://www.zhihu.com/question/22195598/answer/39593235
-来源：知乎&lt;/p&gt;
+来源：知乎
 
-&lt;p&gt;对于方式1，定义最完备。继承时，子类直接访问父类成员变量无需再@synthesize。缺点就是麻烦，重构也麻烦。第二种的问题，在于成员变量没有下划线。这个修改的好处你可能一开始体会不到。其实加下划线最大的好处在于局部变量命名不会冲突。比如你一个成员变量叫name，你的入参也叫name，就会出现覆盖。这个时候简便的办法是对name加冠词，比如aName、anObj，看起来还是挺恶心的。虽然OC也这样干。这个时候如果声明为_name就一劳永逸了，况且编译器还能替你做了这个事。第三种的问题，也是第一种的优势，就是你在父类中可以直接访问成员变量，但是子类中你无法访问，只能通过属性访问到。如果属性还是在.m中声明的，麻烦更多。另外从命名上还兼有第二种的缺陷。那么最好的写法写法一：@interface Person : NSObject
+对于方式1，定义最完备。继承时，子类直接访问父类成员变量无需再@synthesize。缺点就是麻烦，重构也麻烦。第二种的问题，在于成员变量没有下划线。这个修改的好处你可能一开始体会不到。其实加下划线最大的好处在于局部变量命名不会冲突。比如你一个成员变量叫name，你的入参也叫name，就会出现覆盖。这个时候简便的办法是对name加冠词，比如aName、anObj，看起来还是挺恶心的。虽然OC也这样干。这个时候如果声明为_name就一劳永逸了，况且编译器还能替你做了这个事。第三种的问题，也是第一种的优势，就是你在父类中可以直接访问成员变量，但是子类中你无法访问，只能通过属性访问到。如果属性还是在.m中声明的，麻烦更多。另外从命名上还兼有第二种的缺陷。那么最好的写法写法一：@interface Person : NSObject
 {
 }
 @property (nonatomic, strong) NSString *name;
-@end&lt;/p&gt;
+@end
 
-&lt;p&gt;@implementation Person
+@implementation Person
 @end
 这个适用与一般情况，编译器自动生成成员变量_name，而且写法最简单，不必重复声明。写法二，针对继承情况下，向子类暴露父类成员变量：@interface Person : NSObject
 {
 	NSString *_name;
 }
 @property (nonatomic, strong) NSString *name;
-@end&lt;/p&gt;
+@end
 
-&lt;p&gt;@implementation Person
+@implementation Person
 @synthesize name = _name;
 @end
-其实@synthesize那条你不写也行，不过我还是喜欢声明完备，毕竟同一个成员变量，两个地方声明。&lt;/p&gt;
+其实@synthesize那条你不写也行，不过我还是喜欢声明完备，毕竟同一个成员变量，两个地方声明。
 
-&lt;p&gt;OK这下我们知道了其实我们上面说的属性和实例变量基本就是一个东西了。但是我们一个属性对象YYClassPropertyInfo只是包含了get和set方法的名字以及属性名等一些基本信息
-YYClassIvarInfo里面最特殊的就是@property (nonatomic, assign, readonly) ptrdiff_t offset; ///&amp;lt; Ivar’s offset这个属性了
+OK这下我们知道了其实我们上面说的属性和实例变量基本就是一个东西了。但是我们一个属性对象YYClassPropertyInfo只是包含了get和set方法的名字以及属性名等一些基本信息
+YYClassIvarInfo里面最特殊的就是@property (nonatomic, assign, readonly) ptrdiff_t offset; ///&amp;lt; Ivar&#39;s offset这个属性了
 学过C的都知道，所有数据的访问最后都是要转化为地址的，一个char[10]数组要访问第8个数据，就要知道第发布数据的地址，offset就相当于实例变量的地址索引。offset加上
-首地址就得到了实例变量的地址。但是我不得不说作者把这些数据保存下来之后貌似并没有使用。。。。。。&lt;/p&gt;
+首地址就得到了实例变量的地址。但是我不得不说作者把这些数据保存下来之后貌似并没有使用。。。。。。
 
-&lt;p&gt;Anyway，我们已经得到了如何解析的映射表，愉快的进入了下一个步骤，解析Json数据。
-作者在解析前加了很多道防线，防止用户传入的数据格式错误，不是一个字典或者jsonData类型的数据，这些这里就不表了。解析代码如下：&lt;/p&gt;
-
-&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-html&quot; data-lang=&quot;html&quot;&gt;- (BOOL)yy_modelSetWithDictionary:(NSDictionary *)dic {
+Anyway，我们已经得到了如何解析的映射表，愉快的进入了下一个步骤，解析Json数据。
+作者在解析前加了很多道防线，防止用户传入的数据格式错误，不是一个字典或者jsonData类型的数据，这些这里就不表了。解析代码如下：
+&lt;pre class=&quot;brush:cpp&quot;&gt;
+- (BOOL)yy_modelSetWithDictionary:(NSDictionary *)dic {
     if (!dic || dic == (id)kCFNull) return NO;
     if (![dic isKindOfClass:[NSDictionary class]]) return NO;
     
@@ -698,34 +671,35 @@ YYClassIvarInfo里面最特殊的就是@property (nonatomic, assign, readonly) p
     context.dictionary = (__bridge void *)(dic);
     
     if (modelMeta-&amp;gt;_keyMappedCount &amp;gt;= CFDictionaryGetCount((CFDictionaryRef)dic)) {
-        CFDictionaryApplyFunction((CFDictionaryRef)dic, ModelSetWithDictionaryFunction, &lt;span class=&quot;ni&quot;&gt;&amp;amp;context);&lt;/span&gt;
+        CFDictionaryApplyFunction((CFDictionaryRef)dic, ModelSetWithDictionaryFunction, &amp;amp;context);
         if (modelMeta-&amp;gt;_keyPathPropertyMetas) {
             CFArrayApplyFunction((CFArrayRef)modelMeta-&amp;gt;_keyPathPropertyMetas,
                                  CFRangeMake(0, CFArrayGetCount((CFArrayRef)modelMeta-&amp;gt;_keyPathPropertyMetas)),
                                  ModelSetWithPropertyMetaArrayFunction,
-                                 &lt;span class=&quot;ni&quot;&gt;&amp;amp;context);&lt;/span&gt;
+                                 &amp;amp;context);
         }
     } else {
         CFArrayApplyFunction((CFArrayRef)modelMeta-&amp;gt;_allPropertyMetas,
                              CFRangeMake(0, modelMeta-&amp;gt;_keyMappedCount),
                              ModelSetWithPropertyMetaArrayFunction,
-                             &lt;span class=&quot;ni&quot;&gt;&amp;amp;context);&lt;/span&gt;
+                             &amp;amp;context);
     }
     
     if (modelMeta-&amp;gt;_hasCustomTransformFromDictonary) {
-        return [((id&lt;span class=&quot;nt&quot;&gt;&amp;lt;YYModel&amp;gt;&lt;/span&gt;)self) modelCustomTransformFromDictionary:dic];
+        return [((id&lt;yymodel&gt;)self) modelCustomTransformFromDictionary:dic];
     }
     return YES;
-}&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+}
 
-&lt;p&gt;很简单，如果我们的映射表中的key超过了提供的json字典中的key的个数，我们就认为有些字段是不要设置值的，所以对json字典进行遍历，反之就对映射表进行遍历。
-最后如果我们有一些自定义的转化规则，在最后调用用户自己写的modelCustomTransformFromDictionary方法。至此YYModel的解析就结束了&lt;/p&gt;
+很简单，如果我们的映射表中的key超过了提供的json字典中的key的个数，我们就认为有些字段是不要设置值的，所以对json字典进行遍历，反之就对映射表进行遍历。
+最后如果我们有一些自定义的转化规则，在最后调用用户自己写的modelCustomTransformFromDictionary方法。至此YYModel的解析就结束了
 
-&lt;h3 id=&quot;section&quot;&gt;总结&lt;/h3&gt;
-&lt;p&gt;YYModel的作者真的是一个大神，我真心佩服这样的一个90后(同为90的我惭愧不已)，他写了很多开源的第三方库，而这些第三方库都是他在这两年内通公司项目总结等归纳出来的，
+### 总结
+YYModel的作者真的是一个大神，我真心佩服这样的一个90后(同为90的我惭愧不已)，他写了很多开源的第三方库，而这些第三方库都是他在这两年内通公司项目总结等归纳出来的，
 其中有很多很强大的YYText等控件（解决了文字竖排的问题，也是我下一个要学习的库）也得到了很多人的关注。其中YYModel只是这位大神利用业余时间2周写出来的随笔。。。。我
 花了近1一个月时间才勉强弄懂了七八分，要让我自己写那是万万不能的。一个阶段的学习计划应该是先把YYModel再重新吃一边，直到吃透了，然后花两周时间默写出来。。。
-然后在学习大神的YYText库，丰富我之前写的可怜的CoreText库（相比之下我这个简直不能叫库）。。。。。&lt;/p&gt;
+然后在学习大神的YYText库，丰富我之前写的可怜的CoreText库（相比之下我这个简直不能叫库）。。。。。
+&lt;/yymodel&gt;&lt;/pre&gt;&lt;/yymodel&gt;&lt;/yymodel&gt;&lt;/yymodel&gt;&lt;/yymodel&gt;&lt;/pre&gt;&lt;/_yymodelpropertyinfo&gt;&lt;/_yymodelpropertyinfo&gt;&lt;/pre&gt;
 
     &lt;p&gt;&lt;a href=&quot;/ios/record/yymodel/&quot;&gt;学习YYModel&lt;/a&gt; was originally published by 陆 伟 at &lt;a href=&quot;&quot;&gt;Life is a Struggle&lt;/a&gt; on November 05, 2015.&lt;/p&gt;
   </content>
@@ -771,7 +745,8 @@ YYClassIvarInfo里面最特殊的就是@property (nonatomic, assign, readonly) p
 
 &lt;p&gt;1.创建CTFrameRef的时候需要添加一个属性kCTFrameProgressionAttributeName&lt;/p&gt;
 
-&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-html&quot; data-lang=&quot;html&quot;&gt;/*!
+&lt;pre class=&quot;brush:cpp&quot;&gt;
+/*!
 	@const		kCTFrameProgressionAttributeName
 	@abstract	Specifies progression for a frame.
 	
@@ -785,9 +760,10 @@ YYClassIvarInfo里面最特殊的就是@property (nonatomic, assign, readonly) p
 CTFrameRef frame = CTFramesetterCreateFrame(framesetter,
                                             CFRangeMake(0, 0),
                                             path,
-                                            (CFDictionaryRef)@{(id)kCTFrameProgressionAttributeName: @(kCTFrameProgressionRightToLeft)});&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
-
-&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-html&quot; data-lang=&quot;html&quot;&gt;/*!
+                                            (CFDictionaryRef)@{(id)kCTFrameProgressionAttributeName: @(kCTFrameProgressionRightToLeft)});
+&lt;/pre&gt;
+&lt;pre class=&quot;brush:cpp&quot;&gt;
+/*!
     @enum		CTFrameProgression
     @abstract	These constants specify frame progression types.
 
@@ -811,15 +787,15 @@ typedef CF_ENUM(uint32_t, CTFrameProgression) {
     kCTFrameProgressionTopToBottom  = 0,
     kCTFrameProgressionRightToLeft  = 1,
     kCTFrameProgressionLeftToRight  = 2
-}&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
-
+}
+&lt;/pre&gt;
 &lt;p&gt;至此我们就能控制文本的行变列。&lt;/p&gt;
 
 &lt;p&gt;2.让汉字保持竖向&lt;/p&gt;
 
 &lt;p&gt;添加了kCTFrameProgressionAttributeName属性后其实就相当于把绘制区域顺时针旋转了90°，汉字躺下了。。。因此我们需要为每个汉字额外设置一些样式：&lt;/p&gt;
-
-&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-html&quot; data-lang=&quot;html&quot;&gt;/*!
+&lt;pre class=&quot;brush:cpp&quot;&gt;
+/*!
     @const      kCTVerticalFormsAttributeName
     @abstract   Controls glyph orientation.
 
@@ -831,13 +807,14 @@ typedef CF_ENUM(uint32_t, CTFrameProgression) {
 extern const CFStringRef kCTVerticalFormsAttributeName CT_AVAILABLE(10_5, 4_3);
 NSMutableAttributedString *attrStr = [[NSMutableAttributedString alloc] initWithString:self.text attributes:nil];
 
-for (int i = 0; i &lt;span class=&quot;nt&quot;&gt;&amp;lt; attrStr.length&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;++)&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;{&lt;/span&gt;
-    &lt;span class=&quot;na&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;([&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;self&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;isChinese:self&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;text&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;index:i&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;])&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;{&lt;/span&gt;
-        &lt;span class=&quot;err&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;attrStr&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;addAttribute:&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;id&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;kCTVerticalFormsAttributeName&lt;/span&gt;
-                        &lt;span class=&quot;na&quot;&gt;value:&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;@&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;YES&lt;/span&gt;
-                        &lt;span class=&quot;na&quot;&gt;range:NSMakeRange&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;)];&lt;/span&gt; 
-    &lt;span class=&quot;err&quot;&gt;}&lt;/span&gt;
-&lt;span class=&quot;err&quot;&gt;}&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+for (int i = 0; i &amp;lt; attrStr.length; i++) {
+    if ([self isChinese:self.text index:i]) {
+        [attrStr addAttribute:(id)kCTVerticalFormsAttributeName
+                        value:@YES
+                        range:NSMakeRange(i, 1)]; 
+    }
+}
+&lt;/pre&gt;
 
 &lt;p&gt;这两步处理完之后我们的文本就能够竖向显示了，只是字母跟汉字不会右对齐。但是到这里我们才刚开始。&lt;/p&gt;
 
@@ -846,42 +823,50 @@ for (int i = 0; i &lt;span class=&quot;nt&quot;&gt;&amp;lt; attrStr.length&lt;/s
 
 &lt;p&gt;1.获取画布并设置好坐标系&lt;/p&gt;
 
-&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-html&quot; data-lang=&quot;html&quot;&gt;//获取画布句柄
+&lt;pre class=&quot;brush:cpp&quot;&gt;
+//获取画布句柄
 CGContextRef context = UIGraphicsGetCurrentContext();
 //颠倒窗口 坐标计算使用的mac下的坐标系 跟ios的坐标系正好颠倒
 CGContextSetTextMatrix(context, CGAffineTransformIdentity);
 CGContextTranslateCTM(context, 0, self.bounds.size.height);
-CGContextScaleCTM(context, 1.0, -1.0);&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+CGContextScaleCTM(context, 1.0, -1.0);
+&lt;/pre&gt;
 
 &lt;p&gt;2.生成需要绘制的内容&lt;/p&gt;
 
-&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-html&quot; data-lang=&quot;html&quot;&gt;//生成富文本的信息 具体不懂  反正这是core text绘制的必须流程和对象
-CTFramesetterRef framesetter = CTFramesetterCreateWithAttributedString((__bridge CFAttributedStringRef)self.attributedText);&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
-
+&lt;pre class=&quot;brush:cpp&quot;&gt;
+//生成富文本的信息 具体不懂  反正这是core text绘制的必须流程和对象
+CTFramesetterRef framesetter = CTFramesetterCreateWithAttributedString((__bridge CFAttributedStringRef)self.attributedText);
+&lt;/pre&gt;
 &lt;p&gt;这里的attributedText就是一个富文本对象，我们可以设置行间距、字间距、颜色和字体等等一系列属性。&lt;/p&gt;
 
 &lt;p&gt;3.生成绘制区域&lt;/p&gt;
 
-&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-html&quot; data-lang=&quot;html&quot;&gt;//这一步生成合适的绘制区域
-CGPathRef path = [self createPathWithLines];&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
-
+&lt;pre class=&quot;brush:cpp&quot;&gt;
+//这一步生成合适的绘制区域
+CGPathRef path = [self createPathWithLines];
+&lt;/pre&gt;
 &lt;p&gt;createPathWithLines方法我们后面要讲，最简单的实现就是把整个self.bound作为绘制区域，就跟卢克的博客里写的一样&lt;/p&gt;
 
 &lt;p&gt;4.绘制&lt;/p&gt;
 
-&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-html&quot; data-lang=&quot;html&quot;&gt;// Create a frame for this column and draw it.
+&lt;pre class=&quot;brush:cpp&quot;&gt;
+// Create a frame for this column and draw it.
 CTFrameRef frame = CTFramesetterCreateFrame(framesetter,
                                             CFRangeMake(0, 0),
-                                            path,&lt;span class=&quot;nt&quot;&gt;&amp;lt;/br&amp;gt;&lt;/span&gt;
+                                            path,
                                             (CFDictionaryRef)@{(id)kCTFrameProgressionAttributeName: @(kCTFrameProgressionRightToLeft)});
-CTFrameDraw(frame, context);&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+CTFrameDraw(frame, context);
+&lt;/pre&gt;
 
 &lt;p&gt;5.释放内存&lt;/p&gt;
 
-&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-html&quot; data-lang=&quot;html&quot;&gt;//释放内存
+&lt;pre class=&quot;brush:cpp&quot;&gt;
+//释放内存
 CFRelease(frame);
 CFRelease(path);
-CFRelease(framesetter);&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+CFRelease(framesetter);
+&lt;/pre&gt;
 
 &lt;p&gt;由此可见想要实现居中显示，我们只需要计算出正确的绘制区域就行了。其实不光是居中，你想要啥对齐效果都可以通过设置绘制区域来达到。
 计算绘制区域的方法可以参见&lt;a href=&quot;https://github.com/luwei2012/CoreTextView&quot;&gt;我的代码&lt;/a&gt;都有详细的注释。&lt;/p&gt;
@@ -948,9 +933,9 @@ CFRelease(framesetter);&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 于是才决定写个demo好好研究下ScrollView。&lt;/p&gt;
 
 &lt;h3 id=&quot;scrollview&quot;&gt;ScrollView的探究过程&lt;/h3&gt;
-&lt;p&gt;ScrollView的特性相信大家都知道，有几个非常重要的属性：frame，contentSize，contentOffset，contentInset&lt;/p&gt;
-
-&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-html&quot; data-lang=&quot;html&quot;&gt;-(UIScrollView *)scrollView{
+&lt;p&gt;ScrollView的特性相信大家都知道，有几个非常重要的属性：frame，contentSize，contentOffset，contentInset
+    &amp;lt;pre class=&quot;brush:cpp&quot;&amp;gt;
+    -(UIScrollView *)scrollView{
         if (_scrollView == nil) {
             _scrollView                 = [[UIScrollView alloc] init];
             _scrollView.delegate        = self;
@@ -967,31 +952,32 @@ CFRelease(framesetter);&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
                 make.top.equalTo(self.view.mas_top);
                 make.right.equalTo(self.view.mas_right);
                 make.bottom.equalTo(self.view.mas_bottom);
-            }];
+            }];&lt;/p&gt;
 
-        }
+&lt;pre&gt;&lt;code&gt;    }
 
-        return _scrollView;
+    return _scrollView;
+}
+-(UIView *)containerView{
+    if (_containerView == nil) {
+        _containerView = [[UIView alloc] init];
+        [self.scrollView addSubview:_containerView];
+        [_containerView mas_makeConstraints:^(MASConstraintMaker *make) {
+            make.left.equalTo(self.view.mas_left);
+            make.top.equalTo(@(0));
+            make.right.equalTo(self.view.mas_right);
+            make.height.equalTo(@(SCREEN_HEIGHT * 2));
+        }];
+        self.scrollView.contentSize = CGSizeMake(SCREEN_WIDTH, SCREEN_HEIGHT * 2);
     }
-    -(UIView *)containerView{
-        if (_containerView == nil) {
-            _containerView = [[UIView alloc] init];
-            [self.scrollView addSubview:_containerView];
-            [_containerView mas_makeConstraints:^(MASConstraintMaker *make) {
-                make.left.equalTo(self.view.mas_left);
-                make.top.equalTo(@(0));
-                make.right.equalTo(self.view.mas_right);
-                make.height.equalTo(@(SCREEN_HEIGHT * 2));
-            }];
-            self.scrollView.contentSize = CGSizeMake(SCREEN_WIDTH, SCREEN_HEIGHT * 2);
-        }
-        return _containerView;
-    }
-    -(void)viewDidAppear:(BOOL)animated{
-        [super viewDidAppear:animated];
-         NSLog(@&amp;quot;%f %f&amp;quot;,self.containerView.frame.origin.x,self.containerView.frame.origin.y);
-    }&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
-
+    return _containerView;
+}
+-(void)viewDidAppear:(BOOL)animated{
+    [super viewDidAppear:animated];
+     NSLog(@&quot;%f %f&quot;,self.containerView.frame.origin.x,self.containerView.frame.origin.y);
+}
+&amp;lt;/pre&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;
 &lt;ul&gt;
 &lt;li&gt;
     contentInset:之所以首先说contentInset这个属性是因为我自己就被网上很多不负责任的言论坑过。contentInset只是contentSize的四个边增加了一块区域，仅此而已。
@@ -1079,40 +1065,41 @@ CFRelease(framesetter);&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 MBXPageViewController的使用还是远远比RKSwipeBetweenViewControllers简单清晰，而且能适应更多的特殊UI情况。&lt;/p&gt;
 
 &lt;p&gt;使用MBXPageViewController.&lt;/p&gt;
-
-&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-html&quot; data-lang=&quot;html&quot;&gt;MBXPageViewController *MBXPageController = [MBXPageViewController new];
+&lt;pre class=&quot;brush:cpp&quot;&gt;
+MBXPageViewController *MBXPageController = [MBXPageViewController new];
 MBXPageController.MBXDataSource = self;
 MBXPageController.MBXDataDelegate = self;
-[MBXPageController reloadPages];&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
-
+[MBXPageController reloadPages];
+&lt;/pre&gt;
 &lt;p&gt;很简单易懂，有可能有人不理解，为什么没有看到addChildViewController或者addSubview之类的方法？其实这些都封装在了[MBXPageController reloadPages]方法里面
 进去看源码就会发现：&lt;/p&gt;
-
-&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-html&quot; data-lang=&quot;html&quot;&gt;- (void)loadControllerAndView
+&lt;pre class=&quot;brush:cpp&quot;&gt;
+- (void)loadControllerAndView
 {
-    NSAssert([[self MBXDataSource] isKindOfClass:[UIViewController class]], @&amp;quot;This needs to be implemented in a class that inherits from UIViewController&amp;quot;);
+    NSAssert([[self MBXDataSource] isKindOfClass:[UIViewController class]], @&quot;This needs to be implemented in a class that inherits from UIViewController&quot;);
     [(UIViewController *)[self MBXDataSource] addChildViewController:self];
     [[[self MBXDataSource] MBXPageContainer] addSubview:self.view];
-}&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
-
+}
+&lt;/pre&gt;
 &lt;ul&gt;
 &lt;li&gt;addChildViewController我的理解就是重新设置子controller的父controller，也就是层级关系，防止后面再Push或者Present新窗口的时候出错&lt;/li&gt;
 &lt;li&gt;addSubview就更加直观了不需要多解释，没有这句话咱们就没有View可以显示了。&lt;/li&gt;
 &lt;/ul&gt;
 &lt;p&gt;需要注意的是[[self MBXDataSource] MBXPageContainer]这个方法，他是MBXDataSource协议里必选的方法
 说到这里就必须说说为什么我认为MBXPageViewController的使用远远比RKSwipeBetweenViewControllers简单清晰，就是因为两个协议：&lt;/p&gt;
-
-&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-html&quot; data-lang=&quot;html&quot;&gt;@protocol MBXPageControllerDataSource &lt;span class=&quot;nt&quot;&gt;&amp;lt;NSObject&amp;gt;&lt;/span&gt;
+&lt;pre class=&quot;brush:cpp&quot;&gt;
+@protocol MBXPageControllerDataSource &lt;nsobject&gt;
 @required
 - (NSArray *)MBXPageButtons;
 - (NSArray *)MBXPageControllers;
 - (UIView *)MBXPageContainer;
 @end
 
-@protocol MBXPageControllerDataDelegate &lt;span class=&quot;nt&quot;&gt;&amp;lt;NSObject&amp;gt;&lt;/span&gt;
+@protocol MBXPageControllerDataDelegate &lt;nsobject&gt;
 @optional
 - (void)MBXPageChangedToIndex:(NSInteger)index;
-@end&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+@end
+
 
 &lt;ul&gt;
 &lt;li&gt;MBXPageButtons 就是标题栏上面的按钮，需要注意的是MBXPageViewController并不管按钮的显示，MBXPageViewController只负责帮我们绑定按钮的触摸事件，
@@ -1122,9 +1109,9 @@ MBXPageController.MBXDataDelegate = self;
 &lt;li&gt;MBXPageChangedToIndex 是一个提供给用户更新按钮状态的方法，当页面索引改变后就会触发这个方法，用户应该在这里跟新title
     上面按钮和tabIndicator的状态.&lt;/li&gt;
 &lt;/ul&gt;
-&lt;p&gt;整个协议的完整实现大概应该是这个样子：&lt;/p&gt;
-
-&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-html&quot; data-lang=&quot;html&quot;&gt;#pragma mark - MBXPageViewController Data Source
+整个协议的完整实现大概应该是这个样子：
+&lt;pre class=&quot;brush:cpp&quot;&gt;
+#pragma mark - MBXPageViewController Data Source
 
 - (NSArray *)MBXPageButtons
 {
@@ -1139,70 +1126,70 @@ MBXPageController.MBXDataDelegate = self;
 - (NSArray *)MBXPageControllers
 {
     // You can Load a VC directly from Storyboard
-    UIStoryboard* mainStoryboard = [UIStoryboard storyboardWithName:@&amp;quot;Main&amp;quot; bundle:nil];
+    UIStoryboard* mainStoryboard = [UIStoryboard storyboardWithName:@&quot;Main&quot; bundle:nil];
 
-    UIViewController *demo  = [mainStoryboard instantiateViewControllerWithIdentifier:@&amp;quot;firstController&amp;quot;];
-    UIViewController *demo2  = [mainStoryboard instantiateViewControllerWithIdentifier:@&amp;quot;secondController&amp;quot;];
+    UIViewController *demo  = [mainStoryboard instantiateViewControllerWithIdentifier:@&quot;firstController&quot;];
+    UIViewController *demo2  = [mainStoryboard instantiateViewControllerWithIdentifier:@&quot;secondController&quot;];
 
     // Or Load it from a xib file
     UIViewController *demo3 = [UIViewController new];
-    demo3.view = [[[NSBundle mainBundle] loadNibNamed:@&amp;quot;View&amp;quot; owner:self options:nil] objectAtIndex:0];
+    demo3.view = [[[NSBundle mainBundle] loadNibNamed:@&quot;View&quot; owner:self options:nil] objectAtIndex:0];
 
     // Or create it programatically
     UIViewController *demo4 = [[UIViewController alloc] init];
     demo4.view.backgroundColor = [UIColor orangeColor];
 
     UILabel *fromLabel = [[UILabel alloc]initWithFrame:CGRectMake( (self.view.frame.size.width - 130)/2 , 40, 130, 40)];
-    fromLabel.text = @&amp;quot;Fourth Controller&amp;quot;;
+    fromLabel.text = @&quot;Fourth Controller&quot;;
 
     [demo4.view addSubview:fromLabel];
 
     // The order matters.
     return @[demo,demo2, demo3];
-}&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
-
-&lt;p&gt;怎么样，是不是非常简单清晰。下面需要解决的就是我们UI提出的需求问题了，也很简单，修改绑定button的事件：&lt;/p&gt;
-
-&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-html&quot; data-lang=&quot;html&quot;&gt;- (void)controllerModeLogicForDestination:(NSInteger)destination
+}
+&lt;/pre&gt;
+怎么样，是不是非常简单清晰。下面需要解决的就是我们UI提出的需求问题了，也很简单，修改绑定button的事件：
+&lt;pre class=&quot;brush:cpp&quot;&gt;
+- (void)controllerModeLogicForDestination:(NSInteger)destination
 {
-    __weak __typeof(&lt;span class=&quot;err&quot;&gt;&amp;amp;&lt;/span&gt;*self)weakSelf = self;
+    __weak __typeof(&amp;amp;*self)weakSelf = self;
     NSInteger tempIndex = _currentPageIndex;
     // Check to see which way are you going (Left -&amp;gt; Right or Right -&amp;gt; Left)
     if (destination &amp;gt; tempIndex) {
-        for (int i = (int)tempIndex+1; i&lt;span class=&quot;err&quot;&gt;&amp;lt;&lt;/span&gt;=destination; i++) {
+        for (int i = (int)tempIndex+1; i&amp;lt;=destination; i++) {
             [self setPageControllerForIndex:i direction:UIPageViewControllerNavigationDirectionForward currentMBXViewController:weakSelf destionation:destination];
         }
     }
 
     // Right -&amp;gt; Left
-    else if (destination &lt;span class=&quot;nt&quot;&gt;&amp;lt; tempIndex&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;{&lt;/span&gt;
-        &lt;span class=&quot;na&quot;&gt;for&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;i =&lt;/span&gt;&lt;span class=&quot;err&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s&quot;&gt;(int)tempIndex-1;&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;i&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;= destination; i--) {
+    else if (destination &amp;lt; tempIndex) {
+        for (int i = (int)tempIndex-1; i &amp;gt;= destination; i--) {
             [self setPageControllerForIndex:i direction:UIPageViewControllerNavigationDirectionReverse currentMBXViewController:weakSelf destionation:destination];
         }
     }else{
         [weakSelf updateCurrentPageIndex:tempIndex];
     }
-}&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
-
-&lt;p&gt;只加了一句[weakSelf updateCurrentPageIndex:tempIndex];然后我们可以自己在updateCurrentPageIndex方法里判断，如果当前索引跟传入的索引相同则当成点击事件来处理，否则则是页面切换事件，需要跟新button的状态，
+}
+&lt;/pre&gt;
+只加了一句[weakSelf updateCurrentPageIndex:tempIndex];然后我们可以自己在updateCurrentPageIndex方法里判断，如果当前索引跟传入的索引相同则当成点击事件来处理，否则则是页面切换事件，需要跟新button的状态，
 这样我们就解决了第一个问题。第二个问题比较复杂，我到现在都还没完成搞清楚why，只知道要这么做。
-我们先把MBXPageControllerDataDelegate协议拓展一下，添加两个方法：&lt;/p&gt;
-
-&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-html&quot; data-lang=&quot;html&quot;&gt;@protocol MBXPageControllerDataDelegate &lt;span class=&quot;nt&quot;&gt;&amp;lt;NSObject&amp;gt;&lt;/span&gt;
+我们先把MBXPageControllerDataDelegate协议拓展一下，添加两个方法：
+&lt;pre class=&quot;brush:cpp&quot;&gt;
+@protocol MBXPageControllerDataDelegate &lt;nsobject&gt;
 @optional
 - (void)MBXPageChangedToIndex:(NSInteger)index;
 - (void)MBXPageSelectdViewOffset:(CGFloat)offset;
 - (CGFloat)MBXPageTabIndicatorStartOffset:(NSInteger)tabIndex;
-@end&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+@end
 
 &lt;ul&gt;
 &lt;li&gt;MBXPageTabIndicatorStartOffset返回tabIndex被选中时的tabIndicator的X坐标。别问我为什么要这么做，我也是一知半解。&lt;/li&gt;
 &lt;li&gt;MBXPageSelectdViewOffset就是事实跟新tabIndicator的X坐标的方法，offset就是X的新坐标。这两个接口有了之后就需要判断在那里加了。&lt;/li&gt;
-&lt;/ul&gt;
+&lt;/ul&gt;  
 
-&lt;p&gt;通过分析源码可以看到有个很诡异的事情：&lt;/p&gt;
-
-&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-html&quot; data-lang=&quot;html&quot;&gt;-  (void)syncScrollView
+通过分析源码可以看到有个很诡异的事情：
+&lt;pre class=&quot;brush:cpp&quot;&gt;
+-  (void)syncScrollView
 {
     for (UIView* view in _pageController.view.subviews){
         if([view isKindOfClass:[UIScrollView class]])
@@ -1211,39 +1198,41 @@ MBXPageController.MBXDataDelegate = self;
             _pageScrollView.delegate = self;
         }
     }
-}&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
-
-&lt;p&gt;_pageScrollView.delegate = self;可以整个代码里并没有实现ScrollDelegate的方法，我对比了一下RKSwipeBetweenViewControllers才发现原作者并没有copy这个delegate，原因可能是他的项目里当时不需要这个特性。
-很显然我们需要实现这个ScrollDelegate，并在滑动过程中同步调用MBXPageSelectdViewOffset来跟新tabIndicator的X坐标：&lt;/p&gt;
-
-&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-html&quot; data-lang=&quot;html&quot;&gt;#pragma mark - scroll view delegate
+}
+&lt;/pre&gt;
+_pageScrollView.delegate = self;可以整个代码里并没有实现ScrollDelegate的方法，我对比了一下RKSwipeBetweenViewControllers才发现原作者并没有copy这个delegate，原因可能是他的项目里当时不需要这个特性。
+很显然我们需要实现这个ScrollDelegate，并在滑动过程中同步调用MBXPageSelectdViewOffset来跟新tabIndicator的X坐标：
+&lt;pre class=&quot;brush:cpp&quot;&gt;
+#pragma mark - scroll view delegate
 //It extracts the xcoordinate from the center point and instructs the selection bar to move accordingly
 -(void)scrollViewDidScroll:(UIScrollView *)scrollView{
     if ([self MBXDataDelegate]
-        &lt;span class=&quot;err&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt; [self.MBXDataDelegate respondsToSelector:@selector(MBXPageSelectdViewOffset:)]
-        &lt;span class=&quot;err&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt; [self.MBXDataDelegate respondsToSelector:@selector(MBXPageTabIndicatorStartOffset:)]) {
+        &amp;amp;&amp;amp; [self.MBXDataDelegate respondsToSelector:@selector(MBXPageSelectdViewOffset:)]
+        &amp;amp;&amp;amp; [self.MBXDataDelegate respondsToSelector:@selector(MBXPageTabIndicatorStartOffset:)]) {
 //        CGFloat offsetPercent = scrollView.contentOffset.x / scrollView.contentSize.width;
 //        [self.MBXDataDelegate MBXPageSelectdViewOffset:offsetPercent];
-//        NSLog(@&amp;quot;Scrolled percentage: %f   %f&amp;quot;, scrollView.contentOffset.x,scrollView.contentSize.width);
+//        NSLog(@&quot;Scrolled percentage: %f   %f&quot;, scrollView.contentOffset.x,scrollView.contentSize.width);
         CGFloat xFromCenter = self.view.frame.size.width-scrollView.contentOffset.x; //%%% positive for right swipe, negative for left
 
         //%%% checks to see what page you are on and adjusts the xCoor accordingly.
-        //i.e. if you&amp;#39;re on the second page, it makes sure that the bar starts from the frame.origin.x of the
+        //i.e. if you&#39;re on the second page, it makes sure that the bar starts from the frame.origin.x of the
         //second tab instead of the beginning
         NSInteger xCoor = [self.MBXDataDelegate MBXPageTabIndicatorStartOffset:self.currentPageIndex];
         [self.MBXDataDelegate MBXPageSelectdViewOffset:(xCoor-xFromCenter/[self.viewControllerArray count])];;
     }
-}&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+}
+&lt;/pre&gt;
 
-&lt;p&gt;必须得承认，如果没有看RKSwipeBetweenViewControllers我到死都不可能完成这个方法。了解pageController这个容器的都知道，这个容器为了节省内容，会在他认为合适的时候把看不到的子controller移除。
+必须得承认，如果没有看RKSwipeBetweenViewControllers我到死都不可能完成这个方法。了解pageController这个容器的都知道，这个容器为了节省内容，会在他认为合适的时候把看不到的子controller移除。
 这可真是个要命的特性，我刚开始的想法理所当然的认为scrollView.contentOffset.x/scrollView.contentSize.width就是滚动的比例，然后根据这个比例来更新咱们的tabIndicator。可是当我
 把scrollView.contentOffset.x和scrollView.contentSize.width打印出来后我傻眼了，简直混乱的不要不要的，完全不对头。之后在一段时间的探索后我猛然发现，原来RKSwipeBetweenViewControllers有
 同步跟新tabIndicator这个特性。。。
-下面是最后的效果图：&lt;/p&gt;
+下面是最后的效果图：
 &lt;figure&gt;
 	&lt;img src=&quot;/images/IOS/structure/MBXPageViewController/scrollDelegateAfter.gif&quot; alt=&quot;项目实例&quot; /&gt;
 	&lt;figcaption&gt;&lt;a href=&quot;https://www.9panart.com/html/passport/passport_login.html?ran=19406317709945142&quot;&gt;泛艺术客户端.&lt;/a&gt;&lt;/figcaption&gt;
 &lt;/figure&gt;
+&lt;/nsobject&gt;&lt;/pre&gt;&lt;/nsobject&gt;&lt;/nsobject&gt;&lt;/pre&gt;
 
     &lt;p&gt;&lt;a href=&quot;/ios/structure/mbxpageviewcontroller/&quot;&gt;MBXPageViewController的两点优化修改&lt;/a&gt; was originally published by 陆 伟 at &lt;a href=&quot;&quot;&gt;Life is a Struggle&lt;/a&gt; on October 20, 2015.&lt;/p&gt;
   </content>
@@ -1279,26 +1268,28 @@ MBXPageController.MBXDataDelegate = self;
 
 &lt;p&gt;安装Elixir和Phoenix 步骤不赘述了 网上一搜一大堆.
 程序员看世界，第一步，写一个Hello world程序。&lt;/p&gt;
-
-&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-html&quot; data-lang=&quot;html&quot;&gt;mix phoenix.new hello_phoenix&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
-
+&lt;pre class=&quot;brush:cpp&quot;&gt;
+mix phoenix.new hello_phoenix
+&lt;/pre&gt;
 &lt;p&gt;看起来跟Ruby on Rails一样一样的,需要注意的是，看它官网的说明，你需要先安装node-js，然后在提示&lt;/p&gt;
-
-&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-html&quot; data-lang=&quot;html&quot;&gt;Fetch and install dependencies? [Yn]&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
-
+&lt;pre class=&quot;brush:cpp&quot;&gt;
+Fetch and install dependencies? [Yn]
+&lt;/pre&gt;
 &lt;p&gt;的时候，你必须输入Y，否则程序运行起来后会报错.
 写到这里我发现我卡在了&lt;/p&gt;
-
-&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-html&quot; data-lang=&quot;html&quot;&gt;* running mix deps.get&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
-
+&lt;pre class=&quot;brush:cpp&quot;&gt;
+* running mix deps.get
+&lt;/pre&gt;
 &lt;p&gt;我以为是网络问题，Ctrl+C强制退出去，删了挂上VPN重新来一遍，然后还是卡在那儿不动。。。 草,什么鬼。无奈我换了一种姿势，首先运行&lt;/p&gt;
 
-&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-html&quot; data-lang=&quot;html&quot;&gt;mix phoenix.new hello_phoenix
+&lt;pre class=&quot;brush:cpp&quot;&gt;
+mix phoenix.new hello_phoenix
 Fetch and install dependencies? [Yn] n
 We are all set! Run your Phoenix application:
 $ cd hello_world
 $ mix deps.get
-$ mix phoenix.server&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+$ mix phoenix.server
+&lt;/pre&gt;
 
 &lt;p&gt;按照提示一步步做，然后成了。。。。。。心中十万个草泥马奔腾而过，劳资满心欢喜的想学习这个框架，结果一上来就给劳资出了这么个Bug，后面还玩得动么。。。&lt;/p&gt;
 

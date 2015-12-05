@@ -122,7 +122,7 @@
         <p class="entry-reading-time">
           <i class="fa fa-clock-o"></i>
           
-          Reading time ~13 minutes
+          Reading time ~10 minutes
         </p><!-- /.entry-reading-time -->
         
       </div><!-- /.header-title-wrap -->
@@ -141,27 +141,27 @@
 <h3 id="id">什么是id</h3>
 <p>要对一个类序列化首先需要知道IOS里面对象的结构。我们知道C里面是没有类的，只有结构体。C++在C的结构体基础上提出了类的概念和结构，OC也是如此，
 OC的类就是结构体。在OC里面的对象都可以使用id类型来表示，A *a也可以写成 id a。那么id是什么呢，id在objc.h中定义如下：</p>
-
-<div class="highlight"><pre><code class="language-html" data-lang="html">//A pointer to an instance of a class.
-typedef struct objc_object *id;</code></pre></div>
-
+<pre class="brush:cpp">
+//A pointer to an instance of a class.
+typedef struct objc_object *id;
+</pre>
 <p>就像注释中所说的这样id是指向一个objc_object结构体的指针。objc_object在objc.h中的定义：</p>
-
-<div class="highlight"><pre><code class="language-html" data-lang="html">//Represents an instance of a class.
+<pre class="brush:cpp">
+//Represents an instance of a class.
 struct objc_object
 {
     Class isa;
-}</code></pre></div>
-
+}
+</pre>
 <p>这个时候我们知道OBjective-C中的object在最后会被转换成C的结构体，而在这个struct中有一个isa指针，指向它的类别Class(C是大写的):</p>
-
-<div class="highlight"><pre><code class="language-html" data-lang="html">//Represents an instance of a class.
+<pre class="brush:cpp">
+//Represents an instance of a class.
 //An opaque type that represents an Objective-C class
-typedef struct objc_class *Class;</code></pre></div>
-
+typedef struct objc_class *Class;
+</pre>
 <p>我们可以看到，Class本身也是指向一个C的structobjc_class:</p>
-
-<div class="highlight"><pre><code class="language-html" data-lang="html">struct objc_class
+<pre class="brush:cpp">
+struct objc_class
 {
     Class isa OBJC_ISA_AVAILABILITY;
 
@@ -174,18 +174,19 @@ typedef struct objc_class *Class;</code></pre></div>
     struct objc_method_list **methodLists;
     struct objc_cache *cache;
     struct objc_protocol_list *protocols; 
-};</code></pre></div>
-
+};
+</pre>
 <p>该结构中，isa指向所属的Class,super_class指向父类别。在objc_runtime_new.h中，我们发现objc_class有如下定义：</p>
-
-<div class="highlight"><pre><code class="language-html" data-lang="html">struct object_class : objc_object
+<pre class="brush:cpp">
+struct object_class : objc_object
 {
     //Class ISA
     Class superclass;
 
     ...
     ...
-}</code></pre></div>
+}
+</pre>
 
 <h3 id="meta-class">什么是Meta Class</h3>
 <p>根据上面的描述，我们可以把Meta Class理解为一个Class对象的class。简单的说：</p>
@@ -217,38 +218,38 @@ typedef struct objc_class *Class;</code></pre></div>
 <li>根据该对象类型的属性和方法字典来实例化一个对象，并设置好值，这个就是我们要得结果了</li> 
 </ul>
 <p>YYModel的序列化过程也是这样，首先有一个YYClassInfo对象来储存class信息：</p>
-
-<div class="highlight"><pre><code class="language-html" data-lang="html">+ (instancetype)classInfoWithClass:(Class)cls {
+<pre class="brush:cpp">
++ (instancetype)classInfoWithClass:(Class)cls {
     if (!cls) return nil;
     static CFMutableDictionaryRef classCache;
     static CFMutableDictionaryRef metaCache;
     static dispatch_once_t onceToken;
     static OSSpinLock lock;
-    dispatch_once(<span class="err">&amp;</span>onceToken, ^{
-        classCache = CFDictionaryCreateMutable(CFAllocatorGetDefault(), 0, <span class="err">&amp;</span>kCFTypeDictionaryKeyCallBacks, <span class="ni">&amp;kCFTypeDictionaryValueCallBacks);</span>
-        metaCache = CFDictionaryCreateMutable(CFAllocatorGetDefault(), 0, <span class="err">&amp;</span>kCFTypeDictionaryKeyCallBacks, <span class="ni">&amp;kCFTypeDictionaryValueCallBacks);</span>
+    dispatch_once(&amp;onceToken, ^{
+        classCache = CFDictionaryCreateMutable(CFAllocatorGetDefault(), 0, &amp;kCFTypeDictionaryKeyCallBacks, &amp;kCFTypeDictionaryValueCallBacks);
+        metaCache = CFDictionaryCreateMutable(CFAllocatorGetDefault(), 0, &amp;kCFTypeDictionaryKeyCallBacks, &amp;kCFTypeDictionaryValueCallBacks);
         lock = OS_SPINLOCK_INIT;
     });
-    OSSpinLockLock(<span class="ni">&amp;lock);</span>
+    OSSpinLockLock(&amp;lock);
     YYClassInfo *info = CFDictionaryGetValue(class_isMetaClass(cls) ? metaCache : classCache, (__bridge const void *)(cls));
-    if (info <span class="err">&amp;&amp;</span> info-&gt;_needUpdate) {
+    if (info &amp;&amp; info-&gt;_needUpdate) {
         [info _update];
     }
-    OSSpinLockUnlock(<span class="ni">&amp;lock);</span>
+    OSSpinLockUnlock(&amp;lock);
     if (!info) {
         info = [[YYClassInfo alloc] initWithClass:cls];
         if (info) {
-            OSSpinLockLock(<span class="ni">&amp;lock);</span>
+            OSSpinLockLock(&amp;lock);
             CFDictionarySetValue(info.isMeta ? metaCache : classCache, (__bridge const void *)(cls), (__bridge const void *)(info));
-            OSSpinLockUnlock(<span class="ni">&amp;lock);</span>
+            OSSpinLockUnlock(&amp;lock);
         }
     }
     return info;
-}</code></pre></div>
-
+}
+</pre>
 <p>可以看到所有出现的class定义都会储存在一个全局静态字典classCache和metaCache中。我们再看一个YYClassInfo包含那些数据呢：</p>
-
-<div class="highlight"><pre><code class="language-html" data-lang="html">/**
+<pre class="brush:cpp">
+/**
  Class information for a class.
  */
 @interface YYClassInfo : NSObject
@@ -258,88 +259,59 @@ typedef struct objc_class *Class;</code></pre></div>
 @property (nonatomic, assign, readonly) BOOL isMeta;
 @property (nonatomic, strong, readonly) NSString *name;
 @property (nonatomic, strong, readonly) YYClassInfo *superClassInfo;
-@property (nonatomic, strong, readonly) NSDictionary *ivarInfos;     ///<span class="nt">&lt; key:NSString</span><span class="err">(</span><span class="na">ivar</span><span class="err">),</span>     <span class="na">value:YYClassIvarInfo</span>
-<span class="err">@</span><span class="na">property</span> <span class="err">(</span><span class="na">nonatomic</span><span class="err">,</span> <span class="na">strong</span><span class="err">,</span> <span class="na">readonly</span><span class="err">)</span> <span class="na">NSDictionary</span> <span class="err">*</span><span class="na">methodInfos</span><span class="err">;</span>   <span class="err">///&lt;</span> <span class="na">key:NSString</span><span class="err">(</span><span class="na">selector</span><span class="err">),</span> <span class="na">value:YYClassMethodInfo</span>
-<span class="err">@</span><span class="na">property</span> <span class="err">(</span><span class="na">nonatomic</span><span class="err">,</span> <span class="na">strong</span><span class="err">,</span> <span class="na">readonly</span><span class="err">)</span> <span class="na">NSDictionary</span> <span class="err">*</span><span class="na">propertyInfos</span><span class="err">;</span> <span class="err">///&lt;</span> <span class="na">key:NSString</span><span class="err">(</span><span class="na">property</span><span class="err">),</span> <span class="na">value:YYClassPropertyInfo</span>
-<span class="err">@</span><span class="na">end</span>
-<span class="err">/**</span>
- <span class="na">Instance</span> <span class="na">variable</span> <span class="na">information</span><span class="err">.</span>
- <span class="err">*/</span>
-<span class="err">@</span><span class="na">interface</span> <span class="na">YYClassIvarInfo</span> <span class="na">:</span> <span class="na">NSObject</span>
-<span class="err">@</span><span class="na">property</span> <span class="err">(</span><span class="na">nonatomic</span><span class="err">,</span> <span class="na">assign</span><span class="err">,</span> <span class="na">readonly</span><span class="err">)</span> <span class="na">Ivar</span> <span class="na">ivar</span><span class="err">;</span>
-<span class="err">@</span><span class="na">property</span> <span class="err">(</span><span class="na">nonatomic</span><span class="err">,</span> <span class="na">strong</span><span class="err">,</span> <span class="na">readonly</span><span class="err">)</span> <span class="na">NSString</span> <span class="err">*</span><span class="na">name</span><span class="err">;</span> <span class="err">///&lt;</span> <span class="na">Ivar</span><span class="err">&#39;</span><span class="na">s</span> <span class="na">name</span>
-<span class="err">@</span><span class="na">property</span> <span class="err">(</span><span class="na">nonatomic</span><span class="err">,</span> <span class="na">assign</span><span class="err">,</span> <span class="na">readonly</span><span class="err">)</span> <span class="na">ptrdiff_t</span> <span class="na">offset</span><span class="err">;</span> <span class="err">///&lt;</span> <span class="na">Ivar</span><span class="err">&#39;</span><span class="na">s</span> <span class="na">offset</span>
-<span class="err">@</span><span class="na">property</span> <span class="err">(</span><span class="na">nonatomic</span><span class="err">,</span> <span class="na">strong</span><span class="err">,</span> <span class="na">readonly</span><span class="err">)</span> <span class="na">NSString</span> <span class="err">*</span><span class="na">typeEncoding</span><span class="err">;</span> <span class="err">///&lt;</span> <span class="na">Ivar</span><span class="err">&#39;</span><span class="na">s</span> <span class="na">type</span> <span class="na">encoding</span>
-<span class="err">@</span><span class="na">property</span> <span class="err">(</span><span class="na">nonatomic</span><span class="err">,</span> <span class="na">assign</span><span class="err">,</span> <span class="na">readonly</span><span class="err">)</span> <span class="na">YYEncodingType</span> <span class="na">type</span><span class="err">;</span> <span class="err">///&lt;</span> <span class="na">Ivar</span><span class="err">&#39;</span><span class="na">s</span> <span class="na">type</span> 
-<span class="err">@</span><span class="na">end</span>
-<span class="err">/**</span>
- <span class="na">Method</span> <span class="na">information</span><span class="err">.</span>
- <span class="err">*/</span>
-<span class="err">@</span><span class="na">interface</span> <span class="na">YYClassMethodInfo</span> <span class="na">:</span> <span class="na">NSObject</span>
-<span class="err">@</span><span class="na">property</span> <span class="err">(</span><span class="na">nonatomic</span><span class="err">,</span> <span class="na">assign</span><span class="err">,</span> <span class="na">readonly</span><span class="err">)</span> <span class="na">Method</span> <span class="na">method</span><span class="err">;</span>
-<span class="err">@</span><span class="na">property</span> <span class="err">(</span><span class="na">nonatomic</span><span class="err">,</span> <span class="na">strong</span><span class="err">,</span> <span class="na">readonly</span><span class="err">)</span> <span class="na">NSString</span> <span class="err">*</span><span class="na">name</span><span class="err">;</span> <span class="err">///&lt;</span> <span class="na">method</span> <span class="na">name</span>
-<span class="err">@</span><span class="na">property</span> <span class="err">(</span><span class="na">nonatomic</span><span class="err">,</span> <span class="na">assign</span><span class="err">,</span> <span class="na">readonly</span><span class="err">)</span> <span class="na">SEL</span> <span class="na">sel</span><span class="err">;</span> <span class="err">///&lt;</span> <span class="na">method</span><span class="err">&#39;</span><span class="na">s</span> <span class="na">selector</span>
-<span class="err">@</span><span class="na">property</span> <span class="err">(</span><span class="na">nonatomic</span><span class="err">,</span> <span class="na">assign</span><span class="err">,</span> <span class="na">readonly</span><span class="err">)</span> <span class="na">IMP</span> <span class="na">imp</span><span class="err">;</span> <span class="err">///&lt;</span> <span class="na">method</span><span class="err">&#39;</span><span class="na">s</span> <span class="na">implementation</span>
-<span class="err">@</span><span class="na">property</span> <span class="err">(</span><span class="na">nonatomic</span><span class="err">,</span> <span class="na">strong</span><span class="err">,</span> <span class="na">readonly</span><span class="err">)</span> <span class="na">NSString</span> <span class="err">*</span><span class="na">typeEncoding</span><span class="err">;</span> <span class="err">///&lt;</span> <span class="na">method</span><span class="err">&#39;</span><span class="na">s</span> <span class="na">parameter</span> <span class="na">and</span> <span class="na">return</span> <span class="na">types</span>
-<span class="err">@</span><span class="na">property</span> <span class="err">(</span><span class="na">nonatomic</span><span class="err">,</span> <span class="na">strong</span><span class="err">,</span> <span class="na">readonly</span><span class="err">)</span> <span class="na">NSString</span> <span class="err">*</span><span class="na">returnTypeEncoding</span><span class="err">;</span> <span class="err">///&lt;</span> <span class="na">return</span> <span class="na">value</span><span class="err">&#39;</span><span class="na">s</span> <span class="na">type</span>
-<span class="err">@</span><span class="na">property</span> <span class="err">(</span><span class="na">nonatomic</span><span class="err">,</span> <span class="na">strong</span><span class="err">,</span> <span class="na">readonly</span><span class="err">)</span> <span class="na">NSArray</span> <span class="err">*</span><span class="na">argumentTypeEncodings</span><span class="err">;</span> <span class="err">///&lt;</span> <span class="na">array</span> <span class="na">of</span> <span class="na">arguments</span><span class="err">&#39;</span> <span class="na">type</span>
-<span class="err">@</span><span class="na">end</span>
-<span class="err">/**</span>
- <span class="na">Property</span> <span class="na">information</span><span class="err">.</span>
- <span class="err">*/</span>
-<span class="err">@</span><span class="na">interface</span> <span class="na">YYClassPropertyInfo</span> <span class="na">:</span> <span class="na">NSObject</span>
-<span class="err">@</span><span class="na">property</span> <span class="err">(</span><span class="na">nonatomic</span><span class="err">,</span> <span class="na">assign</span><span class="err">,</span> <span class="na">readonly</span><span class="err">)</span> <span class="na">objc_property_t</span> <span class="na">property</span><span class="err">;</span>
-<span class="err">@</span><span class="na">property</span> <span class="err">(</span><span class="na">nonatomic</span><span class="err">,</span> <span class="na">strong</span><span class="err">,</span> <span class="na">readonly</span><span class="err">)</span> <span class="na">NSString</span> <span class="err">*</span><span class="na">name</span><span class="err">;</span> <span class="err">///&lt;</span> <span class="na">property</span><span class="err">&#39;</span><span class="na">s</span> <span class="na">name</span>
-<span class="err">@</span><span class="na">property</span> <span class="err">(</span><span class="na">nonatomic</span><span class="err">,</span> <span class="na">assign</span><span class="err">,</span> <span class="na">readonly</span><span class="err">)</span> <span class="na">YYEncodingType</span> <span class="na">type</span><span class="err">;</span> <span class="err">///&lt;</span> <span class="na">property</span><span class="err">&#39;</span><span class="na">s</span> <span class="na">type</span>
-<span class="err">@</span><span class="na">property</span> <span class="err">(</span><span class="na">nonatomic</span><span class="err">,</span> <span class="na">strong</span><span class="err">,</span> <span class="na">readonly</span><span class="err">)</span> <span class="na">NSString</span> <span class="err">*</span><span class="na">typeEncoding</span><span class="err">;</span> <span class="err">///&lt;</span> <span class="na">property</span><span class="err">&#39;</span><span class="na">s</span> <span class="na">encoding</span> <span class="na">value</span>
-<span class="err">@</span><span class="na">property</span> <span class="err">(</span><span class="na">nonatomic</span><span class="err">,</span> <span class="na">strong</span><span class="err">,</span> <span class="na">readonly</span><span class="err">)</span> <span class="na">NSString</span> <span class="err">*</span><span class="na">ivarName</span><span class="err">;</span> <span class="err">///&lt;</span> <span class="na">property</span><span class="err">&#39;</span><span class="na">s</span> <span class="na">ivar</span> <span class="na">name</span>
-<span class="err">@</span><span class="na">property</span> <span class="err">(</span><span class="na">nonatomic</span><span class="err">,</span> <span class="na">assign</span><span class="err">,</span> <span class="na">readonly</span><span class="err">)</span> <span class="na">Class</span> <span class="na">cls</span><span class="err">;</span> <span class="err">///&lt;</span> <span class="na">may</span> <span class="na">be</span> <span class="na">nil</span>
-<span class="err">@</span><span class="na">property</span> <span class="err">(</span><span class="na">nonatomic</span><span class="err">,</span> <span class="na">strong</span><span class="err">,</span> <span class="na">readonly</span><span class="err">)</span> <span class="na">NSString</span> <span class="err">*</span><span class="na">getter</span><span class="err">;</span> <span class="err">///&lt;</span> <span class="na">getter</span> <span class="err">(</span><span class="na">nonnull</span><span class="err">)</span>
-<span class="err">@</span><span class="na">property</span> <span class="err">(</span><span class="na">nonatomic</span><span class="err">,</span> <span class="na">strong</span><span class="err">,</span> <span class="na">readonly</span><span class="err">)</span> <span class="na">NSString</span> <span class="err">*</span><span class="na">setter</span><span class="err">;</span> <span class="err">///&lt;</span> <span class="na">setter</span> <span class="err">(</span><span class="na">nonnull</span><span class="err">)</span>
-<span class="err">@</span><span class="na">end</span></code></pre></div>
-
+@property (nonatomic, strong, readonly) NSDictionary *ivarInfos;     ///&lt; key:NSString(ivar),     value:YYClassIvarInfo
+@property (nonatomic, strong, readonly) NSDictionary *methodInfos;   ///&lt; key:NSString(selector), value:YYClassMethodInfo
+@property (nonatomic, strong, readonly) NSDictionary *propertyInfos; ///&lt; key:NSString(property), value:YYClassPropertyInfo
+@end
+/**
+ Instance variable information.
+ */
+@interface YYClassIvarInfo : NSObject
+@property (nonatomic, assign, readonly) Ivar ivar;
+@property (nonatomic, strong, readonly) NSString *name; ///&lt; Ivar's name
+@property (nonatomic, assign, readonly) ptrdiff_t offset; ///&lt; Ivar's offset
+@property (nonatomic, strong, readonly) NSString *typeEncoding; ///&lt; Ivar's type encoding
+@property (nonatomic, assign, readonly) YYEncodingType type; ///&lt; Ivar's type 
+@end
+/**
+ Method information.
+ */
+@interface YYClassMethodInfo : NSObject
+@property (nonatomic, assign, readonly) Method method;
+@property (nonatomic, strong, readonly) NSString *name; ///&lt; method name
+@property (nonatomic, assign, readonly) SEL sel; ///&lt; method's selector
+@property (nonatomic, assign, readonly) IMP imp; ///&lt; method's implementation
+@property (nonatomic, strong, readonly) NSString *typeEncoding; ///&lt; method's parameter and return types
+@property (nonatomic, strong, readonly) NSString *returnTypeEncoding; ///&lt; return value's type
+@property (nonatomic, strong, readonly) NSArray *argumentTypeEncodings; ///&lt; array of arguments' type
+@end
+/**
+ Property information.
+ */
+@interface YYClassPropertyInfo : NSObject
+@property (nonatomic, assign, readonly) objc_property_t property;
+@property (nonatomic, strong, readonly) NSString *name; ///&lt; property's name
+@property (nonatomic, assign, readonly) YYEncodingType type; ///&lt; property's type
+@property (nonatomic, strong, readonly) NSString *typeEncoding; ///&lt; property's encoding value
+@property (nonatomic, strong, readonly) NSString *ivarName; ///&lt; property's ivar name
+@property (nonatomic, assign, readonly) Class cls; ///&lt; may be nil
+@property (nonatomic, strong, readonly) NSString *getter; ///&lt; getter (nonnull)
+@property (nonatomic, strong, readonly) NSString *setter; ///&lt; setter (nonnull)
+@end
+</pre>
 <p>我只截取了属性定义的部分。YYClassInfo储存了一个类里面所有的属性和方法字典，并保存了_cls、_superCls和_metaCls的签名。
 主要使用了OC的class_copyMethodList、class_copyPropertyList和class_copyIvarList方法，动过cls签名获取了类的信息。
-当然，说起来好像很简单，实际需要你对OC的底层非常了解，知道objc_method、objc_ivar和objc_property的定义，知道Type Encodings和Declared Properties这些信息，才能真的解析出我们需要的信息。</p>
-
-<div class="highlight"><pre><code class="language-html" data-lang="html">+ (instancetype)classInfoWithClass:(Class)cls {
-    if (!cls) return nil;
-    static CFMutableDictionaryRef classCache;
-    static CFMutableDictionaryRef metaCache;
-    static dispatch_once_t onceToken;
-    static OSSpinLock lock;
-    dispatch_once(<span class="err">&amp;</span>onceToken, ^{
-        classCache = CFDictionaryCreateMutable(CFAllocatorGetDefault(), 0, <span class="err">&amp;</span>kCFTypeDictionaryKeyCallBacks, <span class="ni">&amp;kCFTypeDictionaryValueCallBacks);</span>
-        metaCache = CFDictionaryCreateMutable(CFAllocatorGetDefault(), 0, <span class="err">&amp;</span>kCFTypeDictionaryKeyCallBacks, <span class="ni">&amp;kCFTypeDictionaryValueCallBacks);</span>
-        lock = OS_SPINLOCK_INIT;
-    });
-    OSSpinLockLock(<span class="ni">&amp;lock);</span>
-    YYClassInfo *info = CFDictionaryGetValue(class_isMetaClass(cls) ? metaCache : classCache, (__bridge const void *)(cls));
-    if (info <span class="err">&amp;&amp;</span> info-&gt;_needUpdate) {
-        [info _update];
-    }
-    OSSpinLockUnlock(<span class="ni">&amp;lock);</span>
-    if (!info) {
-        info = [[YYClassInfo alloc] initWithClass:cls];
-        if (info) {
-            OSSpinLockLock(<span class="ni">&amp;lock);</span>
-            CFDictionarySetValue(info.isMeta ? metaCache : classCache, (__bridge const void *)(cls), (__bridge const void *)(info));
-            OSSpinLockUnlock(<span class="ni">&amp;lock);</span>
-        }
-    }
-    return info;
-}</code></pre></div>
-
-<p>可以看到所有出现的class定义都会储存在一个全局静态字典classCache和metaCache中。我们再看一个YYClassInfo包含那些数据呢：</p>
-
-<div class="highlight"><pre><code class="language-html" data-lang="html">类的数据结构
+当然，说起来好像很简单，实际需要你对OC的底层非常了解，知道objc_method、objc_ivar和objc_property的定义，知道Type Encodings和Declared Properties这些信息，才能真的解析出我们需要的信息。
+这里我找到了OC里面关于上面那些结构体的定义：</p>
+<pre class="brush:cpp">
+类的数据结构
 
 Class(指针)
 
 typedef struct objc_class *Class;
        
 /*
-  这是由编译器为每个类产生的数据结构,这个结构定义了一个类.这个结构是通过编译器在执行时产生,在运行时发送消息时使用.因此,一些成员改变了类型.编译器产生&quot;char* const&quot;类型的字符串指针替代了下面的成员变量&quot;super_class&quot;
+  这是由编译器为每个类产生的数据结构,这个结构定义了一个类.这个结构是通过编译器在执行时产生,在运行时发送消息时使用.因此,一些成员改变了类型.编译器产生"char* const"类型的字符串指针替代了下面的成员变量"super_class"
 */
 struct objc_class {
   struct objc_class*  class_pointer;    /* 指向元类的指针. */
@@ -452,18 +424,19 @@ struct objc_super
 {
   id    self;        /* 消息的接受者  */
   Class super_class; /* 接受者的父类  */
-};</code></pre></div>
+};
 
-<p>有了上面这些信息相信所有人都知道作者的代码都在干嘛了，具体不表。反正到此为止，我们已经有了class的定义。理论上下一步就可以解析了，但是作者额外多了一步，定制了映射关系。出现了一个新的class属性映射的类的定义：</p>
-
-<div class="highlight"><pre><code class="language-html" data-lang="html">/// A class info in object model.
+</pre>
+<p>有了上面这些信息相信所有人都知道作者的代码都在干嘛了，具体不表。反正到此为止，我们已经有了class的定义。理论上下一步就可以解析了，但是作者额外多了一步，定制了映射关系。出现了一个新的class属性映射关系类的定义：</p>
+<pre class="brush:cpp">
+/// A class info in object model.
 @interface _YYModelMeta : NSObject {
 @public
     /// Key:mapped key and key path, Value:_YYModelPropertyInfo.
     NSDictionary *_mapper;
-    /// Array<span class="nt">&lt;_YYModelPropertyInfo&gt;</span>, all property meta of this model.
+    /// Array<_yymodelpropertyinfo>, all property meta of this model.
     NSArray *_allPropertyMetas;
-    /// Array<span class="nt">&lt;_YYModelPropertyInfo&gt;</span>, property meta which is mapped to a key path.
+    /// Array<_yymodelpropertyinfo>, property meta which is mapped to a key path.
     NSArray *_keyPathPropertyMetas;
     /// The number of mapped key (and key path), same to _mapper.count.
     NSUInteger _keyMappedCount;
@@ -473,12 +446,12 @@ struct objc_super
     BOOL _hasCustomTransformFromDictonary;
     BOOL _hasCustomTransformToDictionary;
 }
-@end</code></pre></div>
+@end
 
-<p>上面的YYClassInfo更像是一个抽象的模板，只是告诉我们类里面有这些属性和方法，没有告诉我们怎么去解析。_YYModelMeta这个类就是告诉我们怎么去解析的。
-同样的所有_YYModelMeta都缓存在了一个全局静态字典里面。_YYModelMeta通过YYClassInfo的信息来实例化：</p>
-
-<div class="highlight"><pre><code class="language-html" data-lang="html">- (instancetype)initWithClass:(Class)cls {
+上面的YYClassInfo更像是一个抽象的模板，只是告诉我们类里面有这些属性和方法，没有告诉我们怎么去解析。_YYModelMeta这个类就是告诉我们怎么去解析的。
+同样的所有_YYModelMeta都缓存在了一个全局静态字典里面。_YYModelMeta通过YYClassInfo的信息来实例化：
+<pre class="brush:cpp">
+- (instancetype)initWithClass:(Class)cls {
     YYClassInfo *classInfo = [YYClassInfo classInfoWithClass:cls];
     if (!classInfo) return nil;
     self = [super init];
@@ -486,7 +459,7 @@ struct objc_super
     // Get black list
     NSSet *blacklist = nil;
     if ([cls respondsToSelector:@selector(modelPropertyBlacklist)]) {
-        NSArray *properties = [(id<span class="nt">&lt;YYModel&gt;</span>)cls modelPropertyBlacklist];
+        NSArray *properties = [(id<yymodel>)cls modelPropertyBlacklist];
         if (properties) {
             blacklist = [NSSet setWithArray:properties];
         }
@@ -495,16 +468,16 @@ struct objc_super
     // Get white list
     NSSet *whitelist = nil;
     if ([cls respondsToSelector:@selector(modelPropertyWhitelist)]) {
-        NSArray *properties = [(id<span class="nt">&lt;YYModel&gt;</span>)cls modelPropertyWhitelist];
+        NSArray *properties = [(id<yymodel>)cls modelPropertyWhitelist];
         if (properties) {
             whitelist = [NSSet setWithArray:properties];
         }
     }
     
-    // Get container property&#39;s generic class
+    // Get container property's generic class
     NSDictionary *genericMapper = nil;
     if ([cls respondsToSelector:@selector(modelContainerPropertyGenericClass)]) {
-        genericMapper = [(id<span class="nt">&lt;YYModel&gt;</span>)cls modelContainerPropertyGenericClass];
+        genericMapper = [(id<yymodel>)cls modelContainerPropertyGenericClass];
         if (genericMapper) {
             NSMutableDictionary *tmp = genericMapper.mutableCopy;
             [genericMapper enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
@@ -527,16 +500,16 @@ struct objc_super
     // Create all property metas.
     NSMutableDictionary *allPropertyMetas = [NSMutableDictionary new];
     YYClassInfo *curClassInfo = classInfo;
-    while (curClassInfo <span class="err">&amp;&amp;</span> curClassInfo.superCls != nil) { // recursive parse super class, but ignore root class (NSObject/NSProxy)
+    while (curClassInfo &amp;&amp; curClassInfo.superCls != nil) { // recursive parse super class, but ignore root class (NSObject/NSProxy)
         for (YYClassPropertyInfo *propertyInfo in curClassInfo.propertyInfos.allValues) {
             if (!propertyInfo.name) continue;
-            if (blacklist <span class="err">&amp;&amp;</span> [blacklist containsObject:propertyInfo.name]) continue;
-            if (whitelist <span class="err">&amp;&amp;</span> ![whitelist containsObject:propertyInfo.name]) continue;
+            if (blacklist &amp;&amp; [blacklist containsObject:propertyInfo.name]) continue;
+            if (whitelist &amp;&amp; ![whitelist containsObject:propertyInfo.name]) continue;
             _YYModelPropertyMeta *meta = [_YYModelPropertyMeta metaWithClassInfo:classInfo
                                                                     propertyInfo:propertyInfo
                                                                          generic:genericMapper[propertyInfo.name]];
             if (!meta || !meta-&gt;_name) continue;
-            if (!meta-&gt;_getter <span class="err">&amp;&amp;</span> !meta-&gt;_setter) continue;
+            if (!meta-&gt;_getter &amp;&amp; !meta-&gt;_setter) continue;
             if (allPropertyMetas[meta-&gt;_name]) continue;
             allPropertyMetas[meta-&gt;_name] = meta;
         }
@@ -548,11 +521,11 @@ struct objc_super
     NSMutableDictionary *mapper = [NSMutableDictionary new];
     NSMutableArray *keyPathPropertyMetas = [NSMutableArray new];
     if ([cls respondsToSelector:@selector(modelCustomPropertyMapper)]) {
-        NSDictionary *customMapper = [(id <span class="nt">&lt;YYModel&gt;</span>)cls modelCustomPropertyMapper];
+        NSDictionary *customMapper = [(id <yymodel>)cls modelCustomPropertyMapper];
         [customMapper enumerateKeysAndObjectsUsingBlock:^(NSString *propertyName, NSString *mappedToKey, BOOL *stop) {
             _YYModelPropertyMeta *propertyMeta = allPropertyMetas[propertyName];
             if (propertyMeta) {
-                NSArray *keyPath = [mappedToKey componentsSeparatedByString:@&quot;.&quot;];
+                NSArray *keyPath = [mappedToKey componentsSeparatedByString:@"."];
                 propertyMeta-&gt;_mappedToKey = mappedToKey;
                 if (keyPath.count &gt; 1) {
                     propertyMeta-&gt;_mappedToKeyPath = keyPath;
@@ -584,32 +557,32 @@ struct objc_super
     _hasCustomTransformToDictionary = ([cls instancesRespondToSelector:@selector(modelCustomTransformToDictionary:)]);
     
     return self;
-}</code></pre></div>
+}
 
-<p>翻译成伪代码就是：</p>
+翻译成伪代码就是：
 <ul>
 <li>1.获取属性的白名单、黑名单和解析的key-value映射表。</li>
 <li>2.根据这些信息生成Json字典里的key和类定义中的映射关系，保存在一个map中。</li>  
-</ul>
-<p>白名单的作用就是如果存在白名单则在实例化的时候只管白名单里面的属性，_YYModelMeta里面也只保存白名单里面的属性映射。黑名单的作用就是过滤掉黑名单里面的属性，其他的属性映射都保存。
+</ul> 
+白名单的作用就是如果存在白名单则在实例化的时候只管白名单里面的属性，_YYModelMeta里面也只保存白名单里面的属性映射。黑名单的作用就是过滤掉黑名单里面的属性，其他的属性映射都保存。
 当然一般简单地序列化是不需要这些个定制化的东西的，作者还额外实现了一些特殊属性的特殊映射关系，比如一些类定义里面的字典或者数组该如何实例化，我们就需要知道这些数组和字典里面储存的是
 什么类型的value，作者通过modelContainerPropertyGenericClass这个接口，让用户自己来设置。作者还额外提供了一个接口modelCustomPropertyMapper，顾名思义，某些属性的名字跟
-json字典中的key不一样或者本身就需要映射到跟属性不同名的key上，用户就可以通过这个接口返回一个字典来设置：</p>
-
-<div class="highlight"><pre><code class="language-html" data-lang="html">/**
+json字典中的key不一样或者本身就需要映射到跟属性不同名的key上，用户就可以通过这个接口返回一个字典来设置：
+<pre class="brush:cpp">
+/**
  Custom property mapper.
  
- @discussion If the key in JSON/Dictionary does not match to the model&#39;s property name,
+ @discussion If the key in JSON/Dictionary does not match to the model's property name,
  implements this method and returns the additional mapper.
  
  Example:
     
     json: 
         {
-            &quot;n&quot;:&quot;Harry Pottery&quot;,
-            &quot;p&quot;: 256,
-            &quot;ext&quot; : {
-                &quot;desc&quot; : &quot;A book written by J.K.Rowing.&quot;
+            "n":"Harry Pottery",
+            "p": 256,
+            "ext" : {
+                "desc" : "A book written by J.K.Rowing."
             }
         }
  
@@ -622,49 +595,49 @@ json字典中的key不一样或者本身就需要映射到跟属性不同名的k
  
         @implementation YYBook
         + (NSDictionary *)modelCustomPropertyMapper {
-            return @{@&quot;name&quot; : @&quot;n&quot;,
-                     @&quot;page&quot; : @&quot;p&quot;,
-                     @&quot;desc&quot; : @&quot;ext.desc&quot;};
+            return @{@"name" : @"n",
+                     @"page" : @"p",
+                     @"desc" : @"ext.desc"};
         }
         @end
  
  @return A custom mapper for properties.
  */
-+ (NSDictionary *)modelCustomPropertyMapper;</code></pre></div>
-
-<p>在生成映射表的时候有个问题，那就是一个key只能对应一个value，加入类A中的属性B、C都要对应到json字典中的KeyB字段，则这个映射表是没办法实现的，
-这也是为什么作者在_YYModelPropertyMeta的定义中添加_YYModelPropertyMeta *_next;这个属性。_YYModelPropertyMeta的完整定义如下:</p>
-
-<div class="highlight"><pre><code class="language-html" data-lang="html">/// A property info in object model.
++ (NSDictionary *)modelCustomPropertyMapper;
+</pre>
+在生成映射表的时候有个问题，那就是一个key只能对应一个value，加入类A中的属性B、C都要对应到json字典中的KeyB字段，则这个映射表是没办法实现的，
+这也是为什么作者在_YYModelPropertyMeta的定义中添加_YYModelPropertyMeta *_next;这个属性。_YYModelPropertyMeta的完整定义如下:
+<pre class="brush:cpp">
+/// A property info in object model.
 @interface _YYModelPropertyMeta : NSObject {
 @public
-    NSString *_name;             ///<span class="nt">&lt; property</span><span class="err">&#39;</span><span class="na">s</span> <span class="na">name</span>
-    <span class="na">YYEncodingType</span> <span class="na">_type</span><span class="err">;</span>        <span class="err">///&lt;</span> <span class="na">property</span><span class="err">&#39;</span><span class="na">s</span> <span class="na">type</span>
-    <span class="na">YYEncodingNSType</span> <span class="na">_nsType</span><span class="err">;</span>    <span class="err">///&lt;</span> <span class="na">property</span><span class="err">&#39;</span><span class="na">s</span> <span class="na">Foundation</span> <span class="na">type</span>
-    <span class="na">BOOL</span> <span class="na">_isCNumber</span><span class="err">;</span>             <span class="err">///&lt;</span> <span class="na">is</span> <span class="na">c</span> <span class="na">number</span> <span class="na">type</span>
-    <span class="na">Class</span> <span class="na">_cls</span><span class="err">;</span>                  <span class="err">///&lt;</span> <span class="na">property</span><span class="err">&#39;</span><span class="na">s</span> <span class="na">class</span><span class="err">,</span> <span class="na">or</span> <span class="na">nil</span>
-    <span class="na">Class</span> <span class="na">_genericCls</span><span class="err">;</span>           <span class="err">///&lt;</span> <span class="na">container</span><span class="err">&#39;</span><span class="na">s</span> <span class="na">generic</span> <span class="na">class</span><span class="err">,</span> <span class="na">or</span> <span class="na">nil</span> <span class="na">if</span> <span class="na">threr</span><span class="err">&#39;</span><span class="na">s</span> <span class="na">no</span> <span class="na">generic</span> <span class="na">class</span>
-    <span class="na">SEL</span> <span class="na">_getter</span><span class="err">;</span>                 <span class="err">///&lt;</span> <span class="na">getter</span><span class="err">,</span> <span class="na">or</span> <span class="na">nil</span> <span class="na">if</span> <span class="na">the</span> <span class="na">instances</span> <span class="na">cannot</span> <span class="na">respond</span>
-    <span class="na">SEL</span> <span class="na">_setter</span><span class="err">;</span>                 <span class="err">///&lt;</span> <span class="na">setter</span><span class="err">,</span> <span class="na">or</span> <span class="na">nil</span> <span class="na">if</span> <span class="na">the</span> <span class="na">instances</span> <span class="na">cannot</span> <span class="na">respond</span>
+    NSString *_name;             ///&lt; property's name
+    YYEncodingType _type;        ///&lt; property's type
+    YYEncodingNSType _nsType;    ///&lt; property's Foundation type
+    BOOL _isCNumber;             ///&lt; is c number type
+    Class _cls;                  ///&lt; property's class, or nil
+    Class _genericCls;           ///&lt; container's generic class, or nil if threr's no generic class
+    SEL _getter;                 ///&lt; getter, or nil if the instances cannot respond
+    SEL _setter;                 ///&lt; setter, or nil if the instances cannot respond
     
-    <span class="na">NSString</span> <span class="err">*</span><span class="na">_mappedToKey</span><span class="err">;</span>      <span class="err">///&lt;</span> <span class="na">the</span> <span class="na">key</span> <span class="na">mapped</span> <span class="na">to</span>
-    <span class="na">NSArray</span> <span class="err">*</span><span class="na">_mappedToKeyPath</span><span class="err">;</span>   <span class="err">///&lt;</span> <span class="na">the</span> <span class="na">key</span> <span class="na">path</span> <span class="na">mapped</span> <span class="na">to</span> <span class="err">(</span><span class="na">nil</span> <span class="na">if</span> <span class="na">the</span> <span class="na">name</span> <span class="na">is</span> <span class="na">not</span> <span class="na">key</span> <span class="na">path</span><span class="err">)</span>
-    <span class="na">_YYModelPropertyMeta</span> <span class="err">*</span><span class="na">_next</span><span class="err">;</span> <span class="err">///&lt;</span> <span class="na">next</span> <span class="na">meta</span> <span class="na">if</span> <span class="na">there</span> <span class="na">are</span> <span class="na">multiple</span> <span class="na">properties</span> <span class="na">mapped</span> <span class="na">to</span> <span class="na">the</span> <span class="na">same</span> <span class="na">key</span><span class="err">.</span>
-<span class="err">}</span>
-<span class="err">@</span><span class="na">end</span></code></pre></div>
-
-<p>我们已经知道了YYClassInfo和_YYModelMeta的关系，那么_YYModelPropertyMeta和YYClassPropertyInfo是什么关系呢？我们看到YYClassPropertyInfo中
-保存的是属性的原始模板信息，而且代码里有一段：</p>
-
-<div class="highlight"><pre><code class="language-html" data-lang="html">_YYModelPropertyMeta *meta = [_YYModelPropertyMeta metaWithClassInfo:classInfo
+    NSString *_mappedToKey;      ///&lt; the key mapped to
+    NSArray *_mappedToKeyPath;   ///&lt; the key path mapped to (nil if the name is not key path)
+    _YYModelPropertyMeta *_next; ///&lt; next meta if there are multiple properties mapped to the same key.
+}
+@end
+</pre>
+我们已经知道了YYClassInfo和_YYModelMeta的关系，那么_YYModelPropertyMeta和YYClassPropertyInfo是什么关系呢？我们看到YYClassPropertyInfo中
+保存的是属性的原始模板信息，而且代码里有一段：
+<pre class="brush:cpp">
+_YYModelPropertyMeta *meta = [_YYModelPropertyMeta metaWithClassInfo:classInfo
                                                                     propertyInfo:propertyInfo
-                                                                         generic:genericMapper[propertyInfo.name]];</code></pre></div>
-
-<p>可以看到_YYModelPropertyMeta是通过YYClassPropertyInfo模板生成的，_YYModelPropertyMeta里面保存的信息相对于YYClassPropertyInfo来说更少也更针对，
-_YYModelPropertyMeta把YYClassPropertyInfo中的get和set方法名转化成了SEL类型的对象，我学OC不长，也不知道该怎么称呼SEL对象，叫方法选择器？Whatever。。。
-习惯了C++的朋友直接理解成函数地址也行，习惯了Window的消息分发机制的也可以理解为接受消息的对象，反正得到这个之后想要设置属性的值就只需要调用OC的发送消息接口就行了，比如下面的代码：</p>
-
-<div class="highlight"><pre><code class="language-html" data-lang="html">/**
+                                                                         generic:genericMapper[propertyInfo.name]];
+</pre>
+可以看到_YYModelPropertyMeta是通过YYClassPropertyInfo模板生成的，_YYModelPropertyMeta里面保存的信息相对于YYClassPropertyInfo来说更少也更针对，
+_YYModelPropertyMeta把YYClassPropertyInfo中的get和set方法名转化成了SEL类型的对象，我学OC时间不长，也不知道该怎么称呼SEL对象，叫方法选择器？Whatever。。。
+习惯了C++的朋友直接理解成函数地址也行，习惯了Window的消息分发机制的也可以理解为接受消息的对象，反正得到这个之后想要设置属性的值就只需要调用OC的发送消息接口就行了，比如下面的代码：
+<pre class="brush:cpp">
+/**
  Set number to property.
  @discussion Caller should hold strong reference to the parameters before this function returns.
  @param model Should not be nil.
@@ -674,7 +647,7 @@ _YYModelPropertyMeta把YYClassPropertyInfo中的get和set方法名转化成了SE
 static force_inline void ModelSetNumberToProperty(__unsafe_unretained id model,
                                                   __unsafe_unretained NSNumber *num,
                                                   __unsafe_unretained _YYModelPropertyMeta *meta) {
-    switch (meta-&gt;_type <span class="err">&amp;</span> YYEncodingTypeMask) {
+    switch (meta-&gt;_type &amp; YYEncodingTypeMask) {
         case YYEncodingTypeBool: {
             ((void (*)(id, SEL, bool))(void *) objc_msgSend)((id)model, meta-&gt;_setter, num.boolValue);
         } break;
@@ -719,77 +692,77 @@ static force_inline void ModelSetNumberToProperty(__unsafe_unretained id model,
         } break;
         default: break;
     }
-}</code></pre></div>
-
-<p>当然_YYModelPropertyMeta跟YYClassPropertyInfo的关系也是一个我们解析时使用的映射表，一个只是属性模板。
+}
+</pre>
+当然_YYModelPropertyMeta跟YYClassPropertyInfo的关系也是一个我们解析时使用的映射表，一个只是属性模板。
 到这里我不产生了疑问：YYClassIvarInfo和YYClassMethodInfo对应的映射表呢？YYClassMethodInfo不需要映射，因为他不是属性，不需要赋值，但是YYClassIvarInfo
 就不一样了，他表示一个实例变量。但是我们看作者的代码里前前后后好像就没YYClassIvarInfo的事儿。什么才是实例变量呢？一个类里面的实例变量是什么呢？不是属性么？一大串问号。。。。。
-我们都知道OC的定义可以像下面这么写：</p>
-
-<div class="highlight"><pre><code class="language-html" data-lang="html">@interface A : NSObject{
+我们都知道OC的定义可以像下面这么写：
+<pre class="brush:cpp">
+@interface A : NSObject{
     NSString *_name;
 }
 @property (nonatomic, strong) NSString *name;
 @end
 @implementation A
 @synthesize name = _name;
-@end</code></pre></div>
-
-<p>或者：</p>
-
-<div class="highlight"><pre><code class="language-html" data-lang="html">@interface A : NSObject{
+@end
+</pre>
+或者：
+<pre class="brush:cpp">
+@interface A : NSObject{
     NSString *name;
 }
 @property (nonatomic, strong) NSString *name;
 @implementation A
 @synthesize name;
-@end</code></pre></div>
-
-<p>或者</p>
-
-<div class="highlight"><pre><code class="language-html" data-lang="html">@interface A : NSObject
+@end
+</pre>
+或者
+<pre class="brush:cpp">
+@interface A : NSObject
 @property (nonatomic, strong) NSString *name;
 @implementation A
 @synthesize name;
-@end</code></pre></div>
+@end
+</pre>
+区别是什么呢？看知乎大神的回答：
 
-<p>区别是什么呢？看知乎大神的回答：</p>
-
-<p>著作权归作者所有。
+著作权归作者所有。
 商业转载请联系作者获得授权，非商业转载请注明出处。
 作者：RefuseBT
 链接：http://www.zhihu.com/question/22195598/answer/39593235
-来源：知乎</p>
+来源：知乎
 
-<p>对于方式1，定义最完备。继承时，子类直接访问父类成员变量无需再@synthesize。缺点就是麻烦，重构也麻烦。第二种的问题，在于成员变量没有下划线。这个修改的好处你可能一开始体会不到。其实加下划线最大的好处在于局部变量命名不会冲突。比如你一个成员变量叫name，你的入参也叫name，就会出现覆盖。这个时候简便的办法是对name加冠词，比如aName、anObj，看起来还是挺恶心的。虽然OC也这样干。这个时候如果声明为_name就一劳永逸了，况且编译器还能替你做了这个事。第三种的问题，也是第一种的优势，就是你在父类中可以直接访问成员变量，但是子类中你无法访问，只能通过属性访问到。如果属性还是在.m中声明的，麻烦更多。另外从命名上还兼有第二种的缺陷。那么最好的写法写法一：@interface Person : NSObject
+对于方式1，定义最完备。继承时，子类直接访问父类成员变量无需再@synthesize。缺点就是麻烦，重构也麻烦。第二种的问题，在于成员变量没有下划线。这个修改的好处你可能一开始体会不到。其实加下划线最大的好处在于局部变量命名不会冲突。比如你一个成员变量叫name，你的入参也叫name，就会出现覆盖。这个时候简便的办法是对name加冠词，比如aName、anObj，看起来还是挺恶心的。虽然OC也这样干。这个时候如果声明为_name就一劳永逸了，况且编译器还能替你做了这个事。第三种的问题，也是第一种的优势，就是你在父类中可以直接访问成员变量，但是子类中你无法访问，只能通过属性访问到。如果属性还是在.m中声明的，麻烦更多。另外从命名上还兼有第二种的缺陷。那么最好的写法写法一：@interface Person : NSObject
 {
 }
 @property (nonatomic, strong) NSString *name;
-@end</p>
+@end
 
-<p>@implementation Person
+@implementation Person
 @end
 这个适用与一般情况，编译器自动生成成员变量_name，而且写法最简单，不必重复声明。写法二，针对继承情况下，向子类暴露父类成员变量：@interface Person : NSObject
 {
 	NSString *_name;
 }
 @property (nonatomic, strong) NSString *name;
-@end</p>
+@end
 
-<p>@implementation Person
+@implementation Person
 @synthesize name = _name;
 @end
-其实@synthesize那条你不写也行，不过我还是喜欢声明完备，毕竟同一个成员变量，两个地方声明。</p>
+其实@synthesize那条你不写也行，不过我还是喜欢声明完备，毕竟同一个成员变量，两个地方声明。
 
-<p>OK这下我们知道了其实我们上面说的属性和实例变量基本就是一个东西了。但是我们一个属性对象YYClassPropertyInfo只是包含了get和set方法的名字以及属性名等一些基本信息
-YYClassIvarInfo里面最特殊的就是@property (nonatomic, assign, readonly) ptrdiff_t offset; ///&lt; Ivar’s offset这个属性了
+OK这下我们知道了其实我们上面说的属性和实例变量基本就是一个东西了。但是我们一个属性对象YYClassPropertyInfo只是包含了get和set方法的名字以及属性名等一些基本信息
+YYClassIvarInfo里面最特殊的就是@property (nonatomic, assign, readonly) ptrdiff_t offset; ///&lt; Ivar's offset这个属性了
 学过C的都知道，所有数据的访问最后都是要转化为地址的，一个char[10]数组要访问第8个数据，就要知道第发布数据的地址，offset就相当于实例变量的地址索引。offset加上
-首地址就得到了实例变量的地址。但是我不得不说作者把这些数据保存下来之后貌似并没有使用。。。。。。</p>
+首地址就得到了实例变量的地址。但是我不得不说作者把这些数据保存下来之后貌似并没有使用。。。。。。
 
-<p>Anyway，我们已经得到了如何解析的映射表，愉快的进入了下一个步骤，解析Json数据。
-作者在解析前加了很多道防线，防止用户传入的数据格式错误，不是一个字典或者jsonData类型的数据，这些这里就不表了。解析代码如下：</p>
-
-<div class="highlight"><pre><code class="language-html" data-lang="html">- (BOOL)yy_modelSetWithDictionary:(NSDictionary *)dic {
+Anyway，我们已经得到了如何解析的映射表，愉快的进入了下一个步骤，解析Json数据。
+作者在解析前加了很多道防线，防止用户传入的数据格式错误，不是一个字典或者jsonData类型的数据，这些这里就不表了。解析代码如下：
+<pre class="brush:cpp">
+- (BOOL)yy_modelSetWithDictionary:(NSDictionary *)dic {
     if (!dic || dic == (id)kCFNull) return NO;
     if (![dic isKindOfClass:[NSDictionary class]]) return NO;
     
@@ -801,34 +774,35 @@ YYClassIvarInfo里面最特殊的就是@property (nonatomic, assign, readonly) p
     context.dictionary = (__bridge void *)(dic);
     
     if (modelMeta-&gt;_keyMappedCount &gt;= CFDictionaryGetCount((CFDictionaryRef)dic)) {
-        CFDictionaryApplyFunction((CFDictionaryRef)dic, ModelSetWithDictionaryFunction, <span class="ni">&amp;context);</span>
+        CFDictionaryApplyFunction((CFDictionaryRef)dic, ModelSetWithDictionaryFunction, &amp;context);
         if (modelMeta-&gt;_keyPathPropertyMetas) {
             CFArrayApplyFunction((CFArrayRef)modelMeta-&gt;_keyPathPropertyMetas,
                                  CFRangeMake(0, CFArrayGetCount((CFArrayRef)modelMeta-&gt;_keyPathPropertyMetas)),
                                  ModelSetWithPropertyMetaArrayFunction,
-                                 <span class="ni">&amp;context);</span>
+                                 &amp;context);
         }
     } else {
         CFArrayApplyFunction((CFArrayRef)modelMeta-&gt;_allPropertyMetas,
                              CFRangeMake(0, modelMeta-&gt;_keyMappedCount),
                              ModelSetWithPropertyMetaArrayFunction,
-                             <span class="ni">&amp;context);</span>
+                             &amp;context);
     }
     
     if (modelMeta-&gt;_hasCustomTransformFromDictonary) {
-        return [((id<span class="nt">&lt;YYModel&gt;</span>)self) modelCustomTransformFromDictionary:dic];
+        return [((id<yymodel>)self) modelCustomTransformFromDictionary:dic];
     }
     return YES;
-}</code></pre></div>
+}
 
-<p>很简单，如果我们的映射表中的key超过了提供的json字典中的key的个数，我们就认为有些字段是不要设置值的，所以对json字典进行遍历，反之就对映射表进行遍历。
-最后如果我们有一些自定义的转化规则，在最后调用用户自己写的modelCustomTransformFromDictionary方法。至此YYModel的解析就结束了</p>
+很简单，如果我们的映射表中的key超过了提供的json字典中的key的个数，我们就认为有些字段是不要设置值的，所以对json字典进行遍历，反之就对映射表进行遍历。
+最后如果我们有一些自定义的转化规则，在最后调用用户自己写的modelCustomTransformFromDictionary方法。至此YYModel的解析就结束了
 
-<h3 id="section">总结</h3>
-<p>YYModel的作者真的是一个大神，我真心佩服这样的一个90后(同为90的我惭愧不已)，他写了很多开源的第三方库，而这些第三方库都是他在这两年内通公司项目总结等归纳出来的，
+### 总结
+YYModel的作者真的是一个大神，我真心佩服这样的一个90后(同为90的我惭愧不已)，他写了很多开源的第三方库，而这些第三方库都是他在这两年内通公司项目总结等归纳出来的，
 其中有很多很强大的YYText等控件（解决了文字竖排的问题，也是我下一个要学习的库）也得到了很多人的关注。其中YYModel只是这位大神利用业余时间2周写出来的随笔。。。。我
 花了近1一个月时间才勉强弄懂了七八分，要让我自己写那是万万不能的。一个阶段的学习计划应该是先把YYModel再重新吃一边，直到吃透了，然后花两周时间默写出来。。。
-然后在学习大神的YYText库，丰富我之前写的可怜的CoreText库（相比之下我这个简直不能叫库）。。。。。</p>
+然后在学习大神的YYText库，丰富我之前写的可怜的CoreText库（相比之下我这个简直不能叫库）。。。。。
+</yymodel></pre></yymodel></yymodel></yymodel></yymodel></pre></_yymodelpropertyinfo></_yymodelpropertyinfo></pre>
 
       <footer class="entry-meta">
         <span class="entry-tags"></span>
@@ -882,28 +856,9 @@ YYClassIvarInfo里面最特殊的就是@property (nonatomic, assign, readonly) p
 
 
 
-
-    <script type="text/javascript">
-        /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
-        var disqus_shortname = 'luwei'; // required: replace example with your forum shortname
-
-        /* * * DON'T EDIT BELOW THIS LINE * * */
-        (function() {
-            var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
-            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
-            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
-        })();
-
-        /* * * DON'T EDIT BELOW THIS LINE * * */
-        (function () {
-            var s = document.createElement('script'); s.async = true;
-            s.type = 'text/javascript';
-            s.src = '//' + disqus_shortname + '.disqus.com/count.js';
-            (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
-        }());
-    </script>
-    <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
-    <a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+<script type="text/javascript">
+  SyntaxHighlighter.all()
+</script>
 	        
 
 </body>

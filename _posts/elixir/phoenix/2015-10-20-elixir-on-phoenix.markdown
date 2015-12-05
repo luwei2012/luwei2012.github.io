@@ -25,28 +25,28 @@ date: 2015-10-20T19:16:31+08:00
 
 安装Elixir和Phoenix 步骤不赘述了 网上一搜一大堆.
 程序员看世界，第一步，写一个Hello world程序。
-{% highlight html %}
+<pre class="brush:cpp">
 mix phoenix.new hello_phoenix
-{% endhighlight %}
+</pre>
 看起来跟Ruby on Rails一样一样的,需要注意的是，看它官网的说明，你需要先安装node-js，然后在提示
-{% highlight html %}
+<pre class="brush:cpp">
 Fetch and install dependencies? [Yn]
-{% endhighlight %}
+</pre>
 的时候，你必须输入Y，否则程序运行起来后会报错.
 写到这里我发现我卡在了
-{% highlight html %}
+<pre class="brush:cpp">
 * running mix deps.get
-{% endhighlight %}
+</pre>
 我以为是网络问题，Ctrl+C强制退出去，删了挂上VPN重新来一遍，然后还是卡在那儿不动。。。 草,什么鬼。无奈我换了一种姿势，首先运行
 
-{% highlight html %}
+<pre class="brush:cpp">
 mix phoenix.new hello_phoenix
 Fetch and install dependencies? [Yn] n
 We are all set! Run your Phoenix application:
 $ cd hello_world
 $ mix deps.get
 $ mix phoenix.server
-{% endhighlight %}
+</pre>
 
 
 按照提示一步步做，然后成了。。。。。。心中十万个草泥马奔腾而过，劳资满心欢喜的想学习这个框架，结果一上来就给劳资出了这么个Bug，后面还玩得动么。。。

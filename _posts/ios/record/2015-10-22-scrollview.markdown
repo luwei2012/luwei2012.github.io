@@ -19,7 +19,7 @@ ScrollView应该是ios里面最常用的控件之一了，前两天在项目<a h
 
 ### ScrollView的探究过程
 ScrollView的特性相信大家都知道，有几个非常重要的属性：frame，contentSize，contentOffset，contentInset
-    {% highlight html %}
+    <pre class="brush:cpp">
     -(UIScrollView *)scrollView{
         if (_scrollView == nil) {
             _scrollView                 = [[UIScrollView alloc] init];
@@ -61,7 +61,7 @@ ScrollView的特性相信大家都知道，有几个非常重要的属性：fram
         [super viewDidAppear:animated];
          NSLog(@"%f %f",self.containerView.frame.origin.x,self.containerView.frame.origin.y);
     }
-    {% endhighlight %}
+    </pre>
 <ul>
 <li>
     contentInset:之所以首先说contentInset这个属性是因为我自己就被网上很多不负责任的言论坑过。contentInset只是contentSize的四个边增加了一块区域，仅此而已。
