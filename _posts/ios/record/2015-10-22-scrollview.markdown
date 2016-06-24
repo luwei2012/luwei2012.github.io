@@ -13,13 +13,13 @@ comments:
 share:
 date: 2015-10-22T17:10:07+08:00
 ---
-
+### 写在前面的话
 ScrollView应该是ios里面最常用的控件之一了，前两天在项目<a href="https://www.9panart.com/html/passport/passport_login.html?ran=19406317709945142">泛艺术App</a>里面寻找一个UI的解决方案的时候曾经想过使用ScrollView，虽然最后使用的是它的儿子TableView，中间还是在ScrollView上吃了点苦头，
 于是才决定写个demo好好研究下ScrollView。
 
 ### ScrollView的探究过程
 ScrollView的特性相信大家都知道，有几个非常重要的属性：frame，contentSize，contentOffset，contentInset
-    <pre class="brush:cpp">
+    <pre class="brush: cpp;auto-links: true;collapse: true;first-line: 1;gutter: true;html-script: true;light: true;ruler: false;smart-tabs: true;tab-size: 4;toolbar: true;">
     -(UIScrollView *)scrollView{
         if (_scrollView == nil) {
             _scrollView                 = [[UIScrollView alloc] init];

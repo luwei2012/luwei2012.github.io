@@ -28,7 +28,7 @@ MBXPageViewController是仿照RKSwipeBetweenViewControllers写的，通过源码
 MBXPageViewController的使用还是远远比RKSwipeBetweenViewControllers简单清晰，而且能适应更多的特殊UI情况。
 
 使用MBXPageViewController.
-<pre class="brush:cpp">
+<pre class="brush: cpp;auto-links: true;collapse: true;first-line: 1;gutter: true;html-script: true;light: true;ruler: false;smart-tabs: true;tab-size: 4;toolbar: true;">
 MBXPageViewController *MBXPageController = [MBXPageViewController new];
 MBXPageController.MBXDataSource = self;
 MBXPageController.MBXDataDelegate = self;
@@ -36,7 +36,7 @@ MBXPageController.MBXDataDelegate = self;
 </pre>
 很简单易懂，有可能有人不理解，为什么没有看到addChildViewController或者addSubview之类的方法？其实这些都封装在了[MBXPageController reloadPages]方法里面
 进去看源码就会发现：
-<pre class="brush:cpp">
+<pre class="brush: cpp;auto-links: true;collapse: true;first-line: 1;gutter: true;html-script: true;light: true;ruler: false;smart-tabs: true;tab-size: 4;toolbar: true;">
 - (void)loadControllerAndView
 {
     NSAssert([[self MBXDataSource] isKindOfClass:[UIViewController class]], @"This needs to be implemented in a class that inherits from UIViewController");
@@ -50,15 +50,15 @@ MBXPageController.MBXDataDelegate = self;
 </ul>
 需要注意的是[[self MBXDataSource] MBXPageContainer]这个方法，他是MBXDataSource协议里必选的方法
 说到这里就必须说说为什么我认为MBXPageViewController的使用远远比RKSwipeBetweenViewControllers简单清晰，就是因为两个协议：
-<pre class="brush:cpp">
-@protocol MBXPageControllerDataSource <NSObject>
+<pre class="brush: cpp;auto-links: true;collapse: true;first-line: 1;gutter: true;html-script: true;light: true;ruler: false;smart-tabs: true;tab-size: 4;toolbar: true;">
+@protocol MBXPageControllerDataSource &lt;NSObject&gt;
 @required
 - (NSArray *)MBXPageButtons;
 - (NSArray *)MBXPageControllers;
 - (UIView *)MBXPageContainer;
 @end
 
-@protocol MBXPageControllerDataDelegate <NSObject>
+@protocol MBXPageControllerDataDelegate &lt;NSObject&gt;
 @optional
 - (void)MBXPageChangedToIndex:(NSInteger)index;
 @end
@@ -73,7 +73,7 @@ MBXPageController.MBXDataDelegate = self;
     上面按钮和tabIndicator的状态.</li>
 </ul>
 整个协议的完整实现大概应该是这个样子：
-<pre class="brush:cpp">
+<pre class="brush: cpp;auto-links: true;collapse: true;first-line: 1;gutter: true;html-script: true;light: true;ruler: false;smart-tabs: true;tab-size: 4;toolbar: true;">
 #pragma mark - MBXPageViewController Data Source
 
 - (NSArray *)MBXPageButtons
@@ -112,7 +112,7 @@ MBXPageController.MBXDataDelegate = self;
 }
 </pre>
 怎么样，是不是非常简单清晰。下面需要解决的就是我们UI提出的需求问题了，也很简单，修改绑定button的事件：
-<pre class="brush:cpp">
+<pre class="brush: cpp;auto-links: true;collapse: true;first-line: 1;gutter: true;html-script: true;light: true;ruler: false;smart-tabs: true;tab-size: 4;toolbar: true;">
 - (void)controllerModeLogicForDestination:(NSInteger)destination
 {
     __weak __typeof(&*self)weakSelf = self;
@@ -137,8 +137,8 @@ MBXPageController.MBXDataDelegate = self;
 只加了一句[weakSelf updateCurrentPageIndex:tempIndex];然后我们可以自己在updateCurrentPageIndex方法里判断，如果当前索引跟传入的索引相同则当成点击事件来处理，否则则是页面切换事件，需要跟新button的状态，
 这样我们就解决了第一个问题。第二个问题比较复杂，我到现在都还没完成搞清楚why，只知道要这么做。
 我们先把MBXPageControllerDataDelegate协议拓展一下，添加两个方法：
-<pre class="brush:cpp">
-@protocol MBXPageControllerDataDelegate <NSObject>
+<pre class="brush: cpp;auto-links: true;collapse: true;first-line: 1;gutter: true;html-script: true;light: true;ruler: false;smart-tabs: true;tab-size: 4;toolbar: true;">
+@protocol MBXPageControllerDataDelegate &lt;NSObject&gt;
 @optional
 - (void)MBXPageChangedToIndex:(NSInteger)index;
 - (void)MBXPageSelectdViewOffset:(CGFloat)offset;
@@ -151,7 +151,7 @@ MBXPageController.MBXDataDelegate = self;
 </ul>  
 
 通过分析源码可以看到有个很诡异的事情：
-<pre class="brush:cpp">
+<pre class="brush: cpp;auto-links: true;collapse: true;first-line: 1;gutter: true;html-script: true;light: true;ruler: false;smart-tabs: true;tab-size: 4;toolbar: true;">
 -  (void)syncScrollView
 {
     for (UIView* view in _pageController.view.subviews){
@@ -165,7 +165,7 @@ MBXPageController.MBXDataDelegate = self;
 </pre>
 _pageScrollView.delegate = self;可以整个代码里并没有实现ScrollDelegate的方法，我对比了一下RKSwipeBetweenViewControllers才发现原作者并没有copy这个delegate，原因可能是他的项目里当时不需要这个特性。
 很显然我们需要实现这个ScrollDelegate，并在滑动过程中同步调用MBXPageSelectdViewOffset来跟新tabIndicator的X坐标：
-<pre class="brush:cpp">
+<pre class="brush: cpp;auto-links: true;collapse: true;first-line: 1;gutter: true;html-script: true;light: true;ruler: false;smart-tabs: true;tab-size: 4;toolbar: true;">
 #pragma mark - scroll view delegate
 //It extracts the xcoordinate from the center point and instructs the selection bar to move accordingly
 -(void)scrollViewDidScroll:(UIScrollView *)scrollView{

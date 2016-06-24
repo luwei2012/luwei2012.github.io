@@ -4,13 +4,32 @@
 <generator uri="https://github.com/mojombo/jekyll">Jekyll</generator>
 <link rel="self" type="application/atom+xml" href="/feed.xml" />
 <link rel="alternate" type="text/html" href="" />
-<updated>2015-12-05T16:57:52+08:00</updated>
+<updated>2016-06-24T14:00:39+08:00</updated>
 <id>/</id>
 <author>
   <name>陆 伟</name>
   <uri>/</uri>
   <email>1071932819@qq.com</email>
 </author>
+
+
+<entry>
+  <title type="html"><![CDATA[Android UDP服务]]></title>
+ <link rel="alternate" type="text/html" href="/android/android-udp/" />
+  <id>/android/android-udp</id>
+  <published>2016-06-23T09:19:36+08:00</published>
+  <updated>2016-06-23T09:19:36+08:00</updated>
+  <author>
+    <name>陆 伟</name>
+    <uri></uri>
+    <email>1071932819@qq.com</email>
+  </author>
+  <content type="html">
+    
+
+    &lt;p&gt;&lt;a href=&quot;/android/android-udp/&quot;&gt;Android UDP服务&lt;/a&gt; was originally published by 陆 伟 at &lt;a href=&quot;&quot;&gt;Life is a Struggle&lt;/a&gt; on June 23, 2016.&lt;/p&gt;
+  </content>
+</entry>
 
 
 <entry>
@@ -25,9 +44,10 @@
     <email>1071932819@qq.com</email>
   </author>
   <content type="html">
-    &lt;p&gt;相信很多人都用过类的序列化和反序列化，在Android里面有Gson等第三方库可以做到，在IOS里面有setValuesForKeysWithDictionary这个方法。但是setValuesForKeysWithDictionary这个方法只能设置键值对，
+    &lt;h3 id=&quot;section&quot;&gt;序列化和反序列化&lt;/h3&gt;
+&lt;p&gt;相信很多人都用过类的序列化和反序列化，在Android里面有Gson等第三方库可以做到，在IOS里面有setValuesForKeysWithDictionary这个方法。但是setValuesForKeysWithDictionary这个方法只能设置键值对，
 遇到复杂的例如Iva对象就没办法处理了。我们都知道一个实体类里面包含的数据有两类：方法和属性，其中属性又分为基本类型、容器类型和实体(对象)类型。C++里面的基本类型
-就那么几种：int、float、byte等。在IOS里面如果一个实体类只包含这些基本类型，那就可以通过- (void)setValuesForKeysWithDictionary:(NSDictionary&amp;lt;NSString *, id&amp;gt; *)keyedValues;
+就那么几种：int、float、byte等。在IOS里面如果一个实体类只包含这些基本类型，那就可以通过- (void)setValuesForKeysWithDictionary:(NSDictionary&amp;amp;ltNSString *, id&amp;gt; *)keyedValues;
 直接将一个从json字符串中提取出来的字典转为实体类，当然你必须实现-(void)setValue:(id)value forUndefinedKey:(NSString *)key方法，以防服务器返回的字段跟你实体类定义的名字不一样。&lt;/p&gt;
 
 &lt;h3 id=&quot;ios&quot;&gt;IOS中如何处理一般实体类的序列化&lt;/h3&gt;
@@ -38,12 +58,12 @@
 &lt;h3 id=&quot;id&quot;&gt;什么是id&lt;/h3&gt;
 &lt;p&gt;要对一个类序列化首先需要知道IOS里面对象的结构。我们知道C里面是没有类的，只有结构体。C++在C的结构体基础上提出了类的概念和结构，OC也是如此，
 OC的类就是结构体。在OC里面的对象都可以使用id类型来表示，A *a也可以写成 id a。那么id是什么呢，id在objc.h中定义如下：&lt;/p&gt;
-&lt;pre class=&quot;brush:cpp&quot;&gt;
+&lt;pre class=&quot;brush: cpp;auto-links: true;collapse: true;first-line: 1;gutter: true;html-script: true;light: true;ruler: false;smart-tabs: true;tab-size: 4;toolbar: true;&quot;&gt;
 //A pointer to an instance of a class.
 typedef struct objc_object *id;
 &lt;/pre&gt;
 &lt;p&gt;就像注释中所说的这样id是指向一个objc_object结构体的指针。objc_object在objc.h中的定义：&lt;/p&gt;
-&lt;pre class=&quot;brush:cpp&quot;&gt;
+&lt;pre class=&quot;brush: cpp;auto-links: true;collapse: true;first-line: 1;gutter: true;html-script: true;light: true;ruler: false;smart-tabs: true;tab-size: 4;toolbar: true;&quot;&gt;
 //Represents an instance of a class.
 struct objc_object
 {
@@ -51,13 +71,13 @@ struct objc_object
 }
 &lt;/pre&gt;
 &lt;p&gt;这个时候我们知道OBjective-C中的object在最后会被转换成C的结构体，而在这个struct中有一个isa指针，指向它的类别Class(C是大写的):&lt;/p&gt;
-&lt;pre class=&quot;brush:cpp&quot;&gt;
+&lt;pre class=&quot;brush: cpp;auto-links: true;collapse: true;first-line: 1;gutter: true;html-script: true;light: true;ruler: false;smart-tabs: true;tab-size: 4;toolbar: true;&quot;&gt;
 //Represents an instance of a class.
 //An opaque type that represents an Objective-C class
 typedef struct objc_class *Class;
 &lt;/pre&gt;
 &lt;p&gt;我们可以看到，Class本身也是指向一个C的structobjc_class:&lt;/p&gt;
-&lt;pre class=&quot;brush:cpp&quot;&gt;
+&lt;pre class=&quot;brush: cpp;auto-links: true;collapse: true;first-line: 1;gutter: true;html-script: true;light: true;ruler: false;smart-tabs: true;tab-size: 4;toolbar: true;&quot;&gt;
 struct objc_class
 {
     Class isa OBJC_ISA_AVAILABILITY;
@@ -74,7 +94,7 @@ struct objc_class
 };
 &lt;/pre&gt;
 &lt;p&gt;该结构中，isa指向所属的Class,super_class指向父类别。在objc_runtime_new.h中，我们发现objc_class有如下定义：&lt;/p&gt;
-&lt;pre class=&quot;brush:cpp&quot;&gt;
+&lt;pre class=&quot;brush: cpp;auto-links: true;collapse: true;first-line: 1;gutter: true;html-script: true;light: true;ruler: false;smart-tabs: true;tab-size: 4;toolbar: true;&quot;&gt;
 struct object_class : objc_object
 {
     //Class ISA
@@ -115,7 +135,7 @@ struct object_class : objc_object
 &lt;li&gt;根据该对象类型的属性和方法字典来实例化一个对象，并设置好值，这个就是我们要得结果了&lt;/li&gt; 
 &lt;/ul&gt;
 &lt;p&gt;YYModel的序列化过程也是这样，首先有一个YYClassInfo对象来储存class信息：&lt;/p&gt;
-&lt;pre class=&quot;brush:cpp&quot;&gt;
+&lt;pre class=&quot;brush: cpp;auto-links: true;collapse: true;first-line: 1;gutter: true;html-script: true;light: true;ruler: false;smart-tabs: true;tab-size: 4;toolbar: true;&quot;&gt;
 + (instancetype)classInfoWithClass:(Class)cls {
     if (!cls) return nil;
     static CFMutableDictionaryRef classCache;
@@ -145,7 +165,7 @@ struct object_class : objc_object
 }
 &lt;/pre&gt;
 &lt;p&gt;可以看到所有出现的class定义都会储存在一个全局静态字典classCache和metaCache中。我们再看一个YYClassInfo包含那些数据呢：&lt;/p&gt;
-&lt;pre class=&quot;brush:cpp&quot;&gt;
+&lt;pre class=&quot;brush: cpp;auto-links: true;collapse: true;first-line: 1;gutter: true;html-script: true;light: true;ruler: false;smart-tabs: true;tab-size: 4;toolbar: true;&quot;&gt;
 /**
  Class information for a class.
  */
@@ -156,51 +176,51 @@ struct object_class : objc_object
 @property (nonatomic, assign, readonly) BOOL isMeta;
 @property (nonatomic, strong, readonly) NSString *name;
 @property (nonatomic, strong, readonly) YYClassInfo *superClassInfo;
-@property (nonatomic, strong, readonly) NSDictionary *ivarInfos;     ///&amp;lt; key:NSString(ivar),     value:YYClassIvarInfo
-@property (nonatomic, strong, readonly) NSDictionary *methodInfos;   ///&amp;lt; key:NSString(selector), value:YYClassMethodInfo
-@property (nonatomic, strong, readonly) NSDictionary *propertyInfos; ///&amp;lt; key:NSString(property), value:YYClassPropertyInfo
+@property (nonatomic, strong, readonly) NSDictionary *ivarInfos;     //&amp;amp;lt key:NSString(ivar),     value:YYClassIvarInfo
+@property (nonatomic, strong, readonly) NSDictionary *methodInfos;   //&amp;amp;lt key:NSString(selector), value:YYClassMethodInfo
+@property (nonatomic, strong, readonly) NSDictionary *propertyInfos; //&amp;amp;lt key:NSString(property), value:YYClassPropertyInfo
 @end
 /**
  Instance variable information.
  */
 @interface YYClassIvarInfo : NSObject
 @property (nonatomic, assign, readonly) Ivar ivar;
-@property (nonatomic, strong, readonly) NSString *name; ///&amp;lt; Ivar&#39;s name
-@property (nonatomic, assign, readonly) ptrdiff_t offset; ///&amp;lt; Ivar&#39;s offset
-@property (nonatomic, strong, readonly) NSString *typeEncoding; ///&amp;lt; Ivar&#39;s type encoding
-@property (nonatomic, assign, readonly) YYEncodingType type; ///&amp;lt; Ivar&#39;s type 
+@property (nonatomic, strong, readonly) NSString *name; //&amp;amp;lt Ivar&#39;s name
+@property (nonatomic, assign, readonly) ptrdiff_t offset; //&amp;amp;lt Ivar&#39;s offset
+@property (nonatomic, strong, readonly) NSString *typeEncoding; //&amp;amp;lt Ivar&#39;s type encoding
+@property (nonatomic, assign, readonly) YYEncodingType type; //&amp;amp;lt Ivar&#39;s type 
 @end
 /**
  Method information.
  */
 @interface YYClassMethodInfo : NSObject
 @property (nonatomic, assign, readonly) Method method;
-@property (nonatomic, strong, readonly) NSString *name; ///&amp;lt; method name
-@property (nonatomic, assign, readonly) SEL sel; ///&amp;lt; method&#39;s selector
-@property (nonatomic, assign, readonly) IMP imp; ///&amp;lt; method&#39;s implementation
-@property (nonatomic, strong, readonly) NSString *typeEncoding; ///&amp;lt; method&#39;s parameter and return types
-@property (nonatomic, strong, readonly) NSString *returnTypeEncoding; ///&amp;lt; return value&#39;s type
-@property (nonatomic, strong, readonly) NSArray *argumentTypeEncodings; ///&amp;lt; array of arguments&#39; type
+@property (nonatomic, strong, readonly) NSString *name; //&amp;amp;lt method name
+@property (nonatomic, assign, readonly) SEL sel; //&amp;amp;lt method&#39;s selector
+@property (nonatomic, assign, readonly) IMP imp; //&amp;amp;lt method&#39;s implementation
+@property (nonatomic, strong, readonly) NSString *typeEncoding; //&amp;amp;lt method&#39;s parameter and return types
+@property (nonatomic, strong, readonly) NSString *returnTypeEncoding; //&amp;amp;lt return value&#39;s type
+@property (nonatomic, strong, readonly) NSArray *argumentTypeEncodings; //&amp;amp;lt array of arguments&#39; type
 @end
 /**
  Property information.
  */
 @interface YYClassPropertyInfo : NSObject
 @property (nonatomic, assign, readonly) objc_property_t property;
-@property (nonatomic, strong, readonly) NSString *name; ///&amp;lt; property&#39;s name
-@property (nonatomic, assign, readonly) YYEncodingType type; ///&amp;lt; property&#39;s type
-@property (nonatomic, strong, readonly) NSString *typeEncoding; ///&amp;lt; property&#39;s encoding value
-@property (nonatomic, strong, readonly) NSString *ivarName; ///&amp;lt; property&#39;s ivar name
-@property (nonatomic, assign, readonly) Class cls; ///&amp;lt; may be nil
-@property (nonatomic, strong, readonly) NSString *getter; ///&amp;lt; getter (nonnull)
-@property (nonatomic, strong, readonly) NSString *setter; ///&amp;lt; setter (nonnull)
+@property (nonatomic, strong, readonly) NSString *name; //&amp;amp;lt property&#39;s name
+@property (nonatomic, assign, readonly) YYEncodingType type; //&amp;amp;lt property&#39;s type
+@property (nonatomic, strong, readonly) NSString *typeEncoding; //&amp;amp;lt property&#39;s encoding value
+@property (nonatomic, strong, readonly) NSString *ivarName; //&amp;amp;lt property&#39;s ivar name
+@property (nonatomic, assign, readonly) Class cls; //&amp;amp;lt may be nil
+@property (nonatomic, strong, readonly) NSString *getter; //&amp;amp;lt getter (nonnull)
+@property (nonatomic, strong, readonly) NSString *setter; //&amp;amp;lt setter (nonnull)
 @end
 &lt;/pre&gt;
 &lt;p&gt;我只截取了属性定义的部分。YYClassInfo储存了一个类里面所有的属性和方法字典，并保存了_cls、_superCls和_metaCls的签名。
 主要使用了OC的class_copyMethodList、class_copyPropertyList和class_copyIvarList方法，动过cls签名获取了类的信息。
 当然，说起来好像很简单，实际需要你对OC的底层非常了解，知道objc_method、objc_ivar和objc_property的定义，知道Type Encodings和Declared Properties这些信息，才能真的解析出我们需要的信息。
 这里我找到了OC里面关于上面那些结构体的定义：&lt;/p&gt;
-&lt;pre class=&quot;brush:cpp&quot;&gt;
+&lt;pre class=&quot;brush: cpp;auto-links: true;collapse: true;first-line: 1;gutter: true;html-script: true;light: true;ruler: false;smart-tabs: true;tab-size: 4;toolbar: true;&quot;&gt;
 类的数据结构
 
 Class(指针)
@@ -324,30 +344,31 @@ struct objc_super
 };
 
 &lt;/pre&gt;
-&lt;p&gt;有了上面这些信息相信所有人都知道作者的代码都在干嘛了，具体不表。反正到此为止，我们已经有了class的定义。理论上下一步就可以解析了，但是作者额外多了一步，定制了映射关系。出现了一个新的class属性映射关系类的定义：&lt;/p&gt;
-&lt;pre class=&quot;brush:cpp&quot;&gt;
-/// A class info in object model.
+&lt;p&gt;有了上面这些信息相信所有人都知道作者的代码都在干嘛了，具体不表。反正到此为止，我们已经有了class的定义。
+理论上下一步就可以解析了，但是作者额外多了一步，定制了映射关系。出现了一个新的class属性映射关系类的定义：&lt;/p&gt;
+&lt;pre class=&quot;brush: cpp;auto-links: true;collapse: true;first-line: 1;gutter: true;html-script: true;light: true;ruler: false;smart-tabs: true;tab-size: 4;toolbar: true;&quot;&gt;
+//A class info in object model.
 @interface _YYModelMeta : NSObject {
 @public
-    /// Key:mapped key and key path, Value:_YYModelPropertyInfo.
+    // Key:mapped key and key path, Value:_YYModelPropertyInfo.
     NSDictionary *_mapper;
-    /// Array&lt;_yymodelpropertyinfo&gt;, all property meta of this model.
+    // Array&amp;lt;_YYModelPropertyInfo&amp;gt;, all property meta of this model.
     NSArray *_allPropertyMetas;
-    /// Array&lt;_yymodelpropertyinfo&gt;, property meta which is mapped to a key path.
+    // Array&amp;lt;_YYModelPropertyInfo&amp;gt;, property meta which is mapped to a key path.
     NSArray *_keyPathPropertyMetas;
-    /// The number of mapped key (and key path), same to _mapper.count.
+    // The number of mapped key (and key path), same to _mapper.count.
     NSUInteger _keyMappedCount;
-    /// Model class type.
+    // Model class type.
     YYEncodingNSType _nsType;
     
     BOOL _hasCustomTransformFromDictonary;
     BOOL _hasCustomTransformToDictionary;
 }
 @end
-
-上面的YYClassInfo更像是一个抽象的模板，只是告诉我们类里面有这些属性和方法，没有告诉我们怎么去解析。_YYModelMeta这个类就是告诉我们怎么去解析的。
-同样的所有_YYModelMeta都缓存在了一个全局静态字典里面。_YYModelMeta通过YYClassInfo的信息来实例化：
-&lt;pre class=&quot;brush:cpp&quot;&gt;
+&lt;/pre&gt;
+&lt;p&gt;上面的YYClassInfo更像是一个抽象的模板，只是告诉我们类里面有这些属性和方法，没有告诉我们怎么去解析。_YYModelMeta这个类就是告诉我们怎么去解析的。
+同样的所有_YYModelMeta都缓存在了一个全局静态字典里面。_YYModelMeta通过YYClassInfo的信息来实例化：&lt;/p&gt;
+&lt;pre class=&quot;brush: cpp;auto-links: true;collapse: true;first-line: 1;gutter: true;html-script: true;light: true;ruler: false;smart-tabs: true;tab-size: 4;toolbar: true;&quot;&gt;
 - (instancetype)initWithClass:(Class)cls {
     YYClassInfo *classInfo = [YYClassInfo classInfoWithClass:cls];
     if (!classInfo) return nil;
@@ -356,7 +377,7 @@ struct objc_super
     // Get black list
     NSSet *blacklist = nil;
     if ([cls respondsToSelector:@selector(modelPropertyBlacklist)]) {
-        NSArray *properties = [(id&lt;yymodel&gt;)cls modelPropertyBlacklist];
+        NSArray *properties = [(id&amp;amp;ltYYModel&amp;gt;)cls modelPropertyBlacklist];
         if (properties) {
             blacklist = [NSSet setWithArray:properties];
         }
@@ -365,7 +386,7 @@ struct objc_super
     // Get white list
     NSSet *whitelist = nil;
     if ([cls respondsToSelector:@selector(modelPropertyWhitelist)]) {
-        NSArray *properties = [(id&lt;yymodel&gt;)cls modelPropertyWhitelist];
+        NSArray *properties = [(id&amp;amp;ltYYModel&amp;gt;)cls modelPropertyWhitelist];
         if (properties) {
             whitelist = [NSSet setWithArray:properties];
         }
@@ -374,7 +395,7 @@ struct objc_super
     // Get container property&#39;s generic class
     NSDictionary *genericMapper = nil;
     if ([cls respondsToSelector:@selector(modelContainerPropertyGenericClass)]) {
-        genericMapper = [(id&lt;yymodel&gt;)cls modelContainerPropertyGenericClass];
+        genericMapper = [(id&amp;amp;ltYYModel&amp;gt;)cls modelContainerPropertyGenericClass];
         if (genericMapper) {
             NSMutableDictionary *tmp = genericMapper.mutableCopy;
             [genericMapper enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
@@ -418,7 +439,7 @@ struct objc_super
     NSMutableDictionary *mapper = [NSMutableDictionary new];
     NSMutableArray *keyPathPropertyMetas = [NSMutableArray new];
     if ([cls respondsToSelector:@selector(modelCustomPropertyMapper)]) {
-        NSDictionary *customMapper = [(id &lt;yymodel&gt;)cls modelCustomPropertyMapper];
+        NSDictionary *customMapper = [(id &amp;amp;ltYYModel&amp;gt;)cls modelCustomPropertyMapper];
         [customMapper enumerateKeysAndObjectsUsingBlock:^(NSString *propertyName, NSString *mappedToKey, BOOL *stop) {
             _YYModelPropertyMeta *propertyMeta = allPropertyMetas[propertyName];
             if (propertyMeta) {
@@ -455,17 +476,17 @@ struct objc_super
     
     return self;
 }
-
-翻译成伪代码就是：
+&lt;/pre&gt;
+&lt;p&gt;翻译成伪代码就是：&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;1.获取属性的白名单、黑名单和解析的key-value映射表。&lt;/li&gt;
-&lt;li&gt;2.根据这些信息生成Json字典里的key和类定义中的映射关系，保存在一个map中。&lt;/li&gt;  
-&lt;/ul&gt; 
-白名单的作用就是如果存在白名单则在实例化的时候只管白名单里面的属性，_YYModelMeta里面也只保存白名单里面的属性映射。黑名单的作用就是过滤掉黑名单里面的属性，其他的属性映射都保存。
+&lt;li&gt;2.根据这些信息生成Json字典里的key和类定义中的映射关系，保存在一个map中。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;白名单的作用就是如果存在白名单则在实例化的时候只管白名单里面的属性，_YYModelMeta里面也只保存白名单里面的属性映射。黑名单的作用就是过滤掉黑名单里面的属性，其他的属性映射都保存。
 当然一般简单地序列化是不需要这些个定制化的东西的，作者还额外实现了一些特殊属性的特殊映射关系，比如一些类定义里面的字典或者数组该如何实例化，我们就需要知道这些数组和字典里面储存的是
 什么类型的value，作者通过modelContainerPropertyGenericClass这个接口，让用户自己来设置。作者还额外提供了一个接口modelCustomPropertyMapper，顾名思义，某些属性的名字跟
-json字典中的key不一样或者本身就需要映射到跟属性不同名的key上，用户就可以通过这个接口返回一个字典来设置：
-&lt;pre class=&quot;brush:cpp&quot;&gt;
+json字典中的key不一样或者本身就需要映射到跟属性不同名的key上，用户就可以通过这个接口返回一个字典来设置：&lt;/p&gt;
+&lt;pre class=&quot;brush: cpp;auto-links: true;collapse: true;first-line: 1;gutter: true;html-script: true;light: true;ruler: false;smart-tabs: true;tab-size: 4;toolbar: true;&quot;&gt;
 /**
  Custom property mapper.
  
@@ -502,38 +523,38 @@ json字典中的key不一样或者本身就需要映射到跟属性不同名的k
  */
 + (NSDictionary *)modelCustomPropertyMapper;
 &lt;/pre&gt;
-在生成映射表的时候有个问题，那就是一个key只能对应一个value，加入类A中的属性B、C都要对应到json字典中的KeyB字段，则这个映射表是没办法实现的，
-这也是为什么作者在_YYModelPropertyMeta的定义中添加_YYModelPropertyMeta *_next;这个属性。_YYModelPropertyMeta的完整定义如下:
-&lt;pre class=&quot;brush:cpp&quot;&gt;
-/// A property info in object model.
+&lt;p&gt;在生成映射表的时候有个问题，那就是一个key只能对应一个value，加入类A中的属性B、C都要对应到json字典中的KeyB字段，则这个映射表是没办法实现的，
+这也是为什么作者在_YYModelPropertyMeta的定义中添加_YYModelPropertyMeta *_next;这个属性。_YYModelPropertyMeta的完整定义如下:&lt;/p&gt;
+&lt;pre class=&quot;brush: cpp;auto-links: true;collapse: true;first-line: 1;gutter: true;html-script: true;light: true;ruler: false;smart-tabs: true;tab-size: 4;toolbar: true;&quot;&gt;
+// A property info in object model.
 @interface _YYModelPropertyMeta : NSObject {
 @public
-    NSString *_name;             ///&amp;lt; property&#39;s name
-    YYEncodingType _type;        ///&amp;lt; property&#39;s type
-    YYEncodingNSType _nsType;    ///&amp;lt; property&#39;s Foundation type
-    BOOL _isCNumber;             ///&amp;lt; is c number type
-    Class _cls;                  ///&amp;lt; property&#39;s class, or nil
-    Class _genericCls;           ///&amp;lt; container&#39;s generic class, or nil if threr&#39;s no generic class
-    SEL _getter;                 ///&amp;lt; getter, or nil if the instances cannot respond
-    SEL _setter;                 ///&amp;lt; setter, or nil if the instances cannot respond
+    NSString *_name;             //&amp;amp;lt property&#39;s name
+    YYEncodingType _type;        //&amp;amp;lt property&#39;s type
+    YYEncodingNSType _nsType;    //&amp;amp;lt property&#39;s Foundation type
+    BOOL _isCNumber;             //&amp;amp;lt is c number type
+    Class _cls;                  //&amp;amp;lt property&#39;s class, or nil
+    Class _genericCls;           //&amp;amp;lt container&#39;s generic class, or nil if threr&#39;s no generic class
+    SEL _getter;                 //&amp;amp;lt getter, or nil if the instances cannot respond
+    SEL _setter;                 //&amp;amp;lt setter, or nil if the instances cannot respond
     
-    NSString *_mappedToKey;      ///&amp;lt; the key mapped to
-    NSArray *_mappedToKeyPath;   ///&amp;lt; the key path mapped to (nil if the name is not key path)
-    _YYModelPropertyMeta *_next; ///&amp;lt; next meta if there are multiple properties mapped to the same key.
+    NSString *_mappedToKey;      //&amp;amp;lt the key mapped to
+    NSArray *_mappedToKeyPath;   //&amp;amp;lt the key path mapped to (nil if the name is not key path)
+    _YYModelPropertyMeta *_next; //&amp;amp;lt next meta if there are multiple properties mapped to the same key.
 }
 @end
 &lt;/pre&gt;
-我们已经知道了YYClassInfo和_YYModelMeta的关系，那么_YYModelPropertyMeta和YYClassPropertyInfo是什么关系呢？我们看到YYClassPropertyInfo中
-保存的是属性的原始模板信息，而且代码里有一段：
-&lt;pre class=&quot;brush:cpp&quot;&gt;
+&lt;p&gt;我们已经知道了YYClassInfo和_YYModelMeta的关系，那么_YYModelPropertyMeta和YYClassPropertyInfo是什么关系呢？我们看到YYClassPropertyInfo中
+保存的是属性的原始模板信息，而且代码里有一段：&lt;/p&gt;
+&lt;pre class=&quot;brush: cpp;auto-links: true;collapse: true;first-line: 1;gutter: true;html-script: true;light: true;ruler: false;smart-tabs: true;tab-size: 4;toolbar: true;&quot;&gt;
 _YYModelPropertyMeta *meta = [_YYModelPropertyMeta metaWithClassInfo:classInfo
                                                                     propertyInfo:propertyInfo
                                                                          generic:genericMapper[propertyInfo.name]];
 &lt;/pre&gt;
-可以看到_YYModelPropertyMeta是通过YYClassPropertyInfo模板生成的，_YYModelPropertyMeta里面保存的信息相对于YYClassPropertyInfo来说更少也更针对，
+&lt;p&gt;可以看到_YYModelPropertyMeta是通过YYClassPropertyInfo模板生成的，_YYModelPropertyMeta里面保存的信息相对于YYClassPropertyInfo来说更少也更针对，
 _YYModelPropertyMeta把YYClassPropertyInfo中的get和set方法名转化成了SEL类型的对象，我学OC时间不长，也不知道该怎么称呼SEL对象，叫方法选择器？Whatever。。。
-习惯了C++的朋友直接理解成函数地址也行，习惯了Window的消息分发机制的也可以理解为接受消息的对象，反正得到这个之后想要设置属性的值就只需要调用OC的发送消息接口就行了，比如下面的代码：
-&lt;pre class=&quot;brush:cpp&quot;&gt;
+习惯了C++的朋友直接理解成函数地址也行，习惯了Window的消息分发机制的也可以理解为接受消息的对象，反正得到这个之后想要设置属性的值就只需要调用OC的发送消息接口就行了，比如下面的代码：&lt;/p&gt;
+&lt;pre class=&quot;brush: cpp;auto-links: true;collapse: true;first-line: 1;gutter: true;html-script: true;light: true;ruler: false;smart-tabs: true;tab-size: 4;toolbar: true;&quot;&gt;
 /**
  Set number to property.
  @discussion Caller should hold strong reference to the parameters before this function returns.
@@ -591,11 +612,11 @@ static force_inline void ModelSetNumberToProperty(__unsafe_unretained id model,
     }
 }
 &lt;/pre&gt;
-当然_YYModelPropertyMeta跟YYClassPropertyInfo的关系也是一个我们解析时使用的映射表，一个只是属性模板。
+&lt;p&gt;当然_YYModelPropertyMeta跟YYClassPropertyInfo的关系也是一个我们解析时使用的映射表，一个只是属性模板。
 到这里我不产生了疑问：YYClassIvarInfo和YYClassMethodInfo对应的映射表呢？YYClassMethodInfo不需要映射，因为他不是属性，不需要赋值，但是YYClassIvarInfo
 就不一样了，他表示一个实例变量。但是我们看作者的代码里前前后后好像就没YYClassIvarInfo的事儿。什么才是实例变量呢？一个类里面的实例变量是什么呢？不是属性么？一大串问号。。。。。
-我们都知道OC的定义可以像下面这么写：
-&lt;pre class=&quot;brush:cpp&quot;&gt;
+我们都知道OC的定义可以像下面这么写：&lt;/p&gt;
+&lt;pre class=&quot;brush: cpp;auto-links: true;collapse: true;first-line: 1;gutter: true;html-script: true;light: true;ruler: false;smart-tabs: true;tab-size: 4;toolbar: true;&quot;&gt;
 @interface A : NSObject{
     NSString *_name;
 }
@@ -605,8 +626,8 @@ static force_inline void ModelSetNumberToProperty(__unsafe_unretained id model,
 @synthesize name = _name;
 @end
 &lt;/pre&gt;
-或者：
-&lt;pre class=&quot;brush:cpp&quot;&gt;
+&lt;p&gt;或者：&lt;/p&gt;
+&lt;pre class=&quot;brush: cpp;auto-links: true;collapse: true;first-line: 1;gutter: true;html-script: true;light: true;ruler: false;smart-tabs: true;tab-size: 4;toolbar: true;&quot;&gt;
 @interface A : NSObject{
     NSString *name;
 }
@@ -615,50 +636,50 @@ static force_inline void ModelSetNumberToProperty(__unsafe_unretained id model,
 @synthesize name;
 @end
 &lt;/pre&gt;
-或者
-&lt;pre class=&quot;brush:cpp&quot;&gt;
+&lt;p&gt;或者&lt;/p&gt;
+&lt;pre class=&quot;brush: cpp;auto-links: true;collapse: true;first-line: 1;gutter: true;html-script: true;light: true;ruler: false;smart-tabs: true;tab-size: 4;toolbar: true;&quot;&gt;
 @interface A : NSObject
 @property (nonatomic, strong) NSString *name;
 @implementation A
 @synthesize name;
 @end
 &lt;/pre&gt;
-区别是什么呢？看知乎大神的回答：
+&lt;p&gt;区别是什么呢？看知乎大神的回答：&lt;/p&gt;
 
-著作权归作者所有。
+&lt;p&gt;著作权归作者所有。
 商业转载请联系作者获得授权，非商业转载请注明出处。
 作者：RefuseBT
 链接：http://www.zhihu.com/question/22195598/answer/39593235
-来源：知乎
+来源：知乎&lt;/p&gt;
 
-对于方式1，定义最完备。继承时，子类直接访问父类成员变量无需再@synthesize。缺点就是麻烦，重构也麻烦。第二种的问题，在于成员变量没有下划线。这个修改的好处你可能一开始体会不到。其实加下划线最大的好处在于局部变量命名不会冲突。比如你一个成员变量叫name，你的入参也叫name，就会出现覆盖。这个时候简便的办法是对name加冠词，比如aName、anObj，看起来还是挺恶心的。虽然OC也这样干。这个时候如果声明为_name就一劳永逸了，况且编译器还能替你做了这个事。第三种的问题，也是第一种的优势，就是你在父类中可以直接访问成员变量，但是子类中你无法访问，只能通过属性访问到。如果属性还是在.m中声明的，麻烦更多。另外从命名上还兼有第二种的缺陷。那么最好的写法写法一：@interface Person : NSObject
+&lt;p&gt;对于方式1，定义最完备。继承时，子类直接访问父类成员变量无需再@synthesize。缺点就是麻烦，重构也麻烦。第二种的问题，在于成员变量没有下划线。这个修改的好处你可能一开始体会不到。其实加下划线最大的好处在于局部变量命名不会冲突。比如你一个成员变量叫name，你的入参也叫name，就会出现覆盖。这个时候简便的办法是对name加冠词，比如aName、anObj，看起来还是挺恶心的。虽然OC也这样干。这个时候如果声明为_name就一劳永逸了，况且编译器还能替你做了这个事。第三种的问题，也是第一种的优势，就是你在父类中可以直接访问成员变量，但是子类中你无法访问，只能通过属性访问到。如果属性还是在.m中声明的，麻烦更多。另外从命名上还兼有第二种的缺陷。那么最好的写法写法一：@interface Person : NSObject
 {
 }
 @property (nonatomic, strong) NSString *name;
-@end
+@end&lt;/p&gt;
 
-@implementation Person
+&lt;p&gt;@implementation Person
 @end
 这个适用与一般情况，编译器自动生成成员变量_name，而且写法最简单，不必重复声明。写法二，针对继承情况下，向子类暴露父类成员变量：@interface Person : NSObject
 {
 	NSString *_name;
 }
 @property (nonatomic, strong) NSString *name;
-@end
+@end&lt;/p&gt;
 
-@implementation Person
+&lt;p&gt;@implementation Person
 @synthesize name = _name;
 @end
-其实@synthesize那条你不写也行，不过我还是喜欢声明完备，毕竟同一个成员变量，两个地方声明。
+其实@synthesize那条你不写也行，不过我还是喜欢声明完备，毕竟同一个成员变量，两个地方声明。&lt;/p&gt;
 
-OK这下我们知道了其实我们上面说的属性和实例变量基本就是一个东西了。但是我们一个属性对象YYClassPropertyInfo只是包含了get和set方法的名字以及属性名等一些基本信息
-YYClassIvarInfo里面最特殊的就是@property (nonatomic, assign, readonly) ptrdiff_t offset; ///&amp;lt; Ivar&#39;s offset这个属性了
+&lt;p&gt;OK这下我们知道了其实我们上面说的属性和实例变量基本就是一个东西了。但是我们一个属性对象YYClassPropertyInfo只是包含了get和set方法的名字以及属性名等一些基本信息
+YYClassIvarInfo里面最特殊的就是@property (nonatomic, assign, readonly) ptrdiff_t offset; //&amp;lt; Ivar’s offset这个属性了
 学过C的都知道，所有数据的访问最后都是要转化为地址的，一个char[10]数组要访问第8个数据，就要知道第发布数据的地址，offset就相当于实例变量的地址索引。offset加上
-首地址就得到了实例变量的地址。但是我不得不说作者把这些数据保存下来之后貌似并没有使用。。。。。。
+首地址就得到了实例变量的地址。但是我不得不说作者把这些数据保存下来之后貌似并没有使用。。。。。。&lt;/p&gt;
 
-Anyway，我们已经得到了如何解析的映射表，愉快的进入了下一个步骤，解析Json数据。
-作者在解析前加了很多道防线，防止用户传入的数据格式错误，不是一个字典或者jsonData类型的数据，这些这里就不表了。解析代码如下：
-&lt;pre class=&quot;brush:cpp&quot;&gt;
+&lt;p&gt;Anyway，我们已经得到了如何解析的映射表，愉快的进入了下一个步骤，解析Json数据。
+作者在解析前加了很多道防线，防止用户传入的数据格式错误，不是一个字典或者jsonData类型的数据，这些这里就不表了。解析代码如下：&lt;/p&gt;
+&lt;pre class=&quot;brush: cpp;auto-links: true;collapse: true;first-line: 1;gutter: true;html-script: true;light: true;ruler: false;smart-tabs: true;tab-size: 4;toolbar: true;&quot;&gt;
 - (BOOL)yy_modelSetWithDictionary:(NSDictionary *)dic {
     if (!dic || dic == (id)kCFNull) return NO;
     if (![dic isKindOfClass:[NSDictionary class]]) return NO;
@@ -686,20 +707,19 @@ Anyway，我们已经得到了如何解析的映射表，愉快的进入了下�
     }
     
     if (modelMeta-&amp;gt;_hasCustomTransformFromDictonary) {
-        return [((id&lt;yymodel&gt;)self) modelCustomTransformFromDictionary:dic];
+        return [((id&amp;amp;ltYYModel&amp;gt;)self) modelCustomTransformFromDictionary:dic];
     }
     return YES;
 }
+&lt;/pre&gt;
+&lt;p&gt;很简单，如果我们的映射表中的key超过了提供的json字典中的key的个数，我们就认为有些字段是不要设置值的，所以对json字典进行遍历，反之就对映射表进行遍历。
+最后如果我们有一些自定义的转化规则，在最后调用用户自己写的modelCustomTransformFromDictionary方法。至此YYModel的解析就结束了&lt;/p&gt;
 
-很简单，如果我们的映射表中的key超过了提供的json字典中的key的个数，我们就认为有些字段是不要设置值的，所以对json字典进行遍历，反之就对映射表进行遍历。
-最后如果我们有一些自定义的转化规则，在最后调用用户自己写的modelCustomTransformFromDictionary方法。至此YYModel的解析就结束了
-
-### 总结
-YYModel的作者真的是一个大神，我真心佩服这样的一个90后(同为90的我惭愧不已)，他写了很多开源的第三方库，而这些第三方库都是他在这两年内通公司项目总结等归纳出来的，
+&lt;h3 id=&quot;section-1&quot;&gt;总结&lt;/h3&gt;
+&lt;p&gt;YYModel的作者真的是一个大神，我真心佩服这样的一个90后(同为90的我惭愧不已)，他写了很多开源的第三方库，而这些第三方库都是他在这两年内通公司项目总结等归纳出来的，
 其中有很多很强大的YYText等控件（解决了文字竖排的问题，也是我下一个要学习的库）也得到了很多人的关注。其中YYModel只是这位大神利用业余时间2周写出来的随笔。。。。我
 花了近1一个月时间才勉强弄懂了七八分，要让我自己写那是万万不能的。一个阶段的学习计划应该是先把YYModel再重新吃一边，直到吃透了，然后花两周时间默写出来。。。
-然后在学习大神的YYText库，丰富我之前写的可怜的CoreText库（相比之下我这个简直不能叫库）。。。。。
-&lt;/yymodel&gt;&lt;/pre&gt;&lt;/yymodel&gt;&lt;/yymodel&gt;&lt;/yymodel&gt;&lt;/yymodel&gt;&lt;/pre&gt;&lt;/_yymodelpropertyinfo&gt;&lt;/_yymodelpropertyinfo&gt;&lt;/pre&gt;
+然后在学习大神的YYText库，丰富我之前写的可怜的CoreText库（相比之下我这个简直不能叫库）。。。。。&lt;/p&gt;
 
     &lt;p&gt;&lt;a href=&quot;/ios/record/yymodel/&quot;&gt;学习YYModel&lt;/a&gt; was originally published by 陆 伟 at &lt;a href=&quot;&quot;&gt;Life is a Struggle&lt;/a&gt; on November 05, 2015.&lt;/p&gt;
   </content>
@@ -745,7 +765,7 @@ YYModel的作者真的是一个大神，我真心佩服这样的一个90后(同�
 
 &lt;p&gt;1.创建CTFrameRef的时候需要添加一个属性kCTFrameProgressionAttributeName&lt;/p&gt;
 
-&lt;pre class=&quot;brush:cpp&quot;&gt;
+&lt;pre class=&quot;brush: cpp;auto-links: true;collapse: true;first-line: 1;gutter: true;html-script: true;light: true;ruler: false;smart-tabs: true;tab-size: 4;toolbar: true;&quot;&gt;
 /*!
 	@const		kCTFrameProgressionAttributeName
 	@abstract	Specifies progression for a frame.
@@ -762,7 +782,7 @@ CTFrameRef frame = CTFramesetterCreateFrame(framesetter,
                                             path,
                                             (CFDictionaryRef)@{(id)kCTFrameProgressionAttributeName: @(kCTFrameProgressionRightToLeft)});
 &lt;/pre&gt;
-&lt;pre class=&quot;brush:cpp&quot;&gt;
+&lt;pre class=&quot;brush: cpp;auto-links: true;collapse: true;first-line: 1;gutter: true;html-script: true;light: true;ruler: false;smart-tabs: true;tab-size: 4;toolbar: true;&quot;&gt;
 /*!
     @enum		CTFrameProgression
     @abstract	These constants specify frame progression types.
@@ -794,7 +814,7 @@ typedef CF_ENUM(uint32_t, CTFrameProgression) {
 &lt;p&gt;2.让汉字保持竖向&lt;/p&gt;
 
 &lt;p&gt;添加了kCTFrameProgressionAttributeName属性后其实就相当于把绘制区域顺时针旋转了90°，汉字躺下了。。。因此我们需要为每个汉字额外设置一些样式：&lt;/p&gt;
-&lt;pre class=&quot;brush:cpp&quot;&gt;
+&lt;pre class=&quot;brush: cpp;auto-links: true;collapse: true;first-line: 1;gutter: true;html-script: true;light: true;ruler: false;smart-tabs: true;tab-size: 4;toolbar: true;&quot;&gt;
 /*!
     @const      kCTVerticalFormsAttributeName
     @abstract   Controls glyph orientation.
@@ -823,7 +843,7 @@ for (int i = 0; i &amp;lt; attrStr.length; i++) {
 
 &lt;p&gt;1.获取画布并设置好坐标系&lt;/p&gt;
 
-&lt;pre class=&quot;brush:cpp&quot;&gt;
+&lt;pre class=&quot;brush: cpp;auto-links: true;collapse: true;first-line: 1;gutter: true;html-script: true;light: true;ruler: false;smart-tabs: true;tab-size: 4;toolbar: true;&quot;&gt;
 //获取画布句柄
 CGContextRef context = UIGraphicsGetCurrentContext();
 //颠倒窗口 坐标计算使用的mac下的坐标系 跟ios的坐标系正好颠倒
@@ -834,7 +854,7 @@ CGContextScaleCTM(context, 1.0, -1.0);
 
 &lt;p&gt;2.生成需要绘制的内容&lt;/p&gt;
 
-&lt;pre class=&quot;brush:cpp&quot;&gt;
+&lt;pre class=&quot;brush: cpp;auto-links: true;collapse: true;first-line: 1;gutter: true;html-script: true;light: true;ruler: false;smart-tabs: true;tab-size: 4;toolbar: true;&quot;&gt;
 //生成富文本的信息 具体不懂  反正这是core text绘制的必须流程和对象
 CTFramesetterRef framesetter = CTFramesetterCreateWithAttributedString((__bridge CFAttributedStringRef)self.attributedText);
 &lt;/pre&gt;
@@ -842,7 +862,7 @@ CTFramesetterRef framesetter = CTFramesetterCreateWithAttributedString((__bridge
 
 &lt;p&gt;3.生成绘制区域&lt;/p&gt;
 
-&lt;pre class=&quot;brush:cpp&quot;&gt;
+&lt;pre class=&quot;brush: cpp;auto-links: true;collapse: true;first-line: 1;gutter: true;html-script: true;light: true;ruler: false;smart-tabs: true;tab-size: 4;toolbar: true;&quot;&gt;
 //这一步生成合适的绘制区域
 CGPathRef path = [self createPathWithLines];
 &lt;/pre&gt;
@@ -850,7 +870,7 @@ CGPathRef path = [self createPathWithLines];
 
 &lt;p&gt;4.绘制&lt;/p&gt;
 
-&lt;pre class=&quot;brush:cpp&quot;&gt;
+&lt;pre class=&quot;brush: cpp;auto-links: true;collapse: true;first-line: 1;gutter: true;html-script: true;light: true;ruler: false;smart-tabs: true;tab-size: 4;toolbar: true;&quot;&gt;
 // Create a frame for this column and draw it.
 CTFrameRef frame = CTFramesetterCreateFrame(framesetter,
                                             CFRangeMake(0, 0),
@@ -861,7 +881,7 @@ CTFrameDraw(frame, context);
 
 &lt;p&gt;5.释放内存&lt;/p&gt;
 
-&lt;pre class=&quot;brush:cpp&quot;&gt;
+&lt;pre class=&quot;brush: cpp;auto-links: true;collapse: true;first-line: 1;gutter: true;html-script: true;light: true;ruler: false;smart-tabs: true;tab-size: 4;toolbar: true;&quot;&gt;
 //释放内存
 CFRelease(frame);
 CFRelease(path);
@@ -880,44 +900,6 @@ CFRelease(framesetter);
 
 
 <entry>
-  <title type="html"><![CDATA[Yalmip的使用]]></title>
- <link rel="alternate" type="text/html" href="/matlab/yalmip/yalmip/" />
-  <id>/matlab/yalmip/yalmip</id>
-  <published>2015-10-22T17:10:17+08:00</published>
-  <updated>2015-10-22T17:10:17+08:00</updated>
-  <author>
-    <name>陆 伟</name>
-    <uri></uri>
-    <email>1071932819@qq.com</email>
-  </author>
-  <content type="html">
-    
-
-    &lt;p&gt;&lt;a href=&quot;/matlab/yalmip/yalmip/&quot;&gt;Yalmip的使用&lt;/a&gt; was originally published by 陆 伟 at &lt;a href=&quot;&quot;&gt;Life is a Struggle&lt;/a&gt; on October 22, 2015.&lt;/p&gt;
-  </content>
-</entry>
-
-
-<entry>
-  <title type="html"><![CDATA[Fmincon的使用]]></title>
- <link rel="alternate" type="text/html" href="/matlab/fmincon/fmincon/" />
-  <id>/matlab/fmincon/fmincon</id>
-  <published>2015-10-22T17:10:12+08:00</published>
-  <updated>2015-10-22T17:10:12+08:00</updated>
-  <author>
-    <name>陆 伟</name>
-    <uri></uri>
-    <email>1071932819@qq.com</email>
-  </author>
-  <content type="html">
-    
-
-    &lt;p&gt;&lt;a href=&quot;/matlab/fmincon/fmincon/&quot;&gt;Fmincon的使用&lt;/a&gt; was originally published by 陆 伟 at &lt;a href=&quot;&quot;&gt;Life is a Struggle&lt;/a&gt; on October 22, 2015.&lt;/p&gt;
-  </content>
-</entry>
-
-
-<entry>
   <title type="html"><![CDATA[关于ScrollView的学习]]></title>
  <link rel="alternate" type="text/html" href="/ios/record/scrollview/" />
   <id>/ios/record/scrollview</id>
@@ -929,12 +911,13 @@ CFRelease(framesetter);
     <email>1071932819@qq.com</email>
   </author>
   <content type="html">
-    &lt;p&gt;ScrollView应该是ios里面最常用的控件之一了，前两天在项目&lt;a href=&quot;https://www.9panart.com/html/passport/passport_login.html?ran=19406317709945142&quot;&gt;泛艺术App&lt;/a&gt;里面寻找一个UI的解决方案的时候曾经想过使用ScrollView，虽然最后使用的是它的儿子TableView，中间还是在ScrollView上吃了点苦头，
+    &lt;h3 id=&quot;section&quot;&gt;写在前面的话&lt;/h3&gt;
+&lt;p&gt;ScrollView应该是ios里面最常用的控件之一了，前两天在项目&lt;a href=&quot;https://www.9panart.com/html/passport/passport_login.html?ran=19406317709945142&quot;&gt;泛艺术App&lt;/a&gt;里面寻找一个UI的解决方案的时候曾经想过使用ScrollView，虽然最后使用的是它的儿子TableView，中间还是在ScrollView上吃了点苦头，
 于是才决定写个demo好好研究下ScrollView。&lt;/p&gt;
 
 &lt;h3 id=&quot;scrollview&quot;&gt;ScrollView的探究过程&lt;/h3&gt;
 &lt;p&gt;ScrollView的特性相信大家都知道，有几个非常重要的属性：frame，contentSize，contentOffset，contentInset
-    &amp;lt;pre class=&quot;brush:cpp&quot;&amp;gt;
+    &amp;lt;pre class=&quot;brush: cpp;auto-links: true;collapse: true;first-line: 1;gutter: true;html-script: true;light: true;ruler: false;smart-tabs: true;tab-size: 4;toolbar: true;&quot;&amp;gt;
     -(UIScrollView *)scrollView{
         if (_scrollView == nil) {
             _scrollView                 = [[UIScrollView alloc] init];
@@ -1065,7 +1048,7 @@ CFRelease(framesetter);
 MBXPageViewController的使用还是远远比RKSwipeBetweenViewControllers简单清晰，而且能适应更多的特殊UI情况。&lt;/p&gt;
 
 &lt;p&gt;使用MBXPageViewController.&lt;/p&gt;
-&lt;pre class=&quot;brush:cpp&quot;&gt;
+&lt;pre class=&quot;brush: cpp;auto-links: true;collapse: true;first-line: 1;gutter: true;html-script: true;light: true;ruler: false;smart-tabs: true;tab-size: 4;toolbar: true;&quot;&gt;
 MBXPageViewController *MBXPageController = [MBXPageViewController new];
 MBXPageController.MBXDataSource = self;
 MBXPageController.MBXDataDelegate = self;
@@ -1073,7 +1056,7 @@ MBXPageController.MBXDataDelegate = self;
 &lt;/pre&gt;
 &lt;p&gt;很简单易懂，有可能有人不理解，为什么没有看到addChildViewController或者addSubview之类的方法？其实这些都封装在了[MBXPageController reloadPages]方法里面
 进去看源码就会发现：&lt;/p&gt;
-&lt;pre class=&quot;brush:cpp&quot;&gt;
+&lt;pre class=&quot;brush: cpp;auto-links: true;collapse: true;first-line: 1;gutter: true;html-script: true;light: true;ruler: false;smart-tabs: true;tab-size: 4;toolbar: true;&quot;&gt;
 - (void)loadControllerAndView
 {
     NSAssert([[self MBXDataSource] isKindOfClass:[UIViewController class]], @&quot;This needs to be implemented in a class that inherits from UIViewController&quot;);
@@ -1087,19 +1070,19 @@ MBXPageController.MBXDataDelegate = self;
 &lt;/ul&gt;
 &lt;p&gt;需要注意的是[[self MBXDataSource] MBXPageContainer]这个方法，他是MBXDataSource协议里必选的方法
 说到这里就必须说说为什么我认为MBXPageViewController的使用远远比RKSwipeBetweenViewControllers简单清晰，就是因为两个协议：&lt;/p&gt;
-&lt;pre class=&quot;brush:cpp&quot;&gt;
-@protocol MBXPageControllerDataSource &lt;nsobject&gt;
+&lt;pre class=&quot;brush: cpp;auto-links: true;collapse: true;first-line: 1;gutter: true;html-script: true;light: true;ruler: false;smart-tabs: true;tab-size: 4;toolbar: true;&quot;&gt;
+@protocol MBXPageControllerDataSource &amp;lt;NSObject&amp;gt;
 @required
 - (NSArray *)MBXPageButtons;
 - (NSArray *)MBXPageControllers;
 - (UIView *)MBXPageContainer;
 @end
 
-@protocol MBXPageControllerDataDelegate &lt;nsobject&gt;
+@protocol MBXPageControllerDataDelegate &amp;lt;NSObject&amp;gt;
 @optional
 - (void)MBXPageChangedToIndex:(NSInteger)index;
 @end
-
+&lt;/pre&gt;
 
 &lt;ul&gt;
 &lt;li&gt;MBXPageButtons 就是标题栏上面的按钮，需要注意的是MBXPageViewController并不管按钮的显示，MBXPageViewController只负责帮我们绑定按钮的触摸事件，
@@ -1109,8 +1092,8 @@ MBXPageController.MBXDataDelegate = self;
 &lt;li&gt;MBXPageChangedToIndex 是一个提供给用户更新按钮状态的方法，当页面索引改变后就会触发这个方法，用户应该在这里跟新title
     上面按钮和tabIndicator的状态.&lt;/li&gt;
 &lt;/ul&gt;
-整个协议的完整实现大概应该是这个样子：
-&lt;pre class=&quot;brush:cpp&quot;&gt;
+&lt;p&gt;整个协议的完整实现大概应该是这个样子：&lt;/p&gt;
+&lt;pre class=&quot;brush: cpp;auto-links: true;collapse: true;first-line: 1;gutter: true;html-script: true;light: true;ruler: false;smart-tabs: true;tab-size: 4;toolbar: true;&quot;&gt;
 #pragma mark - MBXPageViewController Data Source
 
 - (NSArray *)MBXPageButtons
@@ -1148,8 +1131,8 @@ MBXPageController.MBXDataDelegate = self;
     return @[demo,demo2, demo3];
 }
 &lt;/pre&gt;
-怎么样，是不是非常简单清晰。下面需要解决的就是我们UI提出的需求问题了，也很简单，修改绑定button的事件：
-&lt;pre class=&quot;brush:cpp&quot;&gt;
+&lt;p&gt;怎么样，是不是非常简单清晰。下面需要解决的就是我们UI提出的需求问题了，也很简单，修改绑定button的事件：&lt;/p&gt;
+&lt;pre class=&quot;brush: cpp;auto-links: true;collapse: true;first-line: 1;gutter: true;html-script: true;light: true;ruler: false;smart-tabs: true;tab-size: 4;toolbar: true;&quot;&gt;
 - (void)controllerModeLogicForDestination:(NSInteger)destination
 {
     __weak __typeof(&amp;amp;*self)weakSelf = self;
@@ -1171,24 +1154,24 @@ MBXPageController.MBXDataDelegate = self;
     }
 }
 &lt;/pre&gt;
-只加了一句[weakSelf updateCurrentPageIndex:tempIndex];然后我们可以自己在updateCurrentPageIndex方法里判断，如果当前索引跟传入的索引相同则当成点击事件来处理，否则则是页面切换事件，需要跟新button的状态，
+&lt;p&gt;只加了一句[weakSelf updateCurrentPageIndex:tempIndex];然后我们可以自己在updateCurrentPageIndex方法里判断，如果当前索引跟传入的索引相同则当成点击事件来处理，否则则是页面切换事件，需要跟新button的状态，
 这样我们就解决了第一个问题。第二个问题比较复杂，我到现在都还没完成搞清楚why，只知道要这么做。
-我们先把MBXPageControllerDataDelegate协议拓展一下，添加两个方法：
-&lt;pre class=&quot;brush:cpp&quot;&gt;
-@protocol MBXPageControllerDataDelegate &lt;nsobject&gt;
+我们先把MBXPageControllerDataDelegate协议拓展一下，添加两个方法：&lt;/p&gt;
+&lt;pre class=&quot;brush: cpp;auto-links: true;collapse: true;first-line: 1;gutter: true;html-script: true;light: true;ruler: false;smart-tabs: true;tab-size: 4;toolbar: true;&quot;&gt;
+@protocol MBXPageControllerDataDelegate &amp;lt;NSObject&amp;gt;
 @optional
 - (void)MBXPageChangedToIndex:(NSInteger)index;
 - (void)MBXPageSelectdViewOffset:(CGFloat)offset;
 - (CGFloat)MBXPageTabIndicatorStartOffset:(NSInteger)tabIndex;
 @end
-
+&lt;/pre&gt;
 &lt;ul&gt;
 &lt;li&gt;MBXPageTabIndicatorStartOffset返回tabIndex被选中时的tabIndicator的X坐标。别问我为什么要这么做，我也是一知半解。&lt;/li&gt;
 &lt;li&gt;MBXPageSelectdViewOffset就是事实跟新tabIndicator的X坐标的方法，offset就是X的新坐标。这两个接口有了之后就需要判断在那里加了。&lt;/li&gt;
-&lt;/ul&gt;  
+&lt;/ul&gt;
 
-通过分析源码可以看到有个很诡异的事情：
-&lt;pre class=&quot;brush:cpp&quot;&gt;
+&lt;p&gt;通过分析源码可以看到有个很诡异的事情：&lt;/p&gt;
+&lt;pre class=&quot;brush: cpp;auto-links: true;collapse: true;first-line: 1;gutter: true;html-script: true;light: true;ruler: false;smart-tabs: true;tab-size: 4;toolbar: true;&quot;&gt;
 -  (void)syncScrollView
 {
     for (UIView* view in _pageController.view.subviews){
@@ -1200,9 +1183,9 @@ MBXPageController.MBXDataDelegate = self;
     }
 }
 &lt;/pre&gt;
-_pageScrollView.delegate = self;可以整个代码里并没有实现ScrollDelegate的方法，我对比了一下RKSwipeBetweenViewControllers才发现原作者并没有copy这个delegate，原因可能是他的项目里当时不需要这个特性。
-很显然我们需要实现这个ScrollDelegate，并在滑动过程中同步调用MBXPageSelectdViewOffset来跟新tabIndicator的X坐标：
-&lt;pre class=&quot;brush:cpp&quot;&gt;
+&lt;p&gt;_pageScrollView.delegate = self;可以整个代码里并没有实现ScrollDelegate的方法，我对比了一下RKSwipeBetweenViewControllers才发现原作者并没有copy这个delegate，原因可能是他的项目里当时不需要这个特性。
+很显然我们需要实现这个ScrollDelegate，并在滑动过程中同步调用MBXPageSelectdViewOffset来跟新tabIndicator的X坐标：&lt;/p&gt;
+&lt;pre class=&quot;brush: cpp;auto-links: true;collapse: true;first-line: 1;gutter: true;html-script: true;light: true;ruler: false;smart-tabs: true;tab-size: 4;toolbar: true;&quot;&gt;
 #pragma mark - scroll view delegate
 //It extracts the xcoordinate from the center point and instructs the selection bar to move accordingly
 -(void)scrollViewDidScroll:(UIScrollView *)scrollView{
@@ -1223,16 +1206,15 @@ _pageScrollView.delegate = self;可以整个代码里并没有实现ScrollDelega
 }
 &lt;/pre&gt;
 
-必须得承认，如果没有看RKSwipeBetweenViewControllers我到死都不可能完成这个方法。了解pageController这个容器的都知道，这个容器为了节省内容，会在他认为合适的时候把看不到的子controller移除。
+&lt;p&gt;必须得承认，如果没有看RKSwipeBetweenViewControllers我到死都不可能完成这个方法。了解pageController这个容器的都知道，这个容器为了节省内容，会在他认为合适的时候把看不到的子controller移除。
 这可真是个要命的特性，我刚开始的想法理所当然的认为scrollView.contentOffset.x/scrollView.contentSize.width就是滚动的比例，然后根据这个比例来更新咱们的tabIndicator。可是当我
 把scrollView.contentOffset.x和scrollView.contentSize.width打印出来后我傻眼了，简直混乱的不要不要的，完全不对头。之后在一段时间的探索后我猛然发现，原来RKSwipeBetweenViewControllers有
 同步跟新tabIndicator这个特性。。。
-下面是最后的效果图：
+下面是最后的效果图：&lt;/p&gt;
 &lt;figure&gt;
 	&lt;img src=&quot;/images/IOS/structure/MBXPageViewController/scrollDelegateAfter.gif&quot; alt=&quot;项目实例&quot; /&gt;
 	&lt;figcaption&gt;&lt;a href=&quot;https://www.9panart.com/html/passport/passport_login.html?ran=19406317709945142&quot;&gt;泛艺术客户端.&lt;/a&gt;&lt;/figcaption&gt;
 &lt;/figure&gt;
-&lt;/nsobject&gt;&lt;/pre&gt;&lt;/nsobject&gt;&lt;/nsobject&gt;&lt;/pre&gt;
 
     &lt;p&gt;&lt;a href=&quot;/ios/structure/mbxpageviewcontroller/&quot;&gt;MBXPageViewController的两点优化修改&lt;/a&gt; was originally published by 陆 伟 at &lt;a href=&quot;&quot;&gt;Life is a Struggle&lt;/a&gt; on October 20, 2015.&lt;/p&gt;
   </content>
@@ -1268,21 +1250,21 @@ _pageScrollView.delegate = self;可以整个代码里并没有实现ScrollDelega
 
 &lt;p&gt;安装Elixir和Phoenix 步骤不赘述了 网上一搜一大堆.
 程序员看世界，第一步，写一个Hello world程序。&lt;/p&gt;
-&lt;pre class=&quot;brush:cpp&quot;&gt;
+&lt;pre class=&quot;brush: cpp;auto-links: true;collapse: true;first-line: 1;gutter: true;html-script: true;light: true;ruler: false;smart-tabs: true;tab-size: 4;toolbar: true;&quot;&gt;
 mix phoenix.new hello_phoenix
 &lt;/pre&gt;
 &lt;p&gt;看起来跟Ruby on Rails一样一样的,需要注意的是，看它官网的说明，你需要先安装node-js，然后在提示&lt;/p&gt;
-&lt;pre class=&quot;brush:cpp&quot;&gt;
+&lt;pre class=&quot;brush: cpp;auto-links: true;collapse: true;first-line: 1;gutter: true;html-script: true;light: true;ruler: false;smart-tabs: true;tab-size: 4;toolbar: true;&quot;&gt;
 Fetch and install dependencies? [Yn]
 &lt;/pre&gt;
 &lt;p&gt;的时候，你必须输入Y，否则程序运行起来后会报错.
 写到这里我发现我卡在了&lt;/p&gt;
-&lt;pre class=&quot;brush:cpp&quot;&gt;
+&lt;pre class=&quot;brush: cpp;auto-links: true;collapse: true;first-line: 1;gutter: true;html-script: true;light: true;ruler: false;smart-tabs: true;tab-size: 4;toolbar: true;&quot;&gt;
 * running mix deps.get
 &lt;/pre&gt;
 &lt;p&gt;我以为是网络问题，Ctrl+C强制退出去，删了挂上VPN重新来一遍，然后还是卡在那儿不动。。。 草,什么鬼。无奈我换了一种姿势，首先运行&lt;/p&gt;
 
-&lt;pre class=&quot;brush:cpp&quot;&gt;
+&lt;pre class=&quot;brush: cpp;auto-links: true;collapse: true;first-line: 1;gutter: true;html-script: true;light: true;ruler: false;smart-tabs: true;tab-size: 4;toolbar: true;&quot;&gt;
 mix phoenix.new hello_phoenix
 Fetch and install dependencies? [Yn] n
 We are all set! Run your Phoenix application:

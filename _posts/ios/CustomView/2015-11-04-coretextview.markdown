@@ -42,7 +42,7 @@ date: 2015-11-04T11:39:43+08:00
 
 1.创建CTFrameRef的时候需要添加一个属性kCTFrameProgressionAttributeName 
 
-<pre class="brush:cpp">
+<pre class="brush: cpp;auto-links: true;collapse: true;first-line: 1;gutter: true;html-script: true;light: true;ruler: false;smart-tabs: true;tab-size: 4;toolbar: true;">
 /*!
 	@const		kCTFrameProgressionAttributeName
 	@abstract	Specifies progression for a frame.
@@ -59,7 +59,7 @@ CTFrameRef frame = CTFramesetterCreateFrame(framesetter,
                                             path,
                                             (CFDictionaryRef)@{(id)kCTFrameProgressionAttributeName: @(kCTFrameProgressionRightToLeft)});
 </pre>
-<pre class="brush:cpp">
+<pre class="brush: cpp;auto-links: true;collapse: true;first-line: 1;gutter: true;html-script: true;light: true;ruler: false;smart-tabs: true;tab-size: 4;toolbar: true;">
 /*!
     @enum		CTFrameProgression
     @abstract	These constants specify frame progression types.
@@ -91,7 +91,7 @@ typedef CF_ENUM(uint32_t, CTFrameProgression) {
 2.让汉字保持竖向
 
 添加了kCTFrameProgressionAttributeName属性后其实就相当于把绘制区域顺时针旋转了90°，汉字躺下了。。。因此我们需要为每个汉字额外设置一些样式：
-<pre class="brush:cpp">
+<pre class="brush: cpp;auto-links: true;collapse: true;first-line: 1;gutter: true;html-script: true;light: true;ruler: false;smart-tabs: true;tab-size: 4;toolbar: true;">
 /*!
     @const      kCTVerticalFormsAttributeName
     @abstract   Controls glyph orientation.
@@ -120,7 +120,7 @@ for (int i = 0; i < attrStr.length; i++) {
 
 1.获取画布并设置好坐标系
 
-<pre class="brush:cpp">
+<pre class="brush: cpp;auto-links: true;collapse: true;first-line: 1;gutter: true;html-script: true;light: true;ruler: false;smart-tabs: true;tab-size: 4;toolbar: true;">
 //获取画布句柄
 CGContextRef context = UIGraphicsGetCurrentContext();
 //颠倒窗口 坐标计算使用的mac下的坐标系 跟ios的坐标系正好颠倒
@@ -131,7 +131,7 @@ CGContextScaleCTM(context, 1.0, -1.0);
 
 2.生成需要绘制的内容
 
-<pre class="brush:cpp">
+<pre class="brush: cpp;auto-links: true;collapse: true;first-line: 1;gutter: true;html-script: true;light: true;ruler: false;smart-tabs: true;tab-size: 4;toolbar: true;">
 //生成富文本的信息 具体不懂  反正这是core text绘制的必须流程和对象
 CTFramesetterRef framesetter = CTFramesetterCreateWithAttributedString((__bridge CFAttributedStringRef)self.attributedText);
 </pre>
@@ -139,7 +139,7 @@ CTFramesetterRef framesetter = CTFramesetterCreateWithAttributedString((__bridge
 
 3.生成绘制区域
 
-<pre class="brush:cpp">
+<pre class="brush: cpp;auto-links: true;collapse: true;first-line: 1;gutter: true;html-script: true;light: true;ruler: false;smart-tabs: true;tab-size: 4;toolbar: true;">
 //这一步生成合适的绘制区域
 CGPathRef path = [self createPathWithLines];
 </pre>
@@ -147,7 +147,7 @@ createPathWithLines方法我们后面要讲，最简单的实现就是把整个s
 
 4.绘制
 
-<pre class="brush:cpp">
+<pre class="brush: cpp;auto-links: true;collapse: true;first-line: 1;gutter: true;html-script: true;light: true;ruler: false;smart-tabs: true;tab-size: 4;toolbar: true;">
 // Create a frame for this column and draw it.
 CTFrameRef frame = CTFramesetterCreateFrame(framesetter,
                                             CFRangeMake(0, 0),
@@ -158,7 +158,7 @@ CTFrameDraw(frame, context);
 
 5.释放内存
 
-<pre class="brush:cpp">
+<pre class="brush: cpp;auto-links: true;collapse: true;first-line: 1;gutter: true;html-script: true;light: true;ruler: false;smart-tabs: true;tab-size: 4;toolbar: true;">
 //释放内存
 CFRelease(frame);
 CFRelease(path);

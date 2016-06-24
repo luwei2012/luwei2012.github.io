@@ -129,7 +129,7 @@
         <p class="entry-reading-time">
           <i class="fa fa-clock-o"></i>
           
-          Reading time ~1 minute
+          Reading time ~2 minutes
         </p><!-- /.entry-reading-time -->
         
       </div><!-- /.header-title-wrap -->
@@ -162,7 +162,7 @@
 
 <p>1.创建CTFrameRef的时候需要添加一个属性kCTFrameProgressionAttributeName</p>
 
-<pre class="brush:cpp">
+<pre class="brush: cpp;auto-links: true;collapse: true;first-line: 1;gutter: true;html-script: true;light: true;ruler: false;smart-tabs: true;tab-size: 4;toolbar: true;">
 /*!
 	@const		kCTFrameProgressionAttributeName
 	@abstract	Specifies progression for a frame.
@@ -179,7 +179,7 @@ CTFrameRef frame = CTFramesetterCreateFrame(framesetter,
                                             path,
                                             (CFDictionaryRef)@{(id)kCTFrameProgressionAttributeName: @(kCTFrameProgressionRightToLeft)});
 </pre>
-<pre class="brush:cpp">
+<pre class="brush: cpp;auto-links: true;collapse: true;first-line: 1;gutter: true;html-script: true;light: true;ruler: false;smart-tabs: true;tab-size: 4;toolbar: true;">
 /*!
     @enum		CTFrameProgression
     @abstract	These constants specify frame progression types.
@@ -211,7 +211,7 @@ typedef CF_ENUM(uint32_t, CTFrameProgression) {
 <p>2.让汉字保持竖向</p>
 
 <p>添加了kCTFrameProgressionAttributeName属性后其实就相当于把绘制区域顺时针旋转了90°，汉字躺下了。。。因此我们需要为每个汉字额外设置一些样式：</p>
-<pre class="brush:cpp">
+<pre class="brush: cpp;auto-links: true;collapse: true;first-line: 1;gutter: true;html-script: true;light: true;ruler: false;smart-tabs: true;tab-size: 4;toolbar: true;">
 /*!
     @const      kCTVerticalFormsAttributeName
     @abstract   Controls glyph orientation.
@@ -240,7 +240,7 @@ for (int i = 0; i &lt; attrStr.length; i++) {
 
 <p>1.获取画布并设置好坐标系</p>
 
-<pre class="brush:cpp">
+<pre class="brush: cpp;auto-links: true;collapse: true;first-line: 1;gutter: true;html-script: true;light: true;ruler: false;smart-tabs: true;tab-size: 4;toolbar: true;">
 //获取画布句柄
 CGContextRef context = UIGraphicsGetCurrentContext();
 //颠倒窗口 坐标计算使用的mac下的坐标系 跟ios的坐标系正好颠倒
@@ -251,7 +251,7 @@ CGContextScaleCTM(context, 1.0, -1.0);
 
 <p>2.生成需要绘制的内容</p>
 
-<pre class="brush:cpp">
+<pre class="brush: cpp;auto-links: true;collapse: true;first-line: 1;gutter: true;html-script: true;light: true;ruler: false;smart-tabs: true;tab-size: 4;toolbar: true;">
 //生成富文本的信息 具体不懂  反正这是core text绘制的必须流程和对象
 CTFramesetterRef framesetter = CTFramesetterCreateWithAttributedString((__bridge CFAttributedStringRef)self.attributedText);
 </pre>
@@ -259,7 +259,7 @@ CTFramesetterRef framesetter = CTFramesetterCreateWithAttributedString((__bridge
 
 <p>3.生成绘制区域</p>
 
-<pre class="brush:cpp">
+<pre class="brush: cpp;auto-links: true;collapse: true;first-line: 1;gutter: true;html-script: true;light: true;ruler: false;smart-tabs: true;tab-size: 4;toolbar: true;">
 //这一步生成合适的绘制区域
 CGPathRef path = [self createPathWithLines];
 </pre>
@@ -267,7 +267,7 @@ CGPathRef path = [self createPathWithLines];
 
 <p>4.绘制</p>
 
-<pre class="brush:cpp">
+<pre class="brush: cpp;auto-links: true;collapse: true;first-line: 1;gutter: true;html-script: true;light: true;ruler: false;smart-tabs: true;tab-size: 4;toolbar: true;">
 // Create a frame for this column and draw it.
 CTFrameRef frame = CTFramesetterCreateFrame(framesetter,
                                             CFRangeMake(0, 0),
@@ -278,7 +278,7 @@ CTFrameDraw(frame, context);
 
 <p>5.释放内存</p>
 
-<pre class="brush:cpp">
+<pre class="brush: cpp;auto-links: true;collapse: true;first-line: 1;gutter: true;html-script: true;light: true;ruler: false;smart-tabs: true;tab-size: 4;toolbar: true;">
 //释放内存
 CFRelease(frame);
 CFRelease(path);
@@ -307,22 +307,22 @@ CFRelease(framesetter);
     <div class="read-more">
   
     <div class="read-more-header">
-      <a href="/matlab/yalmip/yalmip/" class="read-more-btn">Read More</a>
+      <a href="/ios/record/scrollview/" class="read-more-btn">Read More</a>
     </div><!-- /.read-more-header -->
     <div class="read-more-content">
-      <h3><a href="/ios/record/yymodel/" title="学习YYModel">学习YYModel</a></h3>
-      <p>相信很多人都用过类的序列化和反序列化，在Android里面有Gson等第三方库可以做到，在IOS里面有setValuesForKeysWithDictionary这个方法。但是setValuesForKeysWithDictionary这个方法只能设置键值对，遇到复杂的例如...&hellip; <a href="/ios/record/yymodel/">Continue reading</a></p>
+      <h3><a href="/android/android-udp/" title="Android UDP服务">Android UDP服务</a></h3>
+      <p>&hellip; <a href="/android/android-udp/">Continue reading</a></p>
     </div><!-- /.read-more-content -->
   
   <div class="read-more-list">
     
       <div class="list-item">
-        <h4><a href="/matlab/yalmip/yalmip/" title="Yalmip的使用">Yalmip的使用</a></h4>
-        <span>Published on October 22, 2015</span>
+        <h4><a href="/ios/record/yymodel/" title="学习YYModel">学习YYModel</a></h4>
+        <span>Published on November 05, 2015</span>
       </div><!-- /.list-item -->
     
       <div class="list-item">
-        <h4><a href="/matlab/fmincon/fmincon/" title="Fmincon的使用">Fmincon的使用</a></h4>
+        <h4><a href="/ios/record/scrollview/" title="关于ScrollView的学习">关于ScrollView的学习</a></h4>
         <span>Published on October 22, 2015</span>
       </div><!-- /.list-item -->
     
@@ -333,7 +333,7 @@ CFRelease(framesetter);
 
 <div class="footer-wrapper">
   <footer role="contentinfo">
-    <span>&copy; 2015 陆 伟. Powered by <a href="http://jekyllrb.com" rel="nofollow">Jekyll</a> using the <a href="https://mademistakes.com/work/hpstr-jekyll-theme/" rel="nofollow">HPSTR Theme</a>.</span>
+    <span>&copy; 2016 陆 伟. Powered by <a href="http://jekyllrb.com" rel="nofollow">Jekyll</a> using the <a href="https://mademistakes.com/work/hpstr-jekyll-theme/" rel="nofollow">HPSTR Theme</a>.</span>
   </footer>
 </div><!-- /.footer-wrapper -->
 

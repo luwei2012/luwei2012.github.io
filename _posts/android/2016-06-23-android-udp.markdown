@@ -1,8 +1,8 @@
 ---
 layout: post
-title: "Fmincon的使用"
+title: "Android UDP服务"
 modified:
-categories: Matlab/fmincon
+categories: android
 description:
 tags: []
 image:
@@ -11,5 +11,5 @@ image:
   creditlink:
 comments:
 share:
-date: 2015-10-22T17:10:12+08:00
+date: 2016-06-23T09:19:36+08:00
 ---

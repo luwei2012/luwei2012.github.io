@@ -25,21 +25,21 @@ date: 2015-10-20T19:16:31+08:00
 
 安装Elixir和Phoenix 步骤不赘述了 网上一搜一大堆.
 程序员看世界，第一步，写一个Hello world程序。
-<pre class="brush:cpp">
+<pre class="brush: cpp;auto-links: true;collapse: true;first-line: 1;gutter: true;html-script: true;light: true;ruler: false;smart-tabs: true;tab-size: 4;toolbar: true;">
 mix phoenix.new hello_phoenix
 </pre>
 看起来跟Ruby on Rails一样一样的,需要注意的是，看它官网的说明，你需要先安装node-js，然后在提示
-<pre class="brush:cpp">
+<pre class="brush: cpp;auto-links: true;collapse: true;first-line: 1;gutter: true;html-script: true;light: true;ruler: false;smart-tabs: true;tab-size: 4;toolbar: true;">
 Fetch and install dependencies? [Yn]
 </pre>
 的时候，你必须输入Y，否则程序运行起来后会报错.
 写到这里我发现我卡在了
-<pre class="brush:cpp">
+<pre class="brush: cpp;auto-links: true;collapse: true;first-line: 1;gutter: true;html-script: true;light: true;ruler: false;smart-tabs: true;tab-size: 4;toolbar: true;">
 * running mix deps.get
 </pre>
 我以为是网络问题，Ctrl+C强制退出去，删了挂上VPN重新来一遍，然后还是卡在那儿不动。。。 草,什么鬼。无奈我换了一种姿势，首先运行
 
-<pre class="brush:cpp">
+<pre class="brush: cpp;auto-links: true;collapse: true;first-line: 1;gutter: true;html-script: true;light: true;ruler: false;smart-tabs: true;tab-size: 4;toolbar: true;">
 mix phoenix.new hello_phoenix
 Fetch and install dependencies? [Yn] n
 We are all set! Run your Phoenix application:
