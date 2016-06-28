@@ -129,22 +129,22 @@
         <p class="entry-reading-time">
           <i class="fa fa-clock-o"></i>
           
-          Reading time ~2 minutes
+          Reading time ~3 minutes
         </p><!-- /.entry-reading-time -->
         
       </div><!-- /.header-title-wrap -->
     </header>
     <div class="entry-content">
       <h3 id="section">如何实现一个轻量级的竖排文字显示控件</h3>
+<hr />
 <figure>
 	<img src="/images/IOS/CustomView/releaseV1.1.png" alt="项目实例" />
 	<figcaption><a href="https://github.com/luwei2012/CoreTextView">CoreTextView</a></figcaption>
 </figure>
-<p>感谢<a href="http://geeklu.com/2013/03/core-text/">卢克</a>的博客和代码，给了我很多帮助和启发。卢克的博客里详细介绍了如何使用Core Text来绘制富文本，
-而且展示了苹果如何处理字体的分解图，加上<a href="https://developer.apple.com/library/mac/documentation/StringsTextFonts/Conceptual/CoreText_Programming/LayoutOperations/LayoutOperations.html">苹果官方的demo</a>,
-最终我拼凑出来一个竖排显示文字的控件。</p>
+<p>感谢<a href="http://geeklu.com/2013/03/core-text/">卢克的博客和代码</a>，给了我很多帮助和启发。卢克的博客里详细介绍了如何使用Core Text来绘制富文本，而且展示了苹果如何处理字体的分解图，加上<a href="https://developer.apple.com/library/mac/documentation/StringsTextFonts/Conceptual/CoreText_Programming/LayoutOperations/LayoutOperations.html">苹果官方的demo</a>,最终我拼凑出来一个竖排显示文字的控件。</p>
 
 <h3 id="section-1">竖排显示文字的核心思想</h3>
+<hr />
 <p>说起来很简单，可能大家也都看到过，其实在IOS的富文本属性中有两个不常用的属性：NSWritingDirectionAttributeName和NSVerticalGlyphFormAttributeName。
 故名思议NSVerticalGlyphFormAttributeName就是控制文字竖向还是横向绘制，而NSWritingDirectionAttributeName控制的是文本绘制方向。
 下面就很简单了，只需要把NSVerticalGlyphFormAttributeName设置为1(0 means horizontal text.  1 indicates vertical text.),NSWritingDirectionAttributeName设置为
@@ -160,135 +160,124 @@
 <p>偶然的机会，我在stackoverflow上看到一个提问，贴了一段代码，居然能实现了文本行变列，他提的问题是如何能使汉字和英文字符高度整体居中对齐。这种感觉就像是我还在解决温饱问题
 而人家开始像怎么找乐子了。。。于是我那段代码扒了下来仔细研究了下。最核心的部分分为两个：</p>
 
-<p>1.创建CTFrameRef的时候需要添加一个属性kCTFrameProgressionAttributeName</p>
+<h4 id="ctframerefkctframeprogressionattributename">1.创建CTFrameRef的时候需要添加一个属性kCTFrameProgressionAttributeName</h4>
 
-<pre class="brush: cpp;auto-links: true;collapse: true;first-line: 1;gutter: true;html-script: true;light: true;ruler: false;smart-tabs: true;tab-size: 4;toolbar: true;">
-/*!
-	@const		kCTFrameProgressionAttributeName
-	@abstract	Specifies progression for a frame.
-	
-	@discussion Value must be a CFNumberRef containing a CTFrameProgression.
-				Default is kCTFrameProgressionTopToBottom. This value determines
-				the line stacking behavior for a frame and does not affect the
-				appearance of the glyphs within that frame.
+<div class="highlight"><pre><code class="language-logos" data-lang="logos"><span class="cm">/*!</span>
+<span class="cm">	@const		kCTFrameProgressionAttributeName</span>
+<span class="cm">	@abstract	Specifies progression for a frame.</span>
+<span class="cm">	</span>
+<span class="cm">	@discussion Value must be a CFNumberRef containing a CTFrameProgression.</span>
+<span class="cm">				Default is kCTFrameProgressionTopToBottom. This value determines</span>
+<span class="cm">				the line stacking behavior for a frame and does not affect the</span>
+<span class="cm">				appearance of the glyphs within that frame.</span>
 
-	@seealso	CTFramesetterCreateFrame
-*/
-CTFrameRef frame = CTFramesetterCreateFrame(framesetter,
-                                            CFRangeMake(0, 0),
-                                            path,
-                                            (CFDictionaryRef)@{(id)kCTFrameProgressionAttributeName: @(kCTFrameProgressionRightToLeft)});
-</pre>
-<pre class="brush: cpp;auto-links: true;collapse: true;first-line: 1;gutter: true;html-script: true;light: true;ruler: false;smart-tabs: true;tab-size: 4;toolbar: true;">
-/*!
-    @enum		CTFrameProgression
-    @abstract	These constants specify frame progression types.
+<span class="cm">	@seealso	CTFramesetterCreateFrame</span>
+<span class="cm">*/</span>
+<span class="n">CTFrameRef</span> <span class="n">frame</span> <span class="o">=</span> <span class="n">CTFramesetterCreateFrame</span><span class="p">(</span><span class="n">framesetter</span><span class="p">,</span>
+                                            <span class="n">CFRangeMake</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+                                            <span class="n">path</span><span class="p">,</span>
+                                            <span class="p">(</span><span class="n">CFDictionaryRef</span><span class="p">)</span><span class="l">@{</span><span class="p">(</span><span class="kt">id</span><span class="p">)</span><span class="nl">kCTFrameProgressionAttributeName</span><span class="p">:</span> <span class="l">@(</span><span class="n">kCTFrameProgressionRightToLeft</span><span class="l">)}</span><span class="p">);</span></code></pre></div>
 
-    @discussion The lines of text within a frame may be stacked for either
-                horizontal or vertical text. Values are enumerated for each
-                stacking type supported by CTFrame. Frames created with a
-                progression type specifying vertical text will rotate lines
-                90 degrees counterclockwise when drawing.
+<div class="highlight"><pre><code class="language-logos" data-lang="logos"><span class="cm">/*!</span>
+<span class="cm">    @enum		CTFrameProgression</span>
+<span class="cm">    @abstract	These constants specify frame progression types.</span>
 
-    @constant	kCTFrameProgressionTopToBottom
-                Lines are stacked top to bottom for horizontal text.
+<span class="cm">    @discussion The lines of text within a frame may be stacked for either</span>
+<span class="cm">                horizontal or vertical text. Values are enumerated for each</span>
+<span class="cm">                stacking type supported by CTFrame. Frames created with a</span>
+<span class="cm">                progression type specifying vertical text will rotate lines</span>
+<span class="cm">                90 degrees counterclockwise when drawing.</span>
 
-    @constant	kCTFrameProgressionRightToLeft
-                Lines are stacked right to left for vertical text.
+<span class="cm">    @constant	kCTFrameProgressionTopToBottom</span>
+<span class="cm">                Lines are stacked top to bottom for horizontal text.</span>
 
-    @constant	kCTFrameProgressionLeftToRight
-                Lines are stacked left to right for vertical text.
-*/
+<span class="cm">    @constant	kCTFrameProgressionRightToLeft</span>
+<span class="cm">                Lines are stacked right to left for vertical text.</span>
 
-typedef CF_ENUM(uint32_t, CTFrameProgression) {
-    kCTFrameProgressionTopToBottom  = 0,
-    kCTFrameProgressionRightToLeft  = 1,
-    kCTFrameProgressionLeftToRight  = 2
-}
-</pre>
+<span class="cm">    @constant	kCTFrameProgressionLeftToRight</span>
+<span class="cm">                Lines are stacked left to right for vertical text.</span>
+<span class="cm">*/</span>
+
+<span class="k">typedef</span> <span class="nf">CF_ENUM</span><span class="p">(</span><span class="kt">uint32_t</span><span class="p">,</span> <span class="n">CTFrameProgression</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">kCTFrameProgressionTopToBottom</span>  <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+    <span class="n">kCTFrameProgressionRightToLeft</span>  <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="n">kCTFrameProgressionLeftToRight</span>  <span class="o">=</span> <span class="mi">2</span>
+<span class="p">}</span></code></pre></div>
+
 <p>至此我们就能控制文本的行变列。</p>
 
-<p>2.让汉字保持竖向</p>
+<h4 id="section-2">2.让汉字保持竖向</h4>
 
 <p>添加了kCTFrameProgressionAttributeName属性后其实就相当于把绘制区域顺时针旋转了90°，汉字躺下了。。。因此我们需要为每个汉字额外设置一些样式：</p>
-<pre class="brush: cpp;auto-links: true;collapse: true;first-line: 1;gutter: true;html-script: true;light: true;ruler: false;smart-tabs: true;tab-size: 4;toolbar: true;">
-/*!
-    @const      kCTVerticalFormsAttributeName
-    @abstract   Controls glyph orientation.
 
-    @discussion Value must be a CFBooleanRef. Default is false. A value of false
-                indicates that horizontal glyph forms are to be used, true
-                indicates that vertical glyph forms are to be used.
-*/
+<div class="highlight"><pre><code class="language-logos" data-lang="logos"><span class="cm">/*!</span>
+<span class="cm">    @const      kCTVerticalFormsAttributeName</span>
+<span class="cm">    @abstract   Controls glyph orientation.</span>
 
-extern const CFStringRef kCTVerticalFormsAttributeName CT_AVAILABLE(10_5, 4_3);
-NSMutableAttributedString *attrStr = [[NSMutableAttributedString alloc] initWithString:self.text attributes:nil];
+<span class="cm">    @discussion Value must be a CFBooleanRef. Default is false. A value of false</span>
+<span class="cm">                indicates that horizontal glyph forms are to be used, true</span>
+<span class="cm">                indicates that vertical glyph forms are to be used.</span>
+<span class="cm">*/</span>
 
-for (int i = 0; i &lt; attrStr.length; i++) {
-    if ([self isChinese:self.text index:i]) {
-        [attrStr addAttribute:(id)kCTVerticalFormsAttributeName
-                        value:@YES
-                        range:NSMakeRange(i, 1)]; 
-    }
-}
-</pre>
+<span class="k">extern</span> <span class="k">const</span> <span class="n">CFStringRef</span> <span class="n">kCTVerticalFormsAttributeName</span> <span class="nf">CT_AVAILABLE</span><span class="p">(</span><span class="mi">10</span><span class="n">_5</span><span class="p">,</span> <span class="mi">4</span><span class="n">_3</span><span class="p">);</span>
+<span class="bp">NSMutableAttributedString</span> <span class="o">*</span><span class="n">attrStr</span> <span class="o">=</span> <span class="p">[[</span><span class="bp">NSMutableAttributedString</span> <span class="n">alloc</span><span class="p">]</span> <span class="nl">initWithString</span><span class="p">:</span><span class="nb">self</span><span class="p">.</span><span class="n">text</span> <span class="nl">attributes</span><span class="p">:</span><span class="nb">nil</span><span class="p">];</span>
+
+<span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">attrStr</span><span class="p">.</span><span class="n">length</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">([</span><span class="nb">self</span> <span class="nl">isChinese</span><span class="p">:</span><span class="nb">self</span><span class="p">.</span><span class="n">text</span> <span class="nl">index</span><span class="p">:</span><span class="n">i</span><span class="p">])</span> <span class="p">{</span>
+        <span class="p">[</span><span class="n">attrStr</span> <span class="nl">addAttribute</span><span class="p">:(</span><span class="kt">id</span><span class="p">)</span><span class="n">kCTVerticalFormsAttributeName</span>
+                        <span class="nl">value</span><span class="p">:</span><span class="m">@YES</span>
+                        <span class="nl">range</span><span class="p">:</span><span class="n">NSMakeRange</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="mi">1</span><span class="p">)];</span> 
+    <span class="p">}</span>
+<span class="p">}</span></code></pre></div>
 
 <p>这两步处理完之后我们的文本就能够竖向显示了，只是字母跟汉字不会右对齐。但是到这里我们才刚开始。</p>
 
-<h3 id="section-2">如何才能让文本居中显示？</h3>
+<h4 id="section-3">如何才能让文本居中显示？</h4>
 <p>使用Core Text绘制文本主要有</p>
 
-<p>1.获取画布并设置好坐标系</p>
+<h5 id="section-4">1.获取画布并设置好坐标系</h5>
 
-<pre class="brush: cpp;auto-links: true;collapse: true;first-line: 1;gutter: true;html-script: true;light: true;ruler: false;smart-tabs: true;tab-size: 4;toolbar: true;">
-//获取画布句柄
-CGContextRef context = UIGraphicsGetCurrentContext();
-//颠倒窗口 坐标计算使用的mac下的坐标系 跟ios的坐标系正好颠倒
-CGContextSetTextMatrix(context, CGAffineTransformIdentity);
-CGContextTranslateCTM(context, 0, self.bounds.size.height);
-CGContextScaleCTM(context, 1.0, -1.0);
-</pre>
+<div class="highlight"><pre><code class="language-logos" data-lang="logos"><span class="c1">//获取画布句柄</span>
+<span class="n">CGContextRef</span> <span class="n">context</span> <span class="o">=</span> <span class="n">UIGraphicsGetCurrentContext</span><span class="p">();</span>
+<span class="c1">//颠倒窗口 坐标计算使用的mac下的坐标系 跟ios的坐标系正好颠倒</span>
+<span class="n">CGContextSetTextMatrix</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">CGAffineTransformIdentity</span><span class="p">);</span>
+<span class="n">CGContextTranslateCTM</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">self</span><span class="p">.</span><span class="n">bounds</span><span class="p">.</span><span class="n">size</span><span class="p">.</span><span class="n">height</span><span class="p">);</span>
+<span class="n">CGContextScaleCTM</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.0</span><span class="p">);</span></code></pre></div>
 
-<p>2.生成需要绘制的内容</p>
+<h5 id="section-5">2.生成需要绘制的内容</h5>
 
-<pre class="brush: cpp;auto-links: true;collapse: true;first-line: 1;gutter: true;html-script: true;light: true;ruler: false;smart-tabs: true;tab-size: 4;toolbar: true;">
-//生成富文本的信息 具体不懂  反正这是core text绘制的必须流程和对象
-CTFramesetterRef framesetter = CTFramesetterCreateWithAttributedString((__bridge CFAttributedStringRef)self.attributedText);
-</pre>
+<div class="highlight"><pre><code class="language-logos" data-lang="logos"><span class="c1">//生成富文本的信息 具体不懂  反正这是core text绘制的必须流程和对象</span>
+<span class="n">CTFramesetterRef</span> <span class="n">framesetter</span> <span class="o">=</span> <span class="n">CTFramesetterCreateWithAttributedString</span><span class="p">((</span><span class="k">__bridge</span> <span class="n">CFAttributedStringRef</span><span class="p">)</span><span class="nb">self</span><span class="p">.</span><span class="n">attributedText</span><span class="p">);</span></code></pre></div>
+
 <p>这里的attributedText就是一个富文本对象，我们可以设置行间距、字间距、颜色和字体等等一系列属性。</p>
 
-<p>3.生成绘制区域</p>
+<h5 id="section-6">3.生成绘制区域</h5>
 
-<pre class="brush: cpp;auto-links: true;collapse: true;first-line: 1;gutter: true;html-script: true;light: true;ruler: false;smart-tabs: true;tab-size: 4;toolbar: true;">
-//这一步生成合适的绘制区域
-CGPathRef path = [self createPathWithLines];
-</pre>
+<div class="highlight"><pre><code class="language-logos" data-lang="logos"><span class="c1">//这一步生成合适的绘制区域</span>
+<span class="n">CGPathRef</span> <span class="n">path</span> <span class="o">=</span> <span class="p">[</span><span class="nb">self</span> <span class="n">createPathWithLines</span><span class="p">];</span></code></pre></div>
+
 <p>createPathWithLines方法我们后面要讲，最简单的实现就是把整个self.bound作为绘制区域，就跟卢克的博客里写的一样</p>
 
-<p>4.绘制</p>
+<h5 id="section-7">4.绘制</h5>
 
-<pre class="brush: cpp;auto-links: true;collapse: true;first-line: 1;gutter: true;html-script: true;light: true;ruler: false;smart-tabs: true;tab-size: 4;toolbar: true;">
-// Create a frame for this column and draw it.
-CTFrameRef frame = CTFramesetterCreateFrame(framesetter,
-                                            CFRangeMake(0, 0),
-                                            path,
-                                            (CFDictionaryRef)@{(id)kCTFrameProgressionAttributeName: @(kCTFrameProgressionRightToLeft)});
-CTFrameDraw(frame, context);
-</pre>
+<div class="highlight"><pre><code class="language-logos" data-lang="logos"><span class="c1">// Create a frame for this column and draw it.</span>
+<span class="n">CTFrameRef</span> <span class="n">frame</span> <span class="o">=</span> <span class="n">CTFramesetterCreateFrame</span><span class="p">(</span><span class="n">framesetter</span><span class="p">,</span>
+                                            <span class="n">CFRangeMake</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+                                            <span class="n">path</span><span class="p">,</span><span class="o">&lt;/</span><span class="n">br</span><span class="o">&gt;</span>
+                                            <span class="p">(</span><span class="n">CFDictionaryRef</span><span class="p">)</span><span class="l">@{</span><span class="p">(</span><span class="kt">id</span><span class="p">)</span><span class="nl">kCTFrameProgressionAttributeName</span><span class="p">:</span> <span class="l">@(</span><span class="n">kCTFrameProgressionRightToLeft</span><span class="l">)}</span><span class="p">);</span>
+<span class="n">CTFrameDraw</span><span class="p">(</span><span class="n">frame</span><span class="p">,</span> <span class="n">context</span><span class="p">);</span></code></pre></div>
 
-<p>5.释放内存</p>
+<h5 id="section-8">5.释放内存</h5>
 
-<pre class="brush: cpp;auto-links: true;collapse: true;first-line: 1;gutter: true;html-script: true;light: true;ruler: false;smart-tabs: true;tab-size: 4;toolbar: true;">
-//释放内存
-CFRelease(frame);
-CFRelease(path);
-CFRelease(framesetter);
-</pre>
+<div class="highlight"><pre><code class="language-logos" data-lang="logos"><span class="c1">//释放内存</span>
+<span class="n">CFRelease</span><span class="p">(</span><span class="n">frame</span><span class="p">);</span>
+<span class="n">CFRelease</span><span class="p">(</span><span class="n">path</span><span class="p">);</span>
+<span class="n">CFRelease</span><span class="p">(</span><span class="n">framesetter</span><span class="p">);</span></code></pre></div>
 
 <p>由此可见想要实现居中显示，我们只需要计算出正确的绘制区域就行了。其实不光是居中，你想要啥对齐效果都可以通过设置绘制区域来达到。
 计算绘制区域的方法可以参见<a href="https://github.com/luwei2012/CoreTextView">我的代码</a>都有详细的注释。</p>
 
-<h3 id="section-3">处理横竖屏切换</h3>
+<h4 id="section-9">处理横竖屏切换</h4>
 <p>这个很简单，横竖屏切换会触发layoutSubviews方法，在layoutSubviews方法里重绘即可。</p>
 
       <footer class="entry-meta">

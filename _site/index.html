@@ -865,7 +865,7 @@ _YYModelPropertyMeta把YYClassPropertyInfo中的get和set方法名转化成了SE
       <span class="entry-reading-time">
         <i class="fa fa-clock-o"></i>
         
-        Reading time ~2 minutes
+        Reading time ~3 minutes
       </span><!-- /.entry-reading-time -->
       
     </div><!-- /.entry-meta -->
@@ -875,15 +875,15 @@ _YYModelPropertyMeta把YYClassPropertyInfo中的get和set方法名转化成了SE
   </header>
   <div class="entry-content">
     <h3 id="section">如何实现一个轻量级的竖排文字显示控件</h3>
+<hr />
 <figure>
 	<img src="/images/IOS/CustomView/releaseV1.1.png" alt="项目实例" />
 	<figcaption><a href="https://github.com/luwei2012/CoreTextView">CoreTextView</a></figcaption>
 </figure>
-<p>感谢<a href="http://geeklu.com/2013/03/core-text/">卢克</a>的博客和代码，给了我很多帮助和启发。卢克的博客里详细介绍了如何使用Core Text来绘制富文本，
-而且展示了苹果如何处理字体的分解图，加上<a href="https://developer.apple.com/library/mac/documentation/StringsTextFonts/Conceptual/CoreText_Programming/LayoutOperations/LayoutOperations.html">苹果官方的demo</a>,
-最终我拼凑出来一个竖排显示文字的控件。</p>
+<p>感谢<a href="http://geeklu.com/2013/03/core-text/">卢克的博客和代码</a>，给了我很多帮助和启发。卢克的博客里详细介绍了如何使用Core Text来绘制富文本，而且展示了苹果如何处理字体的分解图，加上<a href="https://developer.apple.com/library/mac/documentation/StringsTextFonts/Conceptual/CoreText_Programming/LayoutOperations/LayoutOperations.html">苹果官方的demo</a>,最终我拼凑出来一个竖排显示文字的控件。</p>
 
 <h3 id="section-1">竖排显示文字的核心思想</h3>
+<hr />
 <p>说起来很简单，可能大家也都看到过，其实在IOS的富文本属性中有两个不常用的属性：NSWritingDirectionAttributeName和NSVerticalGlyphFormAttributeName。
 故名思议NSVerticalGlyphFormAttributeName就是控制文字竖向还是横向绘制，而NSWritingDirectionAttributeName控制的是文本绘制方向。
 下面就很简单了，只需要把NSVerticalGlyphFormAttributeName设置为1(0 means horizontal text.  1 indicates vertical text.),NSWritingDirectionAttributeName设置为
@@ -899,135 +899,124 @@ _YYModelPropertyMeta把YYClassPropertyInfo中的get和set方法名转化成了SE
 <p>偶然的机会，我在stackoverflow上看到一个提问，贴了一段代码，居然能实现了文本行变列，他提的问题是如何能使汉字和英文字符高度整体居中对齐。这种感觉就像是我还在解决温饱问题
 而人家开始像怎么找乐子了。。。于是我那段代码扒了下来仔细研究了下。最核心的部分分为两个：</p>
 
-<p>1.创建CTFrameRef的时候需要添加一个属性kCTFrameProgressionAttributeName</p>
+<h4 id="ctframerefkctframeprogressionattributename">1.创建CTFrameRef的时候需要添加一个属性kCTFrameProgressionAttributeName</h4>
 
-<pre class="brush: cpp;auto-links: true;collapse: true;first-line: 1;gutter: true;html-script: true;light: true;ruler: false;smart-tabs: true;tab-size: 4;toolbar: true;">
-/*!
-	@const		kCTFrameProgressionAttributeName
-	@abstract	Specifies progression for a frame.
-	
-	@discussion Value must be a CFNumberRef containing a CTFrameProgression.
-				Default is kCTFrameProgressionTopToBottom. This value determines
-				the line stacking behavior for a frame and does not affect the
-				appearance of the glyphs within that frame.
+<div class="highlight"><pre><code class="language-logos" data-lang="logos"><span class="cm">/*!</span>
+<span class="cm">	@const		kCTFrameProgressionAttributeName</span>
+<span class="cm">	@abstract	Specifies progression for a frame.</span>
+<span class="cm">	</span>
+<span class="cm">	@discussion Value must be a CFNumberRef containing a CTFrameProgression.</span>
+<span class="cm">				Default is kCTFrameProgressionTopToBottom. This value determines</span>
+<span class="cm">				the line stacking behavior for a frame and does not affect the</span>
+<span class="cm">				appearance of the glyphs within that frame.</span>
 
-	@seealso	CTFramesetterCreateFrame
-*/
-CTFrameRef frame = CTFramesetterCreateFrame(framesetter,
-                                            CFRangeMake(0, 0),
-                                            path,
-                                            (CFDictionaryRef)@{(id)kCTFrameProgressionAttributeName: @(kCTFrameProgressionRightToLeft)});
-</pre>
-<pre class="brush: cpp;auto-links: true;collapse: true;first-line: 1;gutter: true;html-script: true;light: true;ruler: false;smart-tabs: true;tab-size: 4;toolbar: true;">
-/*!
-    @enum		CTFrameProgression
-    @abstract	These constants specify frame progression types.
+<span class="cm">	@seealso	CTFramesetterCreateFrame</span>
+<span class="cm">*/</span>
+<span class="n">CTFrameRef</span> <span class="n">frame</span> <span class="o">=</span> <span class="n">CTFramesetterCreateFrame</span><span class="p">(</span><span class="n">framesetter</span><span class="p">,</span>
+                                            <span class="n">CFRangeMake</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+                                            <span class="n">path</span><span class="p">,</span>
+                                            <span class="p">(</span><span class="n">CFDictionaryRef</span><span class="p">)</span><span class="l">@{</span><span class="p">(</span><span class="kt">id</span><span class="p">)</span><span class="nl">kCTFrameProgressionAttributeName</span><span class="p">:</span> <span class="l">@(</span><span class="n">kCTFrameProgressionRightToLeft</span><span class="l">)}</span><span class="p">);</span></code></pre></div>
 
-    @discussion The lines of text within a frame may be stacked for either
-                horizontal or vertical text. Values are enumerated for each
-                stacking type supported by CTFrame. Frames created with a
-                progression type specifying vertical text will rotate lines
-                90 degrees counterclockwise when drawing.
+<div class="highlight"><pre><code class="language-logos" data-lang="logos"><span class="cm">/*!</span>
+<span class="cm">    @enum		CTFrameProgression</span>
+<span class="cm">    @abstract	These constants specify frame progression types.</span>
 
-    @constant	kCTFrameProgressionTopToBottom
-                Lines are stacked top to bottom for horizontal text.
+<span class="cm">    @discussion The lines of text within a frame may be stacked for either</span>
+<span class="cm">                horizontal or vertical text. Values are enumerated for each</span>
+<span class="cm">                stacking type supported by CTFrame. Frames created with a</span>
+<span class="cm">                progression type specifying vertical text will rotate lines</span>
+<span class="cm">                90 degrees counterclockwise when drawing.</span>
 
-    @constant	kCTFrameProgressionRightToLeft
-                Lines are stacked right to left for vertical text.
+<span class="cm">    @constant	kCTFrameProgressionTopToBottom</span>
+<span class="cm">                Lines are stacked top to bottom for horizontal text.</span>
 
-    @constant	kCTFrameProgressionLeftToRight
-                Lines are stacked left to right for vertical text.
-*/
+<span class="cm">    @constant	kCTFrameProgressionRightToLeft</span>
+<span class="cm">                Lines are stacked right to left for vertical text.</span>
 
-typedef CF_ENUM(uint32_t, CTFrameProgression) {
-    kCTFrameProgressionTopToBottom  = 0,
-    kCTFrameProgressionRightToLeft  = 1,
-    kCTFrameProgressionLeftToRight  = 2
-}
-</pre>
+<span class="cm">    @constant	kCTFrameProgressionLeftToRight</span>
+<span class="cm">                Lines are stacked left to right for vertical text.</span>
+<span class="cm">*/</span>
+
+<span class="k">typedef</span> <span class="nf">CF_ENUM</span><span class="p">(</span><span class="kt">uint32_t</span><span class="p">,</span> <span class="n">CTFrameProgression</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">kCTFrameProgressionTopToBottom</span>  <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+    <span class="n">kCTFrameProgressionRightToLeft</span>  <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="n">kCTFrameProgressionLeftToRight</span>  <span class="o">=</span> <span class="mi">2</span>
+<span class="p">}</span></code></pre></div>
+
 <p>至此我们就能控制文本的行变列。</p>
 
-<p>2.让汉字保持竖向</p>
+<h4 id="section-2">2.让汉字保持竖向</h4>
 
 <p>添加了kCTFrameProgressionAttributeName属性后其实就相当于把绘制区域顺时针旋转了90°，汉字躺下了。。。因此我们需要为每个汉字额外设置一些样式：</p>
-<pre class="brush: cpp;auto-links: true;collapse: true;first-line: 1;gutter: true;html-script: true;light: true;ruler: false;smart-tabs: true;tab-size: 4;toolbar: true;">
-/*!
-    @const      kCTVerticalFormsAttributeName
-    @abstract   Controls glyph orientation.
 
-    @discussion Value must be a CFBooleanRef. Default is false. A value of false
-                indicates that horizontal glyph forms are to be used, true
-                indicates that vertical glyph forms are to be used.
-*/
+<div class="highlight"><pre><code class="language-logos" data-lang="logos"><span class="cm">/*!</span>
+<span class="cm">    @const      kCTVerticalFormsAttributeName</span>
+<span class="cm">    @abstract   Controls glyph orientation.</span>
 
-extern const CFStringRef kCTVerticalFormsAttributeName CT_AVAILABLE(10_5, 4_3);
-NSMutableAttributedString *attrStr = [[NSMutableAttributedString alloc] initWithString:self.text attributes:nil];
+<span class="cm">    @discussion Value must be a CFBooleanRef. Default is false. A value of false</span>
+<span class="cm">                indicates that horizontal glyph forms are to be used, true</span>
+<span class="cm">                indicates that vertical glyph forms are to be used.</span>
+<span class="cm">*/</span>
 
-for (int i = 0; i &lt; attrStr.length; i++) {
-    if ([self isChinese:self.text index:i]) {
-        [attrStr addAttribute:(id)kCTVerticalFormsAttributeName
-                        value:@YES
-                        range:NSMakeRange(i, 1)]; 
-    }
-}
-</pre>
+<span class="k">extern</span> <span class="k">const</span> <span class="n">CFStringRef</span> <span class="n">kCTVerticalFormsAttributeName</span> <span class="nf">CT_AVAILABLE</span><span class="p">(</span><span class="mi">10</span><span class="n">_5</span><span class="p">,</span> <span class="mi">4</span><span class="n">_3</span><span class="p">);</span>
+<span class="bp">NSMutableAttributedString</span> <span class="o">*</span><span class="n">attrStr</span> <span class="o">=</span> <span class="p">[[</span><span class="bp">NSMutableAttributedString</span> <span class="n">alloc</span><span class="p">]</span> <span class="nl">initWithString</span><span class="p">:</span><span class="nb">self</span><span class="p">.</span><span class="n">text</span> <span class="nl">attributes</span><span class="p">:</span><span class="nb">nil</span><span class="p">];</span>
+
+<span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">attrStr</span><span class="p">.</span><span class="n">length</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">([</span><span class="nb">self</span> <span class="nl">isChinese</span><span class="p">:</span><span class="nb">self</span><span class="p">.</span><span class="n">text</span> <span class="nl">index</span><span class="p">:</span><span class="n">i</span><span class="p">])</span> <span class="p">{</span>
+        <span class="p">[</span><span class="n">attrStr</span> <span class="nl">addAttribute</span><span class="p">:(</span><span class="kt">id</span><span class="p">)</span><span class="n">kCTVerticalFormsAttributeName</span>
+                        <span class="nl">value</span><span class="p">:</span><span class="m">@YES</span>
+                        <span class="nl">range</span><span class="p">:</span><span class="n">NSMakeRange</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="mi">1</span><span class="p">)];</span> 
+    <span class="p">}</span>
+<span class="p">}</span></code></pre></div>
 
 <p>这两步处理完之后我们的文本就能够竖向显示了，只是字母跟汉字不会右对齐。但是到这里我们才刚开始。</p>
 
-<h3 id="section-2">如何才能让文本居中显示？</h3>
+<h4 id="section-3">如何才能让文本居中显示？</h4>
 <p>使用Core Text绘制文本主要有</p>
 
-<p>1.获取画布并设置好坐标系</p>
+<h5 id="section-4">1.获取画布并设置好坐标系</h5>
 
-<pre class="brush: cpp;auto-links: true;collapse: true;first-line: 1;gutter: true;html-script: true;light: true;ruler: false;smart-tabs: true;tab-size: 4;toolbar: true;">
-//获取画布句柄
-CGContextRef context = UIGraphicsGetCurrentContext();
-//颠倒窗口 坐标计算使用的mac下的坐标系 跟ios的坐标系正好颠倒
-CGContextSetTextMatrix(context, CGAffineTransformIdentity);
-CGContextTranslateCTM(context, 0, self.bounds.size.height);
-CGContextScaleCTM(context, 1.0, -1.0);
-</pre>
+<div class="highlight"><pre><code class="language-logos" data-lang="logos"><span class="c1">//获取画布句柄</span>
+<span class="n">CGContextRef</span> <span class="n">context</span> <span class="o">=</span> <span class="n">UIGraphicsGetCurrentContext</span><span class="p">();</span>
+<span class="c1">//颠倒窗口 坐标计算使用的mac下的坐标系 跟ios的坐标系正好颠倒</span>
+<span class="n">CGContextSetTextMatrix</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">CGAffineTransformIdentity</span><span class="p">);</span>
+<span class="n">CGContextTranslateCTM</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">self</span><span class="p">.</span><span class="n">bounds</span><span class="p">.</span><span class="n">size</span><span class="p">.</span><span class="n">height</span><span class="p">);</span>
+<span class="n">CGContextScaleCTM</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.0</span><span class="p">);</span></code></pre></div>
 
-<p>2.生成需要绘制的内容</p>
+<h5 id="section-5">2.生成需要绘制的内容</h5>
 
-<pre class="brush: cpp;auto-links: true;collapse: true;first-line: 1;gutter: true;html-script: true;light: true;ruler: false;smart-tabs: true;tab-size: 4;toolbar: true;">
-//生成富文本的信息 具体不懂  反正这是core text绘制的必须流程和对象
-CTFramesetterRef framesetter = CTFramesetterCreateWithAttributedString((__bridge CFAttributedStringRef)self.attributedText);
-</pre>
+<div class="highlight"><pre><code class="language-logos" data-lang="logos"><span class="c1">//生成富文本的信息 具体不懂  反正这是core text绘制的必须流程和对象</span>
+<span class="n">CTFramesetterRef</span> <span class="n">framesetter</span> <span class="o">=</span> <span class="n">CTFramesetterCreateWithAttributedString</span><span class="p">((</span><span class="k">__bridge</span> <span class="n">CFAttributedStringRef</span><span class="p">)</span><span class="nb">self</span><span class="p">.</span><span class="n">attributedText</span><span class="p">);</span></code></pre></div>
+
 <p>这里的attributedText就是一个富文本对象，我们可以设置行间距、字间距、颜色和字体等等一系列属性。</p>
 
-<p>3.生成绘制区域</p>
+<h5 id="section-6">3.生成绘制区域</h5>
 
-<pre class="brush: cpp;auto-links: true;collapse: true;first-line: 1;gutter: true;html-script: true;light: true;ruler: false;smart-tabs: true;tab-size: 4;toolbar: true;">
-//这一步生成合适的绘制区域
-CGPathRef path = [self createPathWithLines];
-</pre>
+<div class="highlight"><pre><code class="language-logos" data-lang="logos"><span class="c1">//这一步生成合适的绘制区域</span>
+<span class="n">CGPathRef</span> <span class="n">path</span> <span class="o">=</span> <span class="p">[</span><span class="nb">self</span> <span class="n">createPathWithLines</span><span class="p">];</span></code></pre></div>
+
 <p>createPathWithLines方法我们后面要讲，最简单的实现就是把整个self.bound作为绘制区域，就跟卢克的博客里写的一样</p>
 
-<p>4.绘制</p>
+<h5 id="section-7">4.绘制</h5>
 
-<pre class="brush: cpp;auto-links: true;collapse: true;first-line: 1;gutter: true;html-script: true;light: true;ruler: false;smart-tabs: true;tab-size: 4;toolbar: true;">
-// Create a frame for this column and draw it.
-CTFrameRef frame = CTFramesetterCreateFrame(framesetter,
-                                            CFRangeMake(0, 0),
-                                            path,
-                                            (CFDictionaryRef)@{(id)kCTFrameProgressionAttributeName: @(kCTFrameProgressionRightToLeft)});
-CTFrameDraw(frame, context);
-</pre>
+<div class="highlight"><pre><code class="language-logos" data-lang="logos"><span class="c1">// Create a frame for this column and draw it.</span>
+<span class="n">CTFrameRef</span> <span class="n">frame</span> <span class="o">=</span> <span class="n">CTFramesetterCreateFrame</span><span class="p">(</span><span class="n">framesetter</span><span class="p">,</span>
+                                            <span class="n">CFRangeMake</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+                                            <span class="n">path</span><span class="p">,</span><span class="o">&lt;/</span><span class="n">br</span><span class="o">&gt;</span>
+                                            <span class="p">(</span><span class="n">CFDictionaryRef</span><span class="p">)</span><span class="l">@{</span><span class="p">(</span><span class="kt">id</span><span class="p">)</span><span class="nl">kCTFrameProgressionAttributeName</span><span class="p">:</span> <span class="l">@(</span><span class="n">kCTFrameProgressionRightToLeft</span><span class="l">)}</span><span class="p">);</span>
+<span class="n">CTFrameDraw</span><span class="p">(</span><span class="n">frame</span><span class="p">,</span> <span class="n">context</span><span class="p">);</span></code></pre></div>
 
-<p>5.释放内存</p>
+<h5 id="section-8">5.释放内存</h5>
 
-<pre class="brush: cpp;auto-links: true;collapse: true;first-line: 1;gutter: true;html-script: true;light: true;ruler: false;smart-tabs: true;tab-size: 4;toolbar: true;">
-//释放内存
-CFRelease(frame);
-CFRelease(path);
-CFRelease(framesetter);
-</pre>
+<div class="highlight"><pre><code class="language-logos" data-lang="logos"><span class="c1">//释放内存</span>
+<span class="n">CFRelease</span><span class="p">(</span><span class="n">frame</span><span class="p">);</span>
+<span class="n">CFRelease</span><span class="p">(</span><span class="n">path</span><span class="p">);</span>
+<span class="n">CFRelease</span><span class="p">(</span><span class="n">framesetter</span><span class="p">);</span></code></pre></div>
 
 <p>由此可见想要实现居中显示，我们只需要计算出正确的绘制区域就行了。其实不光是居中，你想要啥对齐效果都可以通过设置绘制区域来达到。
 计算绘制区域的方法可以参见<a href="https://github.com/luwei2012/CoreTextView">我的代码</a>都有详细的注释。</p>
 
-<h3 id="section-3">处理横竖屏切换</h3>
+<h4 id="section-9">处理横竖屏切换</h4>
 <p>这个很简单，横竖屏切换会触发layoutSubviews方法，在layoutSubviews方法里重绘即可。</p>
 
   </div><!-- /.entry-content -->
@@ -1146,7 +1135,7 @@ contentInset不会对contentView产生任何影响.上面是我demo里面的一�
       <span class="entry-reading-time">
         <i class="fa fa-clock-o"></i>
         
-        Reading time ~2 minutes
+        Reading time ~5 minutes
       </span><!-- /.entry-reading-time -->
       
     </div><!-- /.entry-meta -->
@@ -1156,13 +1145,20 @@ contentInset不会对contentView产生任何影响.上面是我demo里面的一�
   </header>
   <div class="entry-content">
     <h3 id="mbxpageviewcontroller">MBXPageViewController是什么？</h3>
+<hr />
 <figure>
 	<img src="/images/IOS/structure/MBXPageViewController/scrollDelegateBefore.gif" alt="项目实例" />
 	<figcaption><a href="https://www.9panart.com/html/passport/passport_login.html?ran=19406317709945142">泛艺术客户端.</a></figcaption>
 </figure>
 <p>这里是<a href="https://github.com/Moblox/MBXPageViewController">原作者的主页</a>，Moblox也是参照的其他作者的源代码改的，为了集成更多的样式。
-这个控件是我一个同事集成到项目中来的，集成后UI那边添加了两个需求：1.点击title上面的按钮需要让当前页面滚动到顶部 2.title下面的tabIndicator需要跟页面同步滑动。
-于是我不得不去研究了下MBXPageViewController的源码。</p>
+这个控件是我一个同事集成到项目中来的，集成后UI那边添加了两个需求：</p>
+
+<ol>
+  <li>点击title上面的按钮需要让当前页面滚动到顶部</li>
+  <li>title下面的tabIndicator需要跟页面同步滑动。</li>
+</ol>
+
+<p>于是我不得不去研究了下MBXPageViewController的源码。</p>
 
 <p>MBXPageViewController是仿照RKSwipeBetweenViewControllers写的，通过源码可以看出并不是一个完成品，因为RKSwipeBetweenViewControllers是支持tabIndicator与页面同步滑动的。
 所以第二个问题就简单了，把MBXPageViewController完成就可以了。</p>
@@ -1171,163 +1167,163 @@ contentInset不会对contentView产生任何影响.上面是我demo里面的一�
 MBXPageViewController的使用还是远远比RKSwipeBetweenViewControllers简单清晰，而且能适应更多的特殊UI情况。</p>
 
 <p>使用MBXPageViewController.</p>
-<pre class="brush: cpp;auto-links: true;collapse: true;first-line: 1;gutter: true;html-script: true;light: true;ruler: false;smart-tabs: true;tab-size: 4;toolbar: true;">
-MBXPageViewController *MBXPageController = [MBXPageViewController new];
-MBXPageController.MBXDataSource = self;
-MBXPageController.MBXDataDelegate = self;
-[MBXPageController reloadPages];
-</pre>
+
+<div class="highlight"><pre><code class="language-logos" data-lang="logos"><span class="n">MBXPageViewController</span> <span class="o">*</span><span class="n">MBXPageController</span> <span class="o">=</span> <span class="p">[</span><span class="n">MBXPageViewController</span> <span class="k">new</span><span class="p">];</span>
+<span class="n">MBXPageController</span><span class="p">.</span><span class="n">MBXDataSource</span> <span class="o">=</span> <span class="nb">self</span><span class="p">;</span>
+<span class="n">MBXPageController</span><span class="p">.</span><span class="n">MBXDataDelegate</span> <span class="o">=</span> <span class="nb">self</span><span class="p">;</span>
+<span class="p">[</span><span class="n">MBXPageController</span> <span class="n">reloadPages</span><span class="p">];</span></code></pre></div>
+
 <p>很简单易懂，有可能有人不理解，为什么没有看到addChildViewController或者addSubview之类的方法？其实这些都封装在了[MBXPageController reloadPages]方法里面
 进去看源码就会发现：</p>
-<pre class="brush: cpp;auto-links: true;collapse: true;first-line: 1;gutter: true;html-script: true;light: true;ruler: false;smart-tabs: true;tab-size: 4;toolbar: true;">
-- (void)loadControllerAndView
-{
-    NSAssert([[self MBXDataSource] isKindOfClass:[UIViewController class]], @"This needs to be implemented in a class that inherits from UIViewController");
-    [(UIViewController *)[self MBXDataSource] addChildViewController:self];
-    [[[self MBXDataSource] MBXPageContainer] addSubview:self.view];
-}
-</pre>
+
+<div class="highlight"><pre><code class="language-logos" data-lang="logos"><span class="p">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="nf">loadControllerAndView</span>
+<span class="p">{</span>
+    <span class="n">NSAssert</span><span class="p">([[</span><span class="nb">self</span> <span class="n">MBXDataSource</span><span class="p">]</span> <span class="nl">isKindOfClass</span><span class="p">:[</span><span class="bp">UIViewController</span> <span class="k">class</span><span class="p">]],</span> <span class="s">@&quot;This needs to be implemented in a class that inherits from UIViewController&quot;</span><span class="p">);</span>
+    <span class="p">[(</span><span class="bp">UIViewController</span> <span class="o">*</span><span class="p">)[</span><span class="nb">self</span> <span class="n">MBXDataSource</span><span class="p">]</span> <span class="nl">addChildViewController</span><span class="p">:</span><span class="nb">self</span><span class="p">];</span>
+    <span class="p">[[[</span><span class="nb">self</span> <span class="n">MBXDataSource</span><span class="p">]</span> <span class="n">MBXPageContainer</span><span class="p">]</span> <span class="nl">addSubview</span><span class="p">:</span><span class="nb">self</span><span class="p">.</span><span class="n">view</span><span class="p">];</span>
+<span class="p">}</span></code></pre></div>
+
 <ul>
-<li>addChildViewController我的理解就是重新设置子controller的父controller，也就是层级关系，防止后面再Push或者Present新窗口的时候出错</li>
-<li>addSubview就更加直观了不需要多解释，没有这句话咱们就没有View可以显示了。</li>
+  <li>addChildViewController我的理解就是重新设置子controller的父controller，也就是层级关系，防止后面再Push或者Present新窗口的时候出错</li>
+  <li>addSubview就更加直观了不需要多解释，没有这句话咱们就没有View可以显示了。</li>
 </ul>
+
 <p>需要注意的是[[self MBXDataSource] MBXPageContainer]这个方法，他是MBXDataSource协议里必选的方法
 说到这里就必须说说为什么我认为MBXPageViewController的使用远远比RKSwipeBetweenViewControllers简单清晰，就是因为两个协议：</p>
-<pre class="brush: cpp;auto-links: true;collapse: true;first-line: 1;gutter: true;html-script: true;light: true;ruler: false;smart-tabs: true;tab-size: 4;toolbar: true;">
-@protocol MBXPageControllerDataSource &lt;NSObject&gt;
-@required
-- (NSArray *)MBXPageButtons;
-- (NSArray *)MBXPageControllers;
-- (UIView *)MBXPageContainer;
-@end
 
-@protocol MBXPageControllerDataDelegate &lt;NSObject&gt;
-@optional
-- (void)MBXPageChangedToIndex:(NSInteger)index;
-@end
-</pre>
+<div class="highlight"><pre><code class="language-logos" data-lang="logos"><span class="k">@protocol</span> <span class="nc">MBXPageControllerDataSource</span> <span class="o">&amp;</span><span class="n">lt</span><span class="p">;</span><span class="bp">NSObject</span><span class="o">&amp;</span><span class="n">gt</span><span class="p">;</span>
+<span class="k">@required</span>
+<span class="o">-</span> <span class="p">(</span><span class="bp">NSArray</span> <span class="o">*</span><span class="p">)</span><span class="n">MBXPageButtons</span><span class="p">;</span>
+<span class="p">-</span> <span class="p">(</span><span class="bp">NSArray</span> <span class="o">*</span><span class="p">)</span><span class="nf">MBXPageControllers</span><span class="p">;</span>
+<span class="p">-</span> <span class="p">(</span><span class="bp">UIView</span> <span class="o">*</span><span class="p">)</span><span class="nf">MBXPageContainer</span><span class="p">;</span>
+<span class="k">@end</span>
+
+<span class="k">@protocol</span> <span class="nc">MBXPageControllerDataDelegate</span> <span class="o">&amp;</span><span class="n">lt</span><span class="p">;</span><span class="bp">NSObject</span><span class="o">&amp;</span><span class="n">gt</span><span class="p">;</span>
+<span class="k">@optional</span>
+<span class="o">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="nl">MBXPageChangedToIndex</span><span class="p">:(</span><span class="bp">NSInteger</span><span class="p">)</span><span class="n">index</span><span class="p">;</span>
+<span class="k">@end</span></code></pre></div>
 
 <ul>
-<li>MBXPageButtons 就是标题栏上面的按钮，需要注意的是MBXPageViewController并不管按钮的显示，MBXPageViewController只负责帮我们绑定按钮的触摸事件，
-    显示正确的对应的页面</li>
-<li>MBXPageControllers 这个就是咱们页面的数组了。</li>
-<li>MBXPageContainer 是页面的容器，只需要返回MBXPageViewController所在的UIViewController的container就行。</li>
-<li>MBXPageChangedToIndex 是一个提供给用户更新按钮状态的方法，当页面索引改变后就会触发这个方法，用户应该在这里跟新title
-    上面按钮和tabIndicator的状态.</li>
+  <li>MBXPageButtons 就是标题栏上面的按钮，需要注意的是MBXPageViewController并不管按钮的显示，MBXPageViewController只负责帮我们绑定按钮的触摸事件，
+  显示正确的对应的页面</li>
+  <li>MBXPageControllers 这个就是咱们页面的数组了。</li>
+  <li>MBXPageContainer 是页面的容器，只需要返回MBXPageViewController所在的UIViewController的container就行。</li>
+  <li>MBXPageChangedToIndex 是一个提供给用户更新按钮状态的方法，当页面索引改变后就会触发这个方法，用户应该在这里跟新title
+  上面按钮和tabIndicator的状态.</li>
 </ul>
+
 <p>整个协议的完整实现大概应该是这个样子：</p>
-<pre class="brush: cpp;auto-links: true;collapse: true;first-line: 1;gutter: true;html-script: true;light: true;ruler: false;smart-tabs: true;tab-size: 4;toolbar: true;">
-#pragma mark - MBXPageViewController Data Source
 
-- (NSArray *)MBXPageButtons
-{
-    return @[self.button1, self.button2, self.button3];
-}
+<div class="highlight"><pre><code class="language-logos" data-lang="logos"><span class="cp">#pragma mark - MBXPageViewController Data Source</span>
 
-- (UIView *)MBXPageContainer
-{
-    return self.container;
-}
+<span class="p">-</span> <span class="p">(</span><span class="bp">NSArray</span> <span class="o">*</span><span class="p">)</span><span class="nf">MBXPageButtons</span>
+<span class="p">{</span>
+    <span class="k">return</span> <span class="l">@[</span><span class="nb">self</span><span class="p">.</span><span class="n">button1</span><span class="p">,</span> <span class="nb">self</span><span class="p">.</span><span class="n">button2</span><span class="p">,</span> <span class="nb">self</span><span class="p">.</span><span class="n">button3</span><span class="l">]</span><span class="p">;</span>
+<span class="p">}</span>
 
-- (NSArray *)MBXPageControllers
-{
-    // You can Load a VC directly from Storyboard
-    UIStoryboard* mainStoryboard = [UIStoryboard storyboardWithName:@"Main" bundle:nil];
+<span class="p">-</span> <span class="p">(</span><span class="bp">UIView</span> <span class="o">*</span><span class="p">)</span><span class="nf">MBXPageContainer</span>
+<span class="p">{</span>
+    <span class="k">return</span> <span class="nb">self</span><span class="p">.</span><span class="n">container</span><span class="p">;</span>
+<span class="p">}</span>
 
-    UIViewController *demo  = [mainStoryboard instantiateViewControllerWithIdentifier:@"firstController"];
-    UIViewController *demo2  = [mainStoryboard instantiateViewControllerWithIdentifier:@"secondController"];
+<span class="p">-</span> <span class="p">(</span><span class="bp">NSArray</span> <span class="o">*</span><span class="p">)</span><span class="nf">MBXPageControllers</span>
+<span class="p">{</span>
+    <span class="c1">// You can Load a VC directly from Storyboard</span>
+    <span class="bp">UIStoryboard</span><span class="o">*</span> <span class="n">mainStoryboard</span> <span class="o">=</span> <span class="p">[</span><span class="bp">UIStoryboard</span> <span class="nl">storyboardWithName</span><span class="p">:</span><span class="s">@&quot;Main&quot;</span> <span class="nl">bundle</span><span class="p">:</span><span class="nb">nil</span><span class="p">];</span>
 
-    // Or Load it from a xib file
-    UIViewController *demo3 = [UIViewController new];
-    demo3.view = [[[NSBundle mainBundle] loadNibNamed:@"View" owner:self options:nil] objectAtIndex:0];
+    <span class="bp">UIViewController</span> <span class="o">*</span><span class="n">demo</span>  <span class="o">=</span> <span class="p">[</span><span class="n">mainStoryboard</span> <span class="nl">instantiateViewControllerWithIdentifier</span><span class="p">:</span><span class="s">@&quot;firstController&quot;</span><span class="p">];</span>
+    <span class="bp">UIViewController</span> <span class="o">*</span><span class="n">demo2</span>  <span class="o">=</span> <span class="p">[</span><span class="n">mainStoryboard</span> <span class="nl">instantiateViewControllerWithIdentifier</span><span class="p">:</span><span class="s">@&quot;secondController&quot;</span><span class="p">];</span>
 
-    // Or create it programatically
-    UIViewController *demo4 = [[UIViewController alloc] init];
-    demo4.view.backgroundColor = [UIColor orangeColor];
+    <span class="c1">// Or Load it from a xib file</span>
+    <span class="bp">UIViewController</span> <span class="o">*</span><span class="n">demo3</span> <span class="o">=</span> <span class="p">[</span><span class="bp">UIViewController</span> <span class="k">new</span><span class="p">];</span>
+    <span class="n">demo3</span><span class="p">.</span><span class="n">view</span> <span class="o">=</span> <span class="p">[[[</span><span class="bp">NSBundle</span> <span class="n">mainBundle</span><span class="p">]</span> <span class="nl">loadNibNamed</span><span class="p">:</span><span class="s">@&quot;View&quot;</span> <span class="nl">owner</span><span class="p">:</span><span class="nb">self</span> <span class="nl">options</span><span class="p">:</span><span class="nb">nil</span><span class="p">]</span> <span class="nl">objectAtIndex</span><span class="p">:</span><span class="mi">0</span><span class="p">];</span>
 
-    UILabel *fromLabel = [[UILabel alloc]initWithFrame:CGRectMake( (self.view.frame.size.width - 130)/2 , 40, 130, 40)];
-    fromLabel.text = @"Fourth Controller";
+    <span class="c1">// Or create it programatically</span>
+    <span class="bp">UIViewController</span> <span class="o">*</span><span class="n">demo4</span> <span class="o">=</span> <span class="p">[[</span><span class="bp">UIViewController</span> <span class="n">alloc</span><span class="p">]</span> <span class="n">init</span><span class="p">];</span>
+    <span class="n">demo4</span><span class="p">.</span><span class="n">view</span><span class="p">.</span><span class="n">backgroundColor</span> <span class="o">=</span> <span class="p">[</span><span class="bp">UIColor</span> <span class="n">orangeColor</span><span class="p">];</span>
 
-    [demo4.view addSubview:fromLabel];
+    <span class="bp">UILabel</span> <span class="o">*</span><span class="n">fromLabel</span> <span class="o">=</span> <span class="p">[[</span><span class="bp">UILabel</span> <span class="n">alloc</span><span class="p">]</span><span class="nl">initWithFrame</span><span class="p">:</span><span class="n">CGRectMake</span><span class="p">(</span> <span class="p">(</span><span class="nb">self</span><span class="p">.</span><span class="n">view</span><span class="p">.</span><span class="n">frame</span><span class="p">.</span><span class="n">size</span><span class="p">.</span><span class="n">width</span> <span class="o">-</span> <span class="mi">130</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span> <span class="p">,</span> <span class="mi">40</span><span class="p">,</span> <span class="mi">130</span><span class="p">,</span> <span class="mi">40</span><span class="p">)];</span>
+    <span class="n">fromLabel</span><span class="p">.</span><span class="n">text</span> <span class="o">=</span> <span class="s">@&quot;Fourth Controller&quot;</span><span class="p">;</span>
 
-    // The order matters.
-    return @[demo,demo2, demo3];
-}
-</pre>
+    <span class="p">[</span><span class="n">demo4</span><span class="p">.</span><span class="n">view</span> <span class="nl">addSubview</span><span class="p">:</span><span class="n">fromLabel</span><span class="p">];</span>
+
+    <span class="c1">// The order matters.</span>
+    <span class="k">return</span> <span class="l">@[</span><span class="n">demo</span><span class="p">,</span><span class="n">demo2</span><span class="p">,</span> <span class="n">demo3</span><span class="l">]</span><span class="p">;</span>
+<span class="p">}</span></code></pre></div>
+
 <p>怎么样，是不是非常简单清晰。下面需要解决的就是我们UI提出的需求问题了，也很简单，修改绑定button的事件：</p>
-<pre class="brush: cpp;auto-links: true;collapse: true;first-line: 1;gutter: true;html-script: true;light: true;ruler: false;smart-tabs: true;tab-size: 4;toolbar: true;">
-- (void)controllerModeLogicForDestination:(NSInteger)destination
-{
-    __weak __typeof(&amp;*self)weakSelf = self;
-    NSInteger tempIndex = _currentPageIndex;
-    // Check to see which way are you going (Left -&gt; Right or Right -&gt; Left)
-    if (destination &gt; tempIndex) {
-        for (int i = (int)tempIndex+1; i&lt;=destination; i++) {
-            [self setPageControllerForIndex:i direction:UIPageViewControllerNavigationDirectionForward currentMBXViewController:weakSelf destionation:destination];
-        }
-    }
 
-    // Right -&gt; Left
-    else if (destination &lt; tempIndex) {
-        for (int i = (int)tempIndex-1; i &gt;= destination; i--) {
-            [self setPageControllerForIndex:i direction:UIPageViewControllerNavigationDirectionReverse currentMBXViewController:weakSelf destionation:destination];
-        }
-    }else{
-        [weakSelf updateCurrentPageIndex:tempIndex];
-    }
-}
-</pre>
+<div class="highlight"><pre><code class="language-logos" data-lang="logos"><span class="p">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="nf">controllerModeLogicForDestination:</span><span class="p">(</span><span class="bp">NSInteger</span><span class="p">)</span><span class="nv">destination</span>
+<span class="p">{</span>
+    <span class="k">__weak</span> <span class="n">__typeof</span><span class="p">(</span><span class="o">&amp;*</span><span class="nb">self</span><span class="p">)</span><span class="n">weakSelf</span> <span class="o">=</span> <span class="nb">self</span><span class="p">;</span>
+    <span class="bp">NSInteger</span> <span class="n">tempIndex</span> <span class="o">=</span> <span class="n">_currentPageIndex</span><span class="p">;</span>
+    <span class="c1">// Check to see which way are you going (Left -&gt; Right or Right -&gt; Left)</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">destination</span> <span class="o">&gt;</span> <span class="n">tempIndex</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="p">(</span><span class="kt">int</span><span class="p">)</span><span class="n">tempIndex</span><span class="o">+</span><span class="mi">1</span><span class="p">;</span> <span class="n">i</span><span class="o">&lt;=</span><span class="n">destination</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+            <span class="p">[</span><span class="nb">self</span> <span class="nl">setPageControllerForIndex</span><span class="p">:</span><span class="n">i</span> <span class="nl">direction</span><span class="p">:</span><span class="n">UIPageViewControllerNavigationDirectionForward</span> <span class="nl">currentMBXViewController</span><span class="p">:</span><span class="n">weakSelf</span> <span class="nl">destionation</span><span class="p">:</span><span class="n">destination</span><span class="p">];</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="c1">// Right -&gt; Left</span>
+    <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">destination</span> <span class="o">&lt;</span> <span class="n">tempIndex</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="p">(</span><span class="kt">int</span><span class="p">)</span><span class="n">tempIndex</span><span class="o">-</span><span class="mi">1</span><span class="p">;</span> <span class="n">i</span> <span class="o">&gt;=</span> <span class="n">destination</span><span class="p">;</span> <span class="n">i</span><span class="o">--</span><span class="p">)</span> <span class="p">{</span>
+            <span class="p">[</span><span class="nb">self</span> <span class="nl">setPageControllerForIndex</span><span class="p">:</span><span class="n">i</span> <span class="nl">direction</span><span class="p">:</span><span class="n">UIPageViewControllerNavigationDirectionReverse</span> <span class="nl">currentMBXViewController</span><span class="p">:</span><span class="n">weakSelf</span> <span class="nl">destionation</span><span class="p">:</span><span class="n">destination</span><span class="p">];</span>
+        <span class="p">}</span>
+    <span class="p">}</span><span class="k">else</span><span class="p">{</span>
+        <span class="p">[</span><span class="n">weakSelf</span> <span class="nl">updateCurrentPageIndex</span><span class="p">:</span><span class="n">tempIndex</span><span class="p">];</span>
+    <span class="p">}</span>
+<span class="p">}</span></code></pre></div>
+
 <p>只加了一句[weakSelf updateCurrentPageIndex:tempIndex];然后我们可以自己在updateCurrentPageIndex方法里判断，如果当前索引跟传入的索引相同则当成点击事件来处理，否则则是页面切换事件，需要跟新button的状态，
 这样我们就解决了第一个问题。第二个问题比较复杂，我到现在都还没完成搞清楚why，只知道要这么做。
 我们先把MBXPageControllerDataDelegate协议拓展一下，添加两个方法：</p>
-<pre class="brush: cpp;auto-links: true;collapse: true;first-line: 1;gutter: true;html-script: true;light: true;ruler: false;smart-tabs: true;tab-size: 4;toolbar: true;">
-@protocol MBXPageControllerDataDelegate &lt;NSObject&gt;
-@optional
-- (void)MBXPageChangedToIndex:(NSInteger)index;
-- (void)MBXPageSelectdViewOffset:(CGFloat)offset;
-- (CGFloat)MBXPageTabIndicatorStartOffset:(NSInteger)tabIndex;
-@end
-</pre>
+
+<div class="highlight"><pre><code class="language-logos" data-lang="logos"><span class="k">@protocol</span> <span class="nc">MBXPageControllerDataDelegate</span> <span class="o">&amp;</span><span class="n">lt</span><span class="p">;</span><span class="bp">NSObject</span><span class="o">&amp;</span><span class="n">gt</span><span class="p">;</span>
+<span class="k">@optional</span>
+<span class="o">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="nl">MBXPageChangedToIndex</span><span class="p">:(</span><span class="bp">NSInteger</span><span class="p">)</span><span class="n">index</span><span class="p">;</span>
+<span class="p">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="nf">MBXPageSelectdViewOffset:</span><span class="p">(</span><span class="n">CGFloat</span><span class="p">)</span><span class="nv">offset</span><span class="p">;</span>
+<span class="p">-</span> <span class="p">(</span><span class="n">CGFloat</span><span class="p">)</span><span class="nf">MBXPageTabIndicatorStartOffset:</span><span class="p">(</span><span class="bp">NSInteger</span><span class="p">)</span><span class="nv">tabIndex</span><span class="p">;</span>
+<span class="k">@end</span></code></pre></div>
+
 <ul>
-<li>MBXPageTabIndicatorStartOffset返回tabIndex被选中时的tabIndicator的X坐标。别问我为什么要这么做，我也是一知半解。</li>
-<li>MBXPageSelectdViewOffset就是事实跟新tabIndicator的X坐标的方法，offset就是X的新坐标。这两个接口有了之后就需要判断在那里加了。</li>
+  <li>MBXPageTabIndicatorStartOffset返回tabIndex被选中时的tabIndicator的X坐标。别问我为什么要这么做，我也是一知半解。</li>
+  <li>MBXPageSelectdViewOffset就是事实跟新tabIndicator的X坐标的方法，offset就是X的新坐标。这两个接口有了之后就需要判断在那里加了。</li>
 </ul>
 
 <p>通过分析源码可以看到有个很诡异的事情：</p>
-<pre class="brush: cpp;auto-links: true;collapse: true;first-line: 1;gutter: true;html-script: true;light: true;ruler: false;smart-tabs: true;tab-size: 4;toolbar: true;">
--  (void)syncScrollView
-{
-    for (UIView* view in _pageController.view.subviews){
-        if([view isKindOfClass:[UIScrollView class]])
-        {
-            _pageScrollView = (UIScrollView *)view;
-            _pageScrollView.delegate = self;
-        }
-    }
-}
-</pre>
+
+<div class="highlight"><pre><code class="language-logos" data-lang="logos"><span class="p">-</span>  <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="nf">syncScrollView</span>
+<span class="p">{</span>
+    <span class="k">for</span> <span class="p">(</span><span class="bp">UIView</span><span class="o">*</span> <span class="n">view</span> <span class="k">in</span> <span class="n">_pageController</span><span class="p">.</span><span class="n">view</span><span class="p">.</span><span class="n">subviews</span><span class="p">){</span>
+        <span class="k">if</span><span class="p">([</span><span class="n">view</span> <span class="nl">isKindOfClass</span><span class="p">:[</span><span class="bp">UIScrollView</span> <span class="k">class</span><span class="p">]])</span>
+        <span class="p">{</span>
+            <span class="n">_pageScrollView</span> <span class="o">=</span> <span class="p">(</span><span class="bp">UIScrollView</span> <span class="o">*</span><span class="p">)</span><span class="n">view</span><span class="p">;</span>
+            <span class="n">_pageScrollView</span><span class="p">.</span><span class="n">delegate</span> <span class="o">=</span> <span class="nb">self</span><span class="p">;</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span></code></pre></div>
+
 <p>_pageScrollView.delegate = self;可以整个代码里并没有实现ScrollDelegate的方法，我对比了一下RKSwipeBetweenViewControllers才发现原作者并没有copy这个delegate，原因可能是他的项目里当时不需要这个特性。
 很显然我们需要实现这个ScrollDelegate，并在滑动过程中同步调用MBXPageSelectdViewOffset来跟新tabIndicator的X坐标：</p>
-<pre class="brush: cpp;auto-links: true;collapse: true;first-line: 1;gutter: true;html-script: true;light: true;ruler: false;smart-tabs: true;tab-size: 4;toolbar: true;">
-#pragma mark - scroll view delegate
-//It extracts the xcoordinate from the center point and instructs the selection bar to move accordingly
--(void)scrollViewDidScroll:(UIScrollView *)scrollView{
-    if ([self MBXDataDelegate]
-        &amp;&amp; [self.MBXDataDelegate respondsToSelector:@selector(MBXPageSelectdViewOffset:)]
-        &amp;&amp; [self.MBXDataDelegate respondsToSelector:@selector(MBXPageTabIndicatorStartOffset:)]) {
-//        CGFloat offsetPercent = scrollView.contentOffset.x / scrollView.contentSize.width;
-//        [self.MBXDataDelegate MBXPageSelectdViewOffset:offsetPercent];
-//        NSLog(@"Scrolled percentage: %f   %f", scrollView.contentOffset.x,scrollView.contentSize.width);
-        CGFloat xFromCenter = self.view.frame.size.width-scrollView.contentOffset.x; //%%% positive for right swipe, negative for left
 
-        //%%% checks to see what page you are on and adjusts the xCoor accordingly.
-        //i.e. if you're on the second page, it makes sure that the bar starts from the frame.origin.x of the
-        //second tab instead of the beginning
-        NSInteger xCoor = [self.MBXDataDelegate MBXPageTabIndicatorStartOffset:self.currentPageIndex];
-        [self.MBXDataDelegate MBXPageSelectdViewOffset:(xCoor-xFromCenter/[self.viewControllerArray count])];;
-    }
-}
-</pre>
+<div class="highlight"><pre><code class="language-logos" data-lang="logos"><span class="cp">#pragma mark - scroll view delegate</span>
+<span class="c1">//It extracts the xcoordinate from the center point and instructs the selection bar to move accordingly</span>
+<span class="p">-(</span><span class="kt">void</span><span class="p">)</span><span class="nf">scrollViewDidScroll:</span><span class="p">(</span><span class="bp">UIScrollView</span> <span class="o">*</span><span class="p">)</span><span class="nv">scrollView</span><span class="p">{</span>
+    <span class="k">if</span> <span class="p">([</span><span class="nb">self</span> <span class="n">MBXDataDelegate</span><span class="p">]</span>
+        <span class="o">&amp;&amp;</span> <span class="p">[</span><span class="nb">self</span><span class="p">.</span><span class="n">MBXDataDelegate</span> <span class="nl">respondsToSelector</span><span class="p">:</span><span class="k">@selector</span><span class="p">(</span><span class="nl">MBXPageSelectdViewOffset</span><span class="p">:)]</span>
+        <span class="o">&amp;&amp;</span> <span class="p">[</span><span class="nb">self</span><span class="p">.</span><span class="n">MBXDataDelegate</span> <span class="nl">respondsToSelector</span><span class="p">:</span><span class="k">@selector</span><span class="p">(</span><span class="nl">MBXPageTabIndicatorStartOffset</span><span class="p">:)])</span> <span class="p">{</span>
+<span class="c1">//        CGFloat offsetPercent = scrollView.contentOffset.x / scrollView.contentSize.width;</span>
+<span class="c1">//        [self.MBXDataDelegate MBXPageSelectdViewOffset:offsetPercent];</span>
+<span class="c1">//        NSLog(@&quot;Scrolled percentage: %f   %f&quot;, scrollView.contentOffset.x,scrollView.contentSize.width);</span>
+        <span class="n">CGFloat</span> <span class="n">xFromCenter</span> <span class="o">=</span> <span class="nb">self</span><span class="p">.</span><span class="n">view</span><span class="p">.</span><span class="n">frame</span><span class="p">.</span><span class="n">size</span><span class="p">.</span><span class="n">width</span><span class="o">-</span><span class="n">scrollView</span><span class="p">.</span><span class="n">contentOffset</span><span class="p">.</span><span class="n">x</span><span class="p">;</span> <span class="c1">//%%% positive for right swipe, negative for left</span>
+
+        <span class="c1">//%%% checks to see what page you are on and adjusts the xCoor accordingly.</span>
+        <span class="c1">//i.e. if you&#39;re on the second page, it makes sure that the bar starts from the frame.origin.x of the</span>
+        <span class="c1">//second tab instead of the beginning</span>
+        <span class="bp">NSInteger</span> <span class="n">xCoor</span> <span class="o">=</span> <span class="p">[</span><span class="nb">self</span><span class="p">.</span><span class="n">MBXDataDelegate</span> <span class="nl">MBXPageTabIndicatorStartOffset</span><span class="p">:</span><span class="nb">self</span><span class="p">.</span><span class="n">currentPageIndex</span><span class="p">];</span>
+        <span class="p">[</span><span class="nb">self</span><span class="p">.</span><span class="n">MBXDataDelegate</span> <span class="nl">MBXPageSelectdViewOffset</span><span class="p">:(</span><span class="n">xCoor</span><span class="o">-</span><span class="n">xFromCenter</span><span class="o">/</span><span class="p">[</span><span class="nb">self</span><span class="p">.</span><span class="n">viewControllerArray</span> <span class="n">count</span><span class="p">])];;</span>
+    <span class="p">}</span>
+<span class="p">}</span></code></pre></div>
 
 <p>必须得承认，如果没有看RKSwipeBetweenViewControllers我到死都不可能完成这个方法。了解pageController这个容器的都知道，这个容器为了节省内容，会在他认为合适的时候把看不到的子controller移除。
 这可真是个要命的特性，我刚开始的想法理所当然的认为scrollView.contentOffset.x/scrollView.contentSize.width就是滚动的比例，然后根据这个比例来更新咱们的tabIndicator。可是当我
