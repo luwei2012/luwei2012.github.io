@@ -122,627 +122,633 @@
         <p class="entry-reading-time">
           <i class="fa fa-clock-o"></i>
           
-          Reading time ~11 minutes
+          Reading time ~23 minutes
         </p><!-- /.entry-reading-time -->
         
       </div><!-- /.header-title-wrap -->
     </header>
     <div class="entry-content">
       <h3 id="section">序列化和反序列化</h3>
-<p>相信很多人都用过类的序列化和反序列化，在Android里面有Gson等第三方库可以做到，在IOS里面有setValuesForKeysWithDictionary这个方法。但是setValuesForKeysWithDictionary这个方法只能设置键值对，
-遇到复杂的例如Iva对象就没办法处理了。我们都知道一个实体类里面包含的数据有两类：方法和属性，其中属性又分为基本类型、容器类型和实体(对象)类型。C++里面的基本类型
-就那么几种：int、float、byte等。在IOS里面如果一个实体类只包含这些基本类型，那就可以通过- (void)setValuesForKeysWithDictionary:(NSDictionary&amp;ltNSString *, id&gt; *)keyedValues;
-直接将一个从json字符串中提取出来的字典转为实体类，当然你必须实现-(void)setValue:(id)value forUndefinedKey:(NSString *)key方法，以防服务器返回的字段跟你实体类定义的名字不一样。</p>
+<hr />
+<p>相信很多人都用过类的序列化和反序列化，在Android里面有Gson等第三方库可以做到，在IOS里面有setValuesForKeysWithDictionary这个方法。但是setValuesForKeysWithDictionary这个方法只能设置键值对，遇到复杂的例如Iva对象就没办法处理了。我们都知道一个实体类里面包含的数据有两类：方法和属性，其中属性又分为基本类型、容器类型和实体(对象)类型。C++里面的基本类型就那么几种：int、float、byte等。在IOS里面如果一个实体类只包含这些基本类型，那就可以通过- (void)setValuesForKeysWithDictionary:(NSDictionary&lt;NSString *, id&gt;; *)keyedValues;直接将一个从json字符串中提取出来的字典转为实体类，当然你必须实现-(void)setValue:(id)value forUndefinedKey:(NSString *)key方法，以防服务器返回的字段跟你实体类定义的名字不一样。</p>
 
 <h3 id="ios">IOS中如何处理一般实体类的序列化</h3>
-<p>前面我们说Android里面有很多第三方库可以做到，IOS也是如此：<a href="https://github.com/Mantle/Mantle">Mantle</a>、<a href="https://github.com/icanzilb/JSONModel">JSONModel</a>、
-<a href="https://github.com/Yalantis/FastEasyMapping">FastEasyMapping</a>、<a href="https://github.com/CoderMJLee/MJExtension">MJExtension</a>、<a href="https://github.com/ibireme/YYKit">YYModel</a>
-等等。其中我选取了YYModel作为学习对象，因为这个库文件最少最简单，而且根据他自己的介绍来看，貌似效率挺不错。</p>
+<hr />
+<p>前面我们说Android里面有很多第三方库可以做到，IOS也是如此：<a href="https://github.com/Mantle/Mantle">Mantle</a>、<a href="https://github.com/icanzilb/JSONModel">JSONModel</a>、<a href="https://github.com/Yalantis/FastEasyMapping">FastEasyMapping</a>、<a href="https://github.com/CoderMJLee/MJExtension">MJExtension</a>、<a href="https://github.com/ibireme/YYKit">YYModel</a>等等。
+其中我选取了YYModel作为学习对象，因为这个库文件最少最简单，而且根据他自己的介绍来看，貌似效率挺不错。</p>
 
-<h3 id="id">什么是id</h3>
-<p>要对一个类序列化首先需要知道IOS里面对象的结构。我们知道C里面是没有类的，只有结构体。C++在C的结构体基础上提出了类的概念和结构，OC也是如此，
-OC的类就是结构体。在OC里面的对象都可以使用id类型来表示，A *a也可以写成 id a。那么id是什么呢，id在objc.h中定义如下：</p>
-<pre class="brush: cpp;auto-links: true;collapse: true;first-line: 1;gutter: true;html-script: true;light: true;ruler: false;smart-tabs: true;tab-size: 4;toolbar: true;">
-//A pointer to an instance of a class.
-typedef struct objc_object *id;
-</pre>
+<h4 id="id">什么是id</h4>
+<p>要对一个类序列化首先需要知道IOS里面对象的结构。我们知道C里面是没有类的，只有结构体。C++在C的结构体基础上提出了类的概念和结构，OC也是如此，OC的类就是结构体。在OC里面的对象都可以使用id类型来表示，A *a也可以写成 id a。那么id是什么呢，id在objc.h中定义如下：</p>
+
+<div class="highlight"><pre><code class="language-logos" data-lang="logos"><span class="c1">//A pointer to an instance of a class.</span>
+<span class="k">typedef</span> <span class="k">struct</span> <span class="n">objc_object</span> <span class="o">*</span><span class="kt">id</span><span class="p">;</span></code></pre></div>
+
 <p>就像注释中所说的这样id是指向一个objc_object结构体的指针。objc_object在objc.h中的定义：</p>
-<pre class="brush: cpp;auto-links: true;collapse: true;first-line: 1;gutter: true;html-script: true;light: true;ruler: false;smart-tabs: true;tab-size: 4;toolbar: true;">
-//Represents an instance of a class.
-struct objc_object
-{
-    Class isa;
-}
-</pre>
+
+<div class="highlight"><pre><code class="language-logos" data-lang="logos"><span class="c1">//Represents an instance of a class.</span>
+<span class="k">struct</span> <span class="n">objc_object</span>
+<span class="p">{</span>
+    <span class="kt">Class</span> <span class="n">isa</span><span class="p">;</span>
+<span class="p">}</span></code></pre></div>
+
 <p>这个时候我们知道OBjective-C中的object在最后会被转换成C的结构体，而在这个struct中有一个isa指针，指向它的类别Class(C是大写的):</p>
-<pre class="brush: cpp;auto-links: true;collapse: true;first-line: 1;gutter: true;html-script: true;light: true;ruler: false;smart-tabs: true;tab-size: 4;toolbar: true;">
-//Represents an instance of a class.
-//An opaque type that represents an Objective-C class
-typedef struct objc_class *Class;
-</pre>
+
+<div class="highlight"><pre><code class="language-logos" data-lang="logos"><span class="c1">//Represents an instance of a class.</span>
+<span class="c1">//An opaque type that represents an Objective-C class</span>
+<span class="k">typedef</span> <span class="k">struct</span> <span class="n">objc_class</span> <span class="o">*</span><span class="kt">Class</span><span class="p">;</span></code></pre></div>
+
 <p>我们可以看到，Class本身也是指向一个C的structobjc_class:</p>
-<pre class="brush: cpp;auto-links: true;collapse: true;first-line: 1;gutter: true;html-script: true;light: true;ruler: false;smart-tabs: true;tab-size: 4;toolbar: true;">
-struct objc_class
-{
-    Class isa OBJC_ISA_AVAILABILITY;
 
-    Class super_class;
-    const char *name;
-    long version;
-    long info;
-    long instance_size;
-    struct objc_ivar_list *ivars;
-    struct objc_method_list **methodLists;
-    struct objc_cache *cache;
-    struct objc_protocol_list *protocols; 
-};
-</pre>
+<div class="highlight"><pre><code class="language-logos" data-lang="logos"><span class="k">struct</span> <span class="n">objc_class</span>
+<span class="p">{</span>
+    <span class="kt">Class</span> <span class="n">isa</span> <span class="n">OBJC_ISA_AVAILABILITY</span><span class="p">;</span>
+
+    <span class="kt">Class</span> <span class="n">super_class</span><span class="p">;</span>
+    <span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">name</span><span class="p">;</span>
+    <span class="kt">long</span> <span class="n">version</span><span class="p">;</span>
+    <span class="kt">long</span> <span class="n">info</span><span class="p">;</span>
+    <span class="kt">long</span> <span class="n">instance_size</span><span class="p">;</span>
+    <span class="k">struct</span> <span class="n">objc_ivar_list</span> <span class="o">*</span><span class="n">ivars</span><span class="p">;</span>
+    <span class="k">struct</span> <span class="n">objc_method_list</span> <span class="o">**</span><span class="n">methodLists</span><span class="p">;</span>
+    <span class="k">struct</span> <span class="n">objc_cache</span> <span class="o">*</span><span class="n">cache</span><span class="p">;</span>
+    <span class="k">struct</span> <span class="n">objc_protocol_list</span> <span class="o">*</span><span class="n">protocols</span><span class="p">;</span> 
+<span class="p">};</span></code></pre></div>
+
 <p>该结构中，isa指向所属的Class,super_class指向父类别。在objc_runtime_new.h中，我们发现objc_class有如下定义：</p>
-<pre class="brush: cpp;auto-links: true;collapse: true;first-line: 1;gutter: true;html-script: true;light: true;ruler: false;smart-tabs: true;tab-size: 4;toolbar: true;">
-struct object_class : objc_object
-{
-    //Class ISA
-    Class superclass;
 
-    ...
-    ...
-}
-</pre>
+<div class="highlight"><pre><code class="language-logos" data-lang="logos"><span class="k">struct</span> <span class="nl">object_class</span> <span class="p">:</span> <span class="n">objc_object</span>
+<span class="p">{</span>
+    <span class="c1">//Class ISA</span>
+    <span class="kt">Class</span> <span class="n">superclass</span><span class="p">;</span>
 
-<h3 id="meta-class">什么是Meta Class</h3>
+    <span class="p">...</span>
+    <span class="p">...</span>
+<span class="p">}</span></code></pre></div>
+
+<h4 id="meta-class">什么是Meta Class</h4>
 <p>根据上面的描述，我们可以把Meta Class理解为一个Class对象的class。简单的说：</p>
+
 <ul>
-<li>当我们发送一个消息给一个NSObject对象时，这条消息会在对象类的方法列表里查找。</li>
-<li>当我们发送一个消息给一个类时，这条消息会在类的Meta Class的方法列表中查找。</li>
+  <li>当我们发送一个消息给一个NSObject对象时，这条消息会在对象类的方法列表里查找。</li>
+  <li>当我们发送一个消息给一个类时，这条消息会在类的Meta Class的方法列表中查找。</li>
 </ul>
+
 <p>而Meta Class也是一个Class，它跟其他Class一样有自己的isa和super_class指针。
 具体的如图所示：</p>
 <figure>
 	<img src="/images/IOS/record/yymodel/object_struct.jpeg" /> 
 </figure>
+
 <ul>
-<li>每个Class都有一个isa指针指向一个唯一的Meta Class</li>
-<li>每一个Meta Class的isa指针都指向嘴上层的Meta Class</li>
-<li>最上层的Meta Class的super class指向自己，形成一个环路</li>
-<li>每一个Meta Class的super class指针指向它原本Class的 Super Class的Meta Class。但是最上层的Meta Class的 Super Class指向NSObject Class本身</li>
-<li>最上层的NSObject Class的super Class指向nil。</li>
+  <li>每个Class都有一个isa指针指向一个唯一的Meta Class</li>
+  <li>每一个Meta Class的isa指针都指向嘴上层的Meta Class</li>
+  <li>最上层的Meta Class的super class指向自己，形成一个环路</li>
+  <li>每一个Meta Class的super class指针指向它原本Class的 Super Class的Meta Class。但是最上层的Meta Class的 Super Class指向NSObject Class本身</li>
+  <li>最上层的NSObject Class的super Class指向nil。</li>
 </ul>
 
-<h3 id="yymodel">华丽丽的分割线 其实上面说的根本没有卵用 我们来看看YYModel的序列化过程</h3>
+<h4 id="yymodel">华丽丽的分割线 其实上面说的根本没有卵用 我们来看看YYModel的序列化过程</h4>
 <p>序列化的步骤一般都是：</p>
+
 <ul>
-<li>遍历类定义中的所有属性，储存在一个字典中。</li>
-<li>找到所有属性对应的set和get方法，储存在一个字典里</li> 
-<li>确认json字典里的key和类定义中属性的映射关系，一般来说json字典里的key的名字就是我们类定义中的属性名，所以如果不需要定制化，这一步是可以省略的</li> 
-<li>解析需要序列化的字典，根据key和value的类型判断
-    需要序列化的对象类型</li>
-<li>根据该对象类型的属性和方法字典来实例化一个对象，并设置好值，这个就是我们要得结果了</li> 
+  <li>遍历类定义中的所有属性，储存在一个字典中。</li>
+  <li>找到所有属性对应的set和get方法，储存在一个字典里</li>
+  <li>确认json字典里的key和类定义中属性的映射关系，一般来说json字典里的key的名字就是我们类定义中的属性名，所以如果不需要定制化，这一步是可以省略的</li>
+  <li>解析需要序列化的字典，根据key和value的类型判断需要序列化的对象类型</li>
+  <li>根据该对象类型的属性和方法字典来实例化一个对象，并设置好值，这个就是我们要得结果了</li>
 </ul>
+
 <p>YYModel的序列化过程也是这样，首先有一个YYClassInfo对象来储存class信息：</p>
-<pre class="brush: cpp;auto-links: true;collapse: true;first-line: 1;gutter: true;html-script: true;light: true;ruler: false;smart-tabs: true;tab-size: 4;toolbar: true;">
-+ (instancetype)classInfoWithClass:(Class)cls {
-    if (!cls) return nil;
-    static CFMutableDictionaryRef classCache;
-    static CFMutableDictionaryRef metaCache;
-    static dispatch_once_t onceToken;
-    static OSSpinLock lock;
-    dispatch_once(&amp;onceToken, ^{
-        classCache = CFDictionaryCreateMutable(CFAllocatorGetDefault(), 0, &amp;kCFTypeDictionaryKeyCallBacks, &amp;kCFTypeDictionaryValueCallBacks);
-        metaCache = CFDictionaryCreateMutable(CFAllocatorGetDefault(), 0, &amp;kCFTypeDictionaryKeyCallBacks, &amp;kCFTypeDictionaryValueCallBacks);
-        lock = OS_SPINLOCK_INIT;
-    });
-    OSSpinLockLock(&amp;lock);
-    YYClassInfo *info = CFDictionaryGetValue(class_isMetaClass(cls) ? metaCache : classCache, (__bridge const void *)(cls));
-    if (info &amp;&amp; info-&gt;_needUpdate) {
-        [info _update];
-    }
-    OSSpinLockUnlock(&amp;lock);
-    if (!info) {
-        info = [[YYClassInfo alloc] initWithClass:cls];
-        if (info) {
-            OSSpinLockLock(&amp;lock);
-            CFDictionarySetValue(info.isMeta ? metaCache : classCache, (__bridge const void *)(cls), (__bridge const void *)(info));
-            OSSpinLockUnlock(&amp;lock);
-        }
-    }
-    return info;
-}
-</pre>
+
+<div class="highlight"><pre><code class="language-logos" data-lang="logos"><span class="p">+</span> <span class="p">(</span><span class="kt">instancetype</span><span class="p">)</span><span class="nf">classInfoWithClass:</span><span class="p">(</span><span class="kt">Class</span><span class="p">)</span><span class="nv">cls</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">cls</span><span class="p">)</span> <span class="k">return</span> <span class="nb">nil</span><span class="p">;</span>
+    <span class="k">static</span> <span class="n">CFMutableDictionaryRef</span> <span class="n">classCache</span><span class="p">;</span>
+    <span class="k">static</span> <span class="n">CFMutableDictionaryRef</span> <span class="n">metaCache</span><span class="p">;</span>
+    <span class="k">static</span> <span class="kt">dispatch_once_t</span> <span class="n">onceToken</span><span class="p">;</span>
+    <span class="k">static</span> <span class="n">OSSpinLock</span> <span class="n">lock</span><span class="p">;</span>
+    <span class="n">dispatch_once</span><span class="p">(</span><span class="o">&amp;</span><span class="n">onceToken</span><span class="p">,</span> <span class="o">^</span><span class="p">{</span>
+        <span class="n">classCache</span> <span class="o">=</span> <span class="n">CFDictionaryCreateMutable</span><span class="p">(</span><span class="n">CFAllocatorGetDefault</span><span class="p">(),</span> <span class="mi">0</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">kCFTypeDictionaryKeyCallBacks</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">kCFTypeDictionaryValueCallBacks</span><span class="p">);</span>
+        <span class="n">metaCache</span> <span class="o">=</span> <span class="n">CFDictionaryCreateMutable</span><span class="p">(</span><span class="n">CFAllocatorGetDefault</span><span class="p">(),</span> <span class="mi">0</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">kCFTypeDictionaryKeyCallBacks</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">kCFTypeDictionaryValueCallBacks</span><span class="p">);</span>
+        <span class="n">lock</span> <span class="o">=</span> <span class="n">OS_SPINLOCK_INIT</span><span class="p">;</span>
+    <span class="p">});</span>
+    <span class="n">OSSpinLockLock</span><span class="p">(</span><span class="o">&amp;</span><span class="n">lock</span><span class="p">);</span>
+    <span class="n">YYClassInfo</span> <span class="o">*</span><span class="n">info</span> <span class="o">=</span> <span class="n">CFDictionaryGetValue</span><span class="p">(</span><span class="n">class_isMetaClass</span><span class="p">(</span><span class="n">cls</span><span class="p">)</span> <span class="o">?</span> <span class="nl">metaCache</span> <span class="p">:</span> <span class="n">classCache</span><span class="p">,</span> <span class="p">(</span><span class="k">__bridge</span> <span class="k">const</span> <span class="kt">void</span> <span class="o">*</span><span class="p">)(</span><span class="n">cls</span><span class="p">));</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">info</span> <span class="o">&amp;&amp;</span> <span class="n">info</span><span class="o">-&gt;</span><span class="n">_needUpdate</span><span class="p">)</span> <span class="p">{</span>
+        <span class="p">[</span><span class="n">info</span> <span class="n">_update</span><span class="p">];</span>
+    <span class="p">}</span>
+    <span class="n">OSSpinLockUnlock</span><span class="p">(</span><span class="o">&amp;</span><span class="n">lock</span><span class="p">);</span>
+    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">info</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">info</span> <span class="o">=</span> <span class="p">[[</span><span class="n">YYClassInfo</span> <span class="n">alloc</span><span class="p">]</span> <span class="nl">initWithClass</span><span class="p">:</span><span class="n">cls</span><span class="p">];</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">info</span><span class="p">)</span> <span class="p">{</span>
+            <span class="n">OSSpinLockLock</span><span class="p">(</span><span class="o">&amp;</span><span class="n">lock</span><span class="p">);</span>
+            <span class="n">CFDictionarySetValue</span><span class="p">(</span><span class="n">info</span><span class="p">.</span><span class="n">isMeta</span> <span class="o">?</span> <span class="nl">metaCache</span> <span class="p">:</span> <span class="n">classCache</span><span class="p">,</span> <span class="p">(</span><span class="k">__bridge</span> <span class="k">const</span> <span class="kt">void</span> <span class="o">*</span><span class="p">)(</span><span class="n">cls</span><span class="p">),</span> <span class="p">(</span><span class="k">__bridge</span> <span class="k">const</span> <span class="kt">void</span> <span class="o">*</span><span class="p">)(</span><span class="n">info</span><span class="p">));</span>
+            <span class="n">OSSpinLockUnlock</span><span class="p">(</span><span class="o">&amp;</span><span class="n">lock</span><span class="p">);</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="n">info</span><span class="p">;</span>
+<span class="p">}</span></code></pre></div>
+
 <p>可以看到所有出现的class定义都会储存在一个全局静态字典classCache和metaCache中。我们再看一个YYClassInfo包含那些数据呢：</p>
-<pre class="brush: cpp;auto-links: true;collapse: true;first-line: 1;gutter: true;html-script: true;light: true;ruler: false;smart-tabs: true;tab-size: 4;toolbar: true;">
-/**
- Class information for a class.
- */
-@interface YYClassInfo : NSObject
-@property (nonatomic, assign, readonly) Class cls;
-@property (nonatomic, strong, readonly) Class superCls;
-@property (nonatomic, assign, readonly) Class metaCls;
-@property (nonatomic, assign, readonly) BOOL isMeta;
-@property (nonatomic, strong, readonly) NSString *name;
-@property (nonatomic, strong, readonly) YYClassInfo *superClassInfo;
-@property (nonatomic, strong, readonly) NSDictionary *ivarInfos;     //&amp;lt key:NSString(ivar),     value:YYClassIvarInfo
-@property (nonatomic, strong, readonly) NSDictionary *methodInfos;   //&amp;lt key:NSString(selector), value:YYClassMethodInfo
-@property (nonatomic, strong, readonly) NSDictionary *propertyInfos; //&amp;lt key:NSString(property), value:YYClassPropertyInfo
-@end
-/**
- Instance variable information.
- */
-@interface YYClassIvarInfo : NSObject
-@property (nonatomic, assign, readonly) Ivar ivar;
-@property (nonatomic, strong, readonly) NSString *name; //&amp;lt Ivar's name
-@property (nonatomic, assign, readonly) ptrdiff_t offset; //&amp;lt Ivar's offset
-@property (nonatomic, strong, readonly) NSString *typeEncoding; //&amp;lt Ivar's type encoding
-@property (nonatomic, assign, readonly) YYEncodingType type; //&amp;lt Ivar's type 
-@end
-/**
- Method information.
- */
-@interface YYClassMethodInfo : NSObject
-@property (nonatomic, assign, readonly) Method method;
-@property (nonatomic, strong, readonly) NSString *name; //&amp;lt method name
-@property (nonatomic, assign, readonly) SEL sel; //&amp;lt method's selector
-@property (nonatomic, assign, readonly) IMP imp; //&amp;lt method's implementation
-@property (nonatomic, strong, readonly) NSString *typeEncoding; //&amp;lt method's parameter and return types
-@property (nonatomic, strong, readonly) NSString *returnTypeEncoding; //&amp;lt return value's type
-@property (nonatomic, strong, readonly) NSArray *argumentTypeEncodings; //&amp;lt array of arguments' type
-@end
-/**
- Property information.
- */
-@interface YYClassPropertyInfo : NSObject
-@property (nonatomic, assign, readonly) objc_property_t property;
-@property (nonatomic, strong, readonly) NSString *name; //&amp;lt property's name
-@property (nonatomic, assign, readonly) YYEncodingType type; //&amp;lt property's type
-@property (nonatomic, strong, readonly) NSString *typeEncoding; //&amp;lt property's encoding value
-@property (nonatomic, strong, readonly) NSString *ivarName; //&amp;lt property's ivar name
-@property (nonatomic, assign, readonly) Class cls; //&amp;lt may be nil
-@property (nonatomic, strong, readonly) NSString *getter; //&amp;lt getter (nonnull)
-@property (nonatomic, strong, readonly) NSString *setter; //&amp;lt setter (nonnull)
-@end
-</pre>
+
+<div class="highlight"><pre><code class="language-logos" data-lang="logos"><span class="cm">/**</span>
+<span class="cm"> Class information for a class.</span>
+<span class="cm"> */</span>
+<span class="k">@interface</span> <span class="nc">YYClassInfo</span> : <span class="bp">NSObject</span>
+<span class="k">@property</span> <span class="p">(</span><span class="k">nonatomic</span><span class="p">,</span> <span class="k">assign</span><span class="p">,</span> <span class="k">readonly</span><span class="p">)</span> <span class="kt">Class</span> <span class="n">cls</span><span class="p">;</span>
+<span class="k">@property</span> <span class="p">(</span><span class="k">nonatomic</span><span class="p">,</span> <span class="k">strong</span><span class="p">,</span> <span class="k">readonly</span><span class="p">)</span> <span class="kt">Class</span> <span class="n">superCls</span><span class="p">;</span>
+<span class="k">@property</span> <span class="p">(</span><span class="k">nonatomic</span><span class="p">,</span> <span class="k">assign</span><span class="p">,</span> <span class="k">readonly</span><span class="p">)</span> <span class="kt">Class</span> <span class="n">metaCls</span><span class="p">;</span>
+<span class="k">@property</span> <span class="p">(</span><span class="k">nonatomic</span><span class="p">,</span> <span class="k">assign</span><span class="p">,</span> <span class="k">readonly</span><span class="p">)</span> <span class="kt">BOOL</span> <span class="n">isMeta</span><span class="p">;</span>
+<span class="k">@property</span> <span class="p">(</span><span class="k">nonatomic</span><span class="p">,</span> <span class="k">strong</span><span class="p">,</span> <span class="k">readonly</span><span class="p">)</span> <span class="bp">NSString</span> <span class="o">*</span><span class="n">name</span><span class="p">;</span>
+<span class="k">@property</span> <span class="p">(</span><span class="k">nonatomic</span><span class="p">,</span> <span class="k">strong</span><span class="p">,</span> <span class="k">readonly</span><span class="p">)</span> <span class="n">YYClassInfo</span> <span class="o">*</span><span class="n">superClassInfo</span><span class="p">;</span>
+<span class="k">@property</span> <span class="p">(</span><span class="k">nonatomic</span><span class="p">,</span> <span class="k">strong</span><span class="p">,</span> <span class="k">readonly</span><span class="p">)</span> <span class="bp">NSDictionary</span> <span class="o">*</span><span class="n">ivarInfos</span><span class="p">;</span>     <span class="c1">//&lt; key:NSString(ivar),     value:YYClassIvarInfo</span>
+<span class="k">@property</span> <span class="p">(</span><span class="k">nonatomic</span><span class="p">,</span> <span class="k">strong</span><span class="p">,</span> <span class="k">readonly</span><span class="p">)</span> <span class="bp">NSDictionary</span> <span class="o">*</span><span class="n">methodInfos</span><span class="p">;</span>   <span class="c1">//&lt; key:NSString(selector), value:YYClassMethodInfo</span>
+<span class="k">@property</span> <span class="p">(</span><span class="k">nonatomic</span><span class="p">,</span> <span class="k">strong</span><span class="p">,</span> <span class="k">readonly</span><span class="p">)</span> <span class="bp">NSDictionary</span> <span class="o">*</span><span class="n">propertyInfos</span><span class="p">;</span> <span class="c1">//&lt; key:NSString(property), value:YYClassPropertyInfo</span>
+<span class="k">@end</span>
+<span class="cm">/**</span>
+<span class="cm"> Instance variable information.</span>
+<span class="cm"> */</span>
+<span class="k">@interface</span> <span class="nc">YYClassIvarInfo</span> : <span class="bp">NSObject</span>
+<span class="k">@property</span> <span class="p">(</span><span class="k">nonatomic</span><span class="p">,</span> <span class="k">assign</span><span class="p">,</span> <span class="k">readonly</span><span class="p">)</span> <span class="n">Ivar</span> <span class="n">ivar</span><span class="p">;</span>
+<span class="k">@property</span> <span class="p">(</span><span class="k">nonatomic</span><span class="p">,</span> <span class="k">strong</span><span class="p">,</span> <span class="k">readonly</span><span class="p">)</span> <span class="bp">NSString</span> <span class="o">*</span><span class="n">name</span><span class="p">;</span> <span class="c1">//&lt; Ivar&#39;s name</span>
+<span class="k">@property</span> <span class="p">(</span><span class="k">nonatomic</span><span class="p">,</span> <span class="k">assign</span><span class="p">,</span> <span class="k">readonly</span><span class="p">)</span> <span class="kt">ptrdiff_t</span> <span class="n">offset</span><span class="p">;</span> <span class="c1">//&lt; Ivar&#39;s offset</span>
+<span class="k">@property</span> <span class="p">(</span><span class="k">nonatomic</span><span class="p">,</span> <span class="k">strong</span><span class="p">,</span> <span class="k">readonly</span><span class="p">)</span> <span class="bp">NSString</span> <span class="o">*</span><span class="n">typeEncoding</span><span class="p">;</span> <span class="c1">//&lt; Ivar&#39;s type encoding</span>
+<span class="k">@property</span> <span class="p">(</span><span class="k">nonatomic</span><span class="p">,</span> <span class="k">assign</span><span class="p">,</span> <span class="k">readonly</span><span class="p">)</span> <span class="n">YYEncodingType</span> <span class="n">type</span><span class="p">;</span> <span class="c1">//&lt; Ivar&#39;s type </span>
+<span class="k">@end</span>
+<span class="cm">/**</span>
+<span class="cm"> Method information.</span>
+<span class="cm"> */</span>
+<span class="k">@interface</span> <span class="nc">YYClassMethodInfo</span> : <span class="bp">NSObject</span>
+<span class="k">@property</span> <span class="p">(</span><span class="k">nonatomic</span><span class="p">,</span> <span class="k">assign</span><span class="p">,</span> <span class="k">readonly</span><span class="p">)</span> <span class="n">Method</span> <span class="n">method</span><span class="p">;</span>
+<span class="k">@property</span> <span class="p">(</span><span class="k">nonatomic</span><span class="p">,</span> <span class="k">strong</span><span class="p">,</span> <span class="k">readonly</span><span class="p">)</span> <span class="bp">NSString</span> <span class="o">*</span><span class="n">name</span><span class="p">;</span> <span class="c1">//&lt; method name</span>
+<span class="k">@property</span> <span class="p">(</span><span class="k">nonatomic</span><span class="p">,</span> <span class="k">assign</span><span class="p">,</span> <span class="k">readonly</span><span class="p">)</span> <span class="kt">SEL</span> <span class="n">sel</span><span class="p">;</span> <span class="c1">//&lt; method&#39;s selector</span>
+<span class="k">@property</span> <span class="p">(</span><span class="k">nonatomic</span><span class="p">,</span> <span class="k">assign</span><span class="p">,</span> <span class="k">readonly</span><span class="p">)</span> <span class="kt">IMP</span> <span class="n">imp</span><span class="p">;</span> <span class="c1">//&lt; method&#39;s implementation</span>
+<span class="k">@property</span> <span class="p">(</span><span class="k">nonatomic</span><span class="p">,</span> <span class="k">strong</span><span class="p">,</span> <span class="k">readonly</span><span class="p">)</span> <span class="bp">NSString</span> <span class="o">*</span><span class="n">typeEncoding</span><span class="p">;</span> <span class="c1">//&lt; method&#39;s parameter and return types</span>
+<span class="k">@property</span> <span class="p">(</span><span class="k">nonatomic</span><span class="p">,</span> <span class="k">strong</span><span class="p">,</span> <span class="k">readonly</span><span class="p">)</span> <span class="bp">NSString</span> <span class="o">*</span><span class="n">returnTypeEncoding</span><span class="p">;</span> <span class="c1">//&lt; return value&#39;s type</span>
+<span class="k">@property</span> <span class="p">(</span><span class="k">nonatomic</span><span class="p">,</span> <span class="k">strong</span><span class="p">,</span> <span class="k">readonly</span><span class="p">)</span> <span class="bp">NSArray</span> <span class="o">*</span><span class="n">argumentTypeEncodings</span><span class="p">;</span> <span class="c1">//&lt; array of arguments&#39; type</span>
+<span class="k">@end</span>
+<span class="cm">/**</span>
+<span class="cm"> Property information.</span>
+<span class="cm"> */</span>
+<span class="k">@interface</span> <span class="nc">YYClassPropertyInfo</span> : <span class="bp">NSObject</span>
+<span class="k">@property</span> <span class="p">(</span><span class="k">nonatomic</span><span class="p">,</span> <span class="k">assign</span><span class="p">,</span> <span class="k">readonly</span><span class="p">)</span> <span class="kt">objc_property_t</span> <span class="n">property</span><span class="p">;</span>
+<span class="k">@property</span> <span class="p">(</span><span class="k">nonatomic</span><span class="p">,</span> <span class="k">strong</span><span class="p">,</span> <span class="k">readonly</span><span class="p">)</span> <span class="bp">NSString</span> <span class="o">*</span><span class="n">name</span><span class="p">;</span> <span class="c1">//&lt; property&#39;s name</span>
+<span class="k">@property</span> <span class="p">(</span><span class="k">nonatomic</span><span class="p">,</span> <span class="k">assign</span><span class="p">,</span> <span class="k">readonly</span><span class="p">)</span> <span class="n">YYEncodingType</span> <span class="n">type</span><span class="p">;</span> <span class="c1">//&lt; property&#39;s type</span>
+<span class="k">@property</span> <span class="p">(</span><span class="k">nonatomic</span><span class="p">,</span> <span class="k">strong</span><span class="p">,</span> <span class="k">readonly</span><span class="p">)</span> <span class="bp">NSString</span> <span class="o">*</span><span class="n">typeEncoding</span><span class="p">;</span> <span class="c1">//&lt; property&#39;s encoding value</span>
+<span class="k">@property</span> <span class="p">(</span><span class="k">nonatomic</span><span class="p">,</span> <span class="k">strong</span><span class="p">,</span> <span class="k">readonly</span><span class="p">)</span> <span class="bp">NSString</span> <span class="o">*</span><span class="n">ivarName</span><span class="p">;</span> <span class="c1">//&lt; property&#39;s ivar name</span>
+<span class="k">@property</span> <span class="p">(</span><span class="k">nonatomic</span><span class="p">,</span> <span class="k">assign</span><span class="p">,</span> <span class="k">readonly</span><span class="p">)</span> <span class="kt">Class</span> <span class="n">cls</span><span class="p">;</span> <span class="c1">//&lt; may be nil</span>
+<span class="k">@property</span> <span class="p">(</span><span class="k">nonatomic</span><span class="p">,</span> <span class="k">strong</span><span class="p">,</span> <span class="k">readonly</span><span class="p">)</span> <span class="bp">NSString</span> <span class="o">*</span><span class="k">getter</span><span class="p">;</span> <span class="c1">//&lt; getter (nonnull)</span>
+<span class="k">@property</span> <span class="p">(</span><span class="k">nonatomic</span><span class="p">,</span> <span class="k">strong</span><span class="p">,</span> <span class="k">readonly</span><span class="p">)</span> <span class="bp">NSString</span> <span class="o">*</span><span class="k">setter</span><span class="p">;</span> <span class="c1">//&lt; setter (nonnull)</span>
+<span class="k">@end</span></code></pre></div>
+
 <p>我只截取了属性定义的部分。YYClassInfo储存了一个类里面所有的属性和方法字典，并保存了_cls、_superCls和_metaCls的签名。
 主要使用了OC的class_copyMethodList、class_copyPropertyList和class_copyIvarList方法，动过cls签名获取了类的信息。
 当然，说起来好像很简单，实际需要你对OC的底层非常了解，知道objc_method、objc_ivar和objc_property的定义，知道Type Encodings和Declared Properties这些信息，才能真的解析出我们需要的信息。
 这里我找到了OC里面关于上面那些结构体的定义：</p>
-<pre class="brush: cpp;auto-links: true;collapse: true;first-line: 1;gutter: true;html-script: true;light: true;ruler: false;smart-tabs: true;tab-size: 4;toolbar: true;">
-类的数据结构
 
-Class(指针)
+<div class="highlight"><pre><code class="language-logos" data-lang="logos"><span class="err">类的数据结构</span>
 
-typedef struct objc_class *Class;
+<span class="kt">Class</span><span class="p">(</span><span class="err">指针</span><span class="p">)</span>
+
+<span class="k">typedef</span> <span class="k">struct</span> <span class="n">objc_class</span> <span class="o">*</span><span class="kt">Class</span><span class="p">;</span>
        
-/*
-  这是由编译器为每个类产生的数据结构,这个结构定义了一个类.这个结构是通过编译器在执行时产生,在运行时发送消息时使用.因此,一些成员改变了类型.编译器产生"char* const"类型的字符串指针替代了下面的成员变量"super_class"
-*/
-struct objc_class {
-  struct objc_class*  class_pointer;    /* 指向元类的指针. */
-  struct objc_class*  super_class;      /* 指向父类的指针. 对于NSObject来说是NULL.*/
-  const char*         name;             /* 类的名称. */
-  long                version;          /* 未知. */
-  unsigned long       info;             /* 比特蒙板.  参考下面类的蒙板定义. */
-  long                instance_size;    /* 类的字节数.包含类的定义和所有父类的定义 */
-#ifdef _WIN64
-  long pad;
-#endif
-  struct objc_ivar_list* ivars;         /* 指向类中定义的实例变量的列表结构. NULL代表没有实例变量.不包括父类的变量. */
-  struct objc_method_list*  methods;    /* 链接类中定义的实例方法. */
-  struct sarray *    dtable;            /* 指向实例方法分配表. */
-  struct objc_class* subclass_list;     /* 父类列表 */
-  struct objc_class* sibling_class;
-  struct objc_protocol_list *protocols; /* 要实现的原型列表 */
-  void* gc_object_type;
-};
-Method(指针)
+<span class="cm">/*</span>
+<span class="cm">  这是由编译器为每个类产生的数据结构,这个结构定义了一个类.这个结构是通过编译器在执行时产生,在运行时发送消息时使用.因此,一些成员改变了类型.编译器产生&quot;char* const&quot;类型的字符串指针替代了下面的成员变量&quot;super_class&quot;</span>
+<span class="cm">*/</span>
+<span class="k">struct</span> <span class="n">objc_class</span> <span class="p">{</span>
+  <span class="k">struct</span> <span class="n">objc_class</span><span class="o">*</span>  <span class="n">class_pointer</span><span class="p">;</span>    <span class="cm">/* 指向元类的指针. */</span>
+  <span class="k">struct</span> <span class="n">objc_class</span><span class="o">*</span>  <span class="n">super_class</span><span class="p">;</span>      <span class="cm">/* 指向父类的指针. 对于NSObject来说是NULL.*/</span>
+  <span class="k">const</span> <span class="kt">char</span><span class="o">*</span>         <span class="n">name</span><span class="p">;</span>             <span class="cm">/* 类的名称. */</span>
+  <span class="kt">long</span>                <span class="n">version</span><span class="p">;</span>          <span class="cm">/* 未知. */</span>
+  <span class="kt">unsigned</span> <span class="kt">long</span>       <span class="n">info</span><span class="p">;</span>             <span class="cm">/* 比特蒙板.  参考下面类的蒙板定义. */</span>
+  <span class="kt">long</span>                <span class="n">instance_size</span><span class="p">;</span>    <span class="cm">/* 类的字节数.包含类的定义和所有父类的定义 */</span>
+<span class="cp">#ifdef _WIN64</span>
+  <span class="kt">long</span> <span class="n">pad</span><span class="p">;</span>
+<span class="cp">#endif</span>
+  <span class="k">struct</span> <span class="n">objc_ivar_list</span><span class="o">*</span> <span class="n">ivars</span><span class="p">;</span>         <span class="cm">/* 指向类中定义的实例变量的列表结构. NULL代表没有实例变量.不包括父类的变量. */</span>
+  <span class="k">struct</span> <span class="n">objc_method_list</span><span class="o">*</span>  <span class="n">methods</span><span class="p">;</span>    <span class="cm">/* 链接类中定义的实例方法. */</span>
+  <span class="k">struct</span> <span class="n">sarray</span> <span class="o">*</span>    <span class="n">dtable</span><span class="p">;</span>            <span class="cm">/* 指向实例方法分配表. */</span>
+  <span class="k">struct</span> <span class="n">objc_class</span><span class="o">*</span> <span class="n">subclass_list</span><span class="p">;</span>     <span class="cm">/* 父类列表 */</span>
+  <span class="k">struct</span> <span class="n">objc_class</span><span class="o">*</span> <span class="n">sibling_class</span><span class="p">;</span>
+  <span class="k">struct</span> <span class="n">objc_protocol_list</span> <span class="o">*</span><span class="n">protocols</span><span class="p">;</span> <span class="cm">/* 要实现的原型列表 */</span>
+  <span class="kt">void</span><span class="o">*</span> <span class="n">gc_object_type</span><span class="p">;</span>
+<span class="p">};</span>
+<span class="n">Method</span><span class="p">(</span><span class="err">指针</span><span class="p">)</span>
 
-typedef struct objc_method *Method;
+<span class="k">typedef</span> <span class="k">struct</span> <span class="n">objc_method</span> <span class="o">*</span><span class="n">Method</span><span class="p">;</span>
        
-/* 编译器依据类中定义的方法为该类产生一个或更多这种这种结构.
-    一个类的实现可以分散在一个文件中不同部分,同时类别可以分散在不同的模块中.为了处理这个问题,使用一个单独的方法链表 */
-struct objc_method
-{
-  SEL         method_name;  /* 这个变量就是方法的名称.编译器使用在这里使用一个`char*`,当一个方法被注册,名称在运行时被使用真正的SEL替代  */
-  const char* method_types; /* 描述方法的参数列表. 在运行时注册选择器时使用.那时候方法名就会包含方法的参数列表.*/
-  IMP         method_imp;   /* 方法执行时候的地址. */
-};
-Ivar(指针)
+<span class="cm">/* 编译器依据类中定义的方法为该类产生一个或更多这种这种结构.</span>
+<span class="cm">    一个类的实现可以分散在一个文件中不同部分,同时类别可以分散在不同的模块中.为了处理这个问题,使用一个单独的方法链表 */</span>
+<span class="k">struct</span> <span class="n">objc_method</span>
+<span class="p">{</span>
+  <span class="kt">SEL</span>         <span class="n">method_name</span><span class="p">;</span>  <span class="cm">/* 这个变量就是方法的名称.编译器使用在这里使用一个`char*`,当一个方法被注册,名称在运行时被使用真正的SEL替代  */</span>
+  <span class="k">const</span> <span class="kt">char</span><span class="o">*</span> <span class="n">method_types</span><span class="p">;</span> <span class="cm">/* 描述方法的参数列表. 在运行时注册选择器时使用.那时候方法名就会包含方法的参数列表.*/</span>
+  <span class="kt">IMP</span>         <span class="n">method_imp</span><span class="p">;</span>   <span class="cm">/* 方法执行时候的地址. */</span>
+<span class="p">};</span>
+<span class="n">Ivar</span><span class="p">(</span><span class="err">指针</span><span class="p">)</span>
 
-typedef struct objc_ivar *Ivar;
+<span class="k">typedef</span> <span class="k">struct</span> <span class="n">objc_ivar</span> <span class="o">*</span><span class="n">Ivar</span><span class="p">;</span>
        
-/* 编译器依据类中定义的实例变量为该类产生一个或更多这种这种结构  */
-struct objc_ivar
-{
-  const char* ivar_name;  /* 类中定义的变量名. */
-  const char* ivar_type;  /* 描述变量的类型.调试时非常有用. */
-  int        ivar_offset; /* 实例结构的基地址偏移字节 */
-};
-Category(指针)
+<span class="cm">/* 编译器依据类中定义的实例变量为该类产生一个或更多这种这种结构  */</span>
+<span class="k">struct</span> <span class="n">objc_ivar</span>
+<span class="p">{</span>
+  <span class="k">const</span> <span class="kt">char</span><span class="o">*</span> <span class="n">ivar_name</span><span class="p">;</span>  <span class="cm">/* 类中定义的变量名. */</span>
+  <span class="k">const</span> <span class="kt">char</span><span class="o">*</span> <span class="n">ivar_type</span><span class="p">;</span>  <span class="cm">/* 描述变量的类型.调试时非常有用. */</span>
+  <span class="kt">int</span>        <span class="n">ivar_offset</span><span class="p">;</span> <span class="cm">/* 实例结构的基地址偏移字节 */</span>
+<span class="p">};</span>
+<span class="n">Category</span><span class="p">(</span><span class="err">指针</span><span class="p">)</span>
 
-typedef struct objc_category *Category;
+<span class="k">typedef</span> <span class="k">struct</span> <span class="n">objc_category</span> <span class="o">*</span><span class="n">Category</span><span class="p">;</span>
        
-/* 编译器为每个类别产生一个这样的结构.一个类可以具有多个类别同时既包括实例方法,也可以包括类方法*/
-struct objc_category
-{
-  const char*   category_name;                /* 类别名.定义在类别后面的括号内*/
-  const char*   class_name;                   /* 类名 */
-  struct objc_method_list  *instance_methods; /* 链接类中定义的实例方法. NULL表示没有实例方法. */
-  struct objc_method_list *class_methods;     /* 链接类中定义的类方法. NULL表示没有类方法. */
-  struct objc_protocol_list *protocols;       /* 遵循的协议表  */
-};
-objc_property_t
+<span class="cm">/* 编译器为每个类别产生一个这样的结构.一个类可以具有多个类别同时既包括实例方法,也可以包括类方法*/</span>
+<span class="k">struct</span> <span class="n">objc_category</span>
+<span class="p">{</span>
+  <span class="k">const</span> <span class="kt">char</span><span class="o">*</span>   <span class="n">category_name</span><span class="p">;</span>                <span class="cm">/* 类别名.定义在类别后面的括号内*/</span>
+  <span class="k">const</span> <span class="kt">char</span><span class="o">*</span>   <span class="n">class_name</span><span class="p">;</span>                   <span class="cm">/* 类名 */</span>
+  <span class="k">struct</span> <span class="n">objc_method_list</span>  <span class="o">*</span><span class="n">instance_methods</span><span class="p">;</span> <span class="cm">/* 链接类中定义的实例方法. NULL表示没有实例方法. */</span>
+  <span class="k">struct</span> <span class="n">objc_method_list</span> <span class="o">*</span><span class="n">class_methods</span><span class="p">;</span>     <span class="cm">/* 链接类中定义的类方法. NULL表示没有类方法. */</span>
+  <span class="k">struct</span> <span class="n">objc_protocol_list</span> <span class="o">*</span><span class="n">protocols</span><span class="p">;</span>       <span class="cm">/* 遵循的协议表  */</span>
+<span class="p">};</span>
+<span class="kt">objc_property_t</span>
 
-typedef struct objc_property *objc_property_t;
-IMP
+<span class="k">typedef</span> <span class="k">struct</span> <span class="n">objc_property</span> <span class="o">*</span><span class="kt">objc_property_t</span><span class="p">;</span>
+<span class="kt">IMP</span>
 
-id (*IMP)(id, SEL, ...)
-SEL
+<span class="kt">id</span> <span class="p">(</span><span class="o">*</span><span class="kt">IMP</span><span class="p">)(</span><span class="kt">id</span><span class="p">,</span> <span class="kt">SEL</span><span class="p">,</span> <span class="p">...)</span>
+<span class="kt">SEL</span>
 
-typedef struct objc_selector *SEL;
+<span class="k">typedef</span> <span class="k">struct</span> <span class="n">objc_selector</span> <span class="o">*</span><span class="kt">SEL</span><span class="p">;</span>
        
-struct objc_selector
-{
-  void *sel_id;
-  const char *sel_types;
-};
-objc_method_list
+<span class="k">struct</span> <span class="n">objc_selector</span>
+<span class="p">{</span>
+  <span class="kt">void</span> <span class="o">*</span><span class="n">sel_id</span><span class="p">;</span>
+  <span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">sel_types</span><span class="p">;</span>
+<span class="p">};</span>
+<span class="n">objc_method_list</span>
 
-struct objc_method_list
-{
-  struct objc_method_list*  method_next; /* 这个变量用来链接另一个单独的方法链表 */
-  int            method_count;            /* 结构中定义的方法数量 */
-  struct objc_method method_list[1];      /* 可变长度的结构 */
-};
-objc_cache
+<span class="k">struct</span> <span class="n">objc_method_list</span>
+<span class="p">{</span>
+  <span class="k">struct</span> <span class="n">objc_method_list</span><span class="o">*</span>  <span class="n">method_next</span><span class="p">;</span> <span class="cm">/* 这个变量用来链接另一个单独的方法链表 */</span>
+  <span class="kt">int</span>            <span class="n">method_count</span><span class="p">;</span>            <span class="cm">/* 结构中定义的方法数量 */</span>
+  <span class="k">struct</span> <span class="n">objc_method</span> <span class="n">method_list</span><span class="p">[</span><span class="mi">1</span><span class="p">];</span>      <span class="cm">/* 可变长度的结构 */</span>
+<span class="p">};</span>
+<span class="n">objc_cache</span>
 
-struct objc_cache
-{
-    unsigned int mask;
-    unsigned int occupied;
-    Method buckets[1];
-};
-objc_protocol_list
+<span class="k">struct</span> <span class="n">objc_cache</span>
+<span class="p">{</span>
+    <span class="kt">unsigned</span> <span class="kt">int</span> <span class="n">mask</span><span class="p">;</span>
+    <span class="kt">unsigned</span> <span class="kt">int</span> <span class="n">occupied</span><span class="p">;</span>
+    <span class="n">Method</span> <span class="n">buckets</span><span class="p">[</span><span class="mi">1</span><span class="p">];</span>
+<span class="p">};</span>
+<span class="n">objc_protocol_list</span>
 
-struct objc_protocol_list
-{
-  struct objc_protocol_list *next;
-  size_t count;
-  struct objc_protocol *list[1];
-};
-实例的数据结构
+<span class="k">struct</span> <span class="n">objc_protocol_list</span>
+<span class="p">{</span>
+  <span class="k">struct</span> <span class="n">objc_protocol_list</span> <span class="o">*</span><span class="n">next</span><span class="p">;</span>
+  <span class="kt">size_t</span> <span class="n">count</span><span class="p">;</span>
+  <span class="k">struct</span> <span class="n">objc_protocol</span> <span class="o">*</span><span class="n">list</span><span class="p">[</span><span class="mi">1</span><span class="p">];</span>
+<span class="p">};</span>
+<span class="err">实例的数据结构</span>
 
-id
+<span class="kt">id</span>
 
-typedef struct objc_object *id;
-objc_object
+<span class="k">typedef</span> <span class="k">struct</span> <span class="n">objc_object</span> <span class="o">*</span><span class="kt">id</span><span class="p">;</span>
+<span class="n">objc_object</span>
 
-struct objc_object
-{
-  /* 类的指针是对象相关的类.如果是一个类对象, 这个指针指向元类.
-  Class isa;
-};
-objc_super
+<span class="k">struct</span> <span class="n">objc_object</span>
+<span class="p">{</span>
+  <span class="cm">/* 类的指针是对象相关的类.如果是一个类对象, 这个指针指向元类.</span>
+<span class="cm">  Class isa;</span>
+<span class="cm">};</span>
+<span class="cm">objc_super</span>
 
-struct objc_super
-{
-  id    self;        /* 消息的接受者  */
-  Class super_class; /* 接受者的父类  */
-};
+<span class="cm">struct objc_super</span>
+<span class="cm">{</span>
+<span class="cm">  id    self;        /* 消息的接受者  */</span>
+  <span class="kt">Class</span> <span class="n">super_class</span><span class="p">;</span> <span class="cm">/* 接受者的父类  */</span>
+<span class="p">};</span></code></pre></div>
 
-</pre>
 <p>有了上面这些信息相信所有人都知道作者的代码都在干嘛了，具体不表。反正到此为止，我们已经有了class的定义。
 理论上下一步就可以解析了，但是作者额外多了一步，定制了映射关系。出现了一个新的class属性映射关系类的定义：</p>
-<pre class="brush: cpp;auto-links: true;collapse: true;first-line: 1;gutter: true;html-script: true;light: true;ruler: false;smart-tabs: true;tab-size: 4;toolbar: true;">
-//A class info in object model.
-@interface _YYModelMeta : NSObject {
-@public
-    // Key:mapped key and key path, Value:_YYModelPropertyInfo.
-    NSDictionary *_mapper;
-    // Array&lt;_YYModelPropertyInfo&gt;, all property meta of this model.
-    NSArray *_allPropertyMetas;
-    // Array&lt;_YYModelPropertyInfo&gt;, property meta which is mapped to a key path.
-    NSArray *_keyPathPropertyMetas;
-    // The number of mapped key (and key path), same to _mapper.count.
-    NSUInteger _keyMappedCount;
-    // Model class type.
-    YYEncodingNSType _nsType;
+
+<div class="highlight"><pre><code class="language-logos" data-lang="logos"><span class="c1">//A class info in object model.</span>
+<span class="k">@interface</span> <span class="nc">_YYModelMeta</span> : <span class="bp">NSObject</span> <span class="p">{</span>
+<span class="k">@public</span>
+    <span class="c1">// Key:mapped key and key path, Value:_YYModelPropertyInfo.</span>
+    <span class="bp">NSDictionary</span> <span class="o">*</span><span class="n">_mapper</span><span class="p">;</span>
+    <span class="c1">// Array&lt;_YYModelPropertyInfo&gt;, all property meta of this model.</span>
+    <span class="bp">NSArray</span> <span class="o">*</span><span class="n">_allPropertyMetas</span><span class="p">;</span>
+    <span class="c1">// Array&lt;_YYModelPropertyInfo&gt;, property meta which is mapped to a key path.</span>
+    <span class="bp">NSArray</span> <span class="o">*</span><span class="n">_keyPathPropertyMetas</span><span class="p">;</span>
+    <span class="c1">// The number of mapped key (and key path), same to _mapper.count.</span>
+    <span class="bp">NSUInteger</span> <span class="n">_keyMappedCount</span><span class="p">;</span>
+    <span class="c1">// Model class type.</span>
+    <span class="n">YYEncodingNSType</span> <span class="n">_nsType</span><span class="p">;</span>
     
-    BOOL _hasCustomTransformFromDictonary;
-    BOOL _hasCustomTransformToDictionary;
-}
-@end
-</pre>
+    <span class="kt">BOOL</span> <span class="n">_hasCustomTransformFromDictonary</span><span class="p">;</span>
+    <span class="kt">BOOL</span> <span class="n">_hasCustomTransformToDictionary</span><span class="p">;</span>
+<span class="p">}</span>
+<span class="k">@end</span></code></pre></div>
+
 <p>上面的YYClassInfo更像是一个抽象的模板，只是告诉我们类里面有这些属性和方法，没有告诉我们怎么去解析。_YYModelMeta这个类就是告诉我们怎么去解析的。
 同样的所有_YYModelMeta都缓存在了一个全局静态字典里面。_YYModelMeta通过YYClassInfo的信息来实例化：</p>
-<pre class="brush: cpp;auto-links: true;collapse: true;first-line: 1;gutter: true;html-script: true;light: true;ruler: false;smart-tabs: true;tab-size: 4;toolbar: true;">
-- (instancetype)initWithClass:(Class)cls {
-    YYClassInfo *classInfo = [YYClassInfo classInfoWithClass:cls];
-    if (!classInfo) return nil;
-    self = [super init];
+
+<div class="highlight"><pre><code class="language-logos" data-lang="logos"><span class="p">-</span> <span class="p">(</span><span class="kt">instancetype</span><span class="p">)</span><span class="nf">initWithClass:</span><span class="p">(</span><span class="kt">Class</span><span class="p">)</span><span class="nv">cls</span> <span class="p">{</span>
+    <span class="n">YYClassInfo</span> <span class="o">*</span><span class="n">classInfo</span> <span class="o">=</span> <span class="p">[</span><span class="n">YYClassInfo</span> <span class="nl">classInfoWithClass</span><span class="p">:</span><span class="n">cls</span><span class="p">];</span>
+    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">classInfo</span><span class="p">)</span> <span class="k">return</span> <span class="nb">nil</span><span class="p">;</span>
+    <span class="nb">self</span> <span class="o">=</span> <span class="p">[</span><span class="nb">super</span> <span class="n">init</span><span class="p">];</span>
     
-    // Get black list
-    NSSet *blacklist = nil;
-    if ([cls respondsToSelector:@selector(modelPropertyBlacklist)]) {
-        NSArray *properties = [(id&amp;ltYYModel&gt;)cls modelPropertyBlacklist];
-        if (properties) {
-            blacklist = [NSSet setWithArray:properties];
-        }
-    }
+    <span class="c1">// Get black list</span>
+    <span class="bp">NSSet</span> <span class="o">*</span><span class="n">blacklist</span> <span class="o">=</span> <span class="nb">nil</span><span class="p">;</span>
+    <span class="k">if</span> <span class="p">([</span><span class="n">cls</span> <span class="nl">respondsToSelector</span><span class="p">:</span><span class="k">@selector</span><span class="p">(</span><span class="n">modelPropertyBlacklist</span><span class="p">)])</span> <span class="p">{</span>
+        <span class="bp">NSArray</span> <span class="o">*</span><span class="n">properties</span> <span class="o">=</span> <span class="p">[(</span><span class="kt">id</span><span class="o">&lt;</span><span class="n">YYModel</span><span class="o">&gt;</span><span class="p">)</span><span class="n">cls</span> <span class="n">modelPropertyBlacklist</span><span class="p">];</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">properties</span><span class="p">)</span> <span class="p">{</span>
+            <span class="n">blacklist</span> <span class="o">=</span> <span class="p">[</span><span class="bp">NSSet</span> <span class="nl">setWithArray</span><span class="p">:</span><span class="n">properties</span><span class="p">];</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
     
-    // Get white list
-    NSSet *whitelist = nil;
-    if ([cls respondsToSelector:@selector(modelPropertyWhitelist)]) {
-        NSArray *properties = [(id&amp;ltYYModel&gt;)cls modelPropertyWhitelist];
-        if (properties) {
-            whitelist = [NSSet setWithArray:properties];
-        }
-    }
+    <span class="c1">// Get white list</span>
+    <span class="bp">NSSet</span> <span class="o">*</span><span class="n">whitelist</span> <span class="o">=</span> <span class="nb">nil</span><span class="p">;</span>
+    <span class="k">if</span> <span class="p">([</span><span class="n">cls</span> <span class="nl">respondsToSelector</span><span class="p">:</span><span class="k">@selector</span><span class="p">(</span><span class="n">modelPropertyWhitelist</span><span class="p">)])</span> <span class="p">{</span>
+        <span class="bp">NSArray</span> <span class="o">*</span><span class="n">properties</span> <span class="o">=</span> <span class="p">[(</span><span class="kt">id</span><span class="o">&lt;</span><span class="n">YYModel</span><span class="o">&gt;</span><span class="p">)</span><span class="n">cls</span> <span class="n">modelPropertyWhitelist</span><span class="p">];</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">properties</span><span class="p">)</span> <span class="p">{</span>
+            <span class="n">whitelist</span> <span class="o">=</span> <span class="p">[</span><span class="bp">NSSet</span> <span class="nl">setWithArray</span><span class="p">:</span><span class="n">properties</span><span class="p">];</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
     
-    // Get container property's generic class
-    NSDictionary *genericMapper = nil;
-    if ([cls respondsToSelector:@selector(modelContainerPropertyGenericClass)]) {
-        genericMapper = [(id&amp;ltYYModel&gt;)cls modelContainerPropertyGenericClass];
-        if (genericMapper) {
-            NSMutableDictionary *tmp = genericMapper.mutableCopy;
-            [genericMapper enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
-                if (![key isKindOfClass:[NSString class]]) return;
-                Class meta = object_getClass(obj);
-                if (!meta) return;
-                if (class_isMetaClass(meta)) {
-                    tmp[key] = obj;
-                } else if ([obj isKindOfClass:[NSString class]]) {
-                    Class cls = NSClassFromString(obj);
-                    if (cls) {
-                        tmp[key] = cls;
-                    }
-                }
-            }];
-            genericMapper = tmp;
-        }
-    }
+    <span class="c1">// Get container property&#39;s generic class</span>
+    <span class="bp">NSDictionary</span> <span class="o">*</span><span class="n">genericMapper</span> <span class="o">=</span> <span class="nb">nil</span><span class="p">;</span>
+    <span class="k">if</span> <span class="p">([</span><span class="n">cls</span> <span class="nl">respondsToSelector</span><span class="p">:</span><span class="k">@selector</span><span class="p">(</span><span class="n">modelContainerPropertyGenericClass</span><span class="p">)])</span> <span class="p">{</span>
+        <span class="n">genericMapper</span> <span class="o">=</span> <span class="p">[(</span><span class="kt">id</span><span class="o">&lt;</span><span class="n">YYModel</span><span class="o">&gt;</span><span class="p">)</span><span class="n">cls</span> <span class="n">modelContainerPropertyGenericClass</span><span class="p">];</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">genericMapper</span><span class="p">)</span> <span class="p">{</span>
+            <span class="bp">NSMutableDictionary</span> <span class="o">*</span><span class="n">tmp</span> <span class="o">=</span> <span class="n">genericMapper</span><span class="p">.</span><span class="n">mutableCopy</span><span class="p">;</span>
+            <span class="p">[</span><span class="n">genericMapper</span> <span class="nl">enumerateKeysAndObjectsUsingBlock</span><span class="p">:</span><span class="o">^</span><span class="p">(</span><span class="kt">id</span> <span class="n">key</span><span class="p">,</span> <span class="kt">id</span> <span class="n">obj</span><span class="p">,</span> <span class="kt">BOOL</span> <span class="o">*</span><span class="n">stop</span><span class="p">)</span> <span class="p">{</span>
+                <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="p">[</span><span class="n">key</span> <span class="nl">isKindOfClass</span><span class="p">:[</span><span class="bp">NSString</span> <span class="k">class</span><span class="p">]])</span> <span class="k">return</span><span class="p">;</span>
+                <span class="kt">Class</span> <span class="n">meta</span> <span class="o">=</span> <span class="n">object_getClass</span><span class="p">(</span><span class="n">obj</span><span class="p">);</span>
+                <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">meta</span><span class="p">)</span> <span class="k">return</span><span class="p">;</span>
+                <span class="k">if</span> <span class="p">(</span><span class="n">class_isMetaClass</span><span class="p">(</span><span class="n">meta</span><span class="p">))</span> <span class="p">{</span>
+                    <span class="n">tmp</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">obj</span><span class="p">;</span>
+                <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="p">([</span><span class="n">obj</span> <span class="nl">isKindOfClass</span><span class="p">:[</span><span class="bp">NSString</span> <span class="k">class</span><span class="p">]])</span> <span class="p">{</span>
+                    <span class="kt">Class</span> <span class="n">cls</span> <span class="o">=</span> <span class="n">NSClassFromString</span><span class="p">(</span><span class="n">obj</span><span class="p">);</span>
+                    <span class="k">if</span> <span class="p">(</span><span class="n">cls</span><span class="p">)</span> <span class="p">{</span>
+                        <span class="n">tmp</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">cls</span><span class="p">;</span>
+                    <span class="p">}</span>
+                <span class="p">}</span>
+            <span class="p">}];</span>
+            <span class="n">genericMapper</span> <span class="o">=</span> <span class="n">tmp</span><span class="p">;</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
     
-    // Create all property metas.
-    NSMutableDictionary *allPropertyMetas = [NSMutableDictionary new];
-    YYClassInfo *curClassInfo = classInfo;
-    while (curClassInfo &amp;&amp; curClassInfo.superCls != nil) { // recursive parse super class, but ignore root class (NSObject/NSProxy)
-        for (YYClassPropertyInfo *propertyInfo in curClassInfo.propertyInfos.allValues) {
-            if (!propertyInfo.name) continue;
-            if (blacklist &amp;&amp; [blacklist containsObject:propertyInfo.name]) continue;
-            if (whitelist &amp;&amp; ![whitelist containsObject:propertyInfo.name]) continue;
-            _YYModelPropertyMeta *meta = [_YYModelPropertyMeta metaWithClassInfo:classInfo
-                                                                    propertyInfo:propertyInfo
-                                                                         generic:genericMapper[propertyInfo.name]];
-            if (!meta || !meta-&gt;_name) continue;
-            if (!meta-&gt;_getter &amp;&amp; !meta-&gt;_setter) continue;
-            if (allPropertyMetas[meta-&gt;_name]) continue;
-            allPropertyMetas[meta-&gt;_name] = meta;
-        }
-        curClassInfo = curClassInfo.superClassInfo;
-    }
-    if (allPropertyMetas.count) _allPropertyMetas = allPropertyMetas.allValues.copy;
+    <span class="c1">// Create all property metas.</span>
+    <span class="bp">NSMutableDictionary</span> <span class="o">*</span><span class="n">allPropertyMetas</span> <span class="o">=</span> <span class="p">[</span><span class="bp">NSMutableDictionary</span> <span class="k">new</span><span class="p">];</span>
+    <span class="n">YYClassInfo</span> <span class="o">*</span><span class="n">curClassInfo</span> <span class="o">=</span> <span class="n">classInfo</span><span class="p">;</span>
+    <span class="k">while</span> <span class="p">(</span><span class="n">curClassInfo</span> <span class="o">&amp;&amp;</span> <span class="n">curClassInfo</span><span class="p">.</span><span class="n">superCls</span> <span class="o">!=</span> <span class="nb">nil</span><span class="p">)</span> <span class="p">{</span> <span class="c1">// recursive parse super class, but ignore root class (NSObject/NSProxy)</span>
+        <span class="k">for</span> <span class="p">(</span><span class="n">YYClassPropertyInfo</span> <span class="o">*</span><span class="n">propertyInfo</span> <span class="k">in</span> <span class="n">curClassInfo</span><span class="p">.</span><span class="n">propertyInfos</span><span class="p">.</span><span class="n">allValues</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">propertyInfo</span><span class="p">.</span><span class="n">name</span><span class="p">)</span> <span class="k">continue</span><span class="p">;</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">blacklist</span> <span class="o">&amp;&amp;</span> <span class="p">[</span><span class="n">blacklist</span> <span class="nl">containsObject</span><span class="p">:</span><span class="n">propertyInfo</span><span class="p">.</span><span class="n">name</span><span class="p">])</span> <span class="k">continue</span><span class="p">;</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">whitelist</span> <span class="o">&amp;&amp;</span> <span class="o">!</span><span class="p">[</span><span class="n">whitelist</span> <span class="nl">containsObject</span><span class="p">:</span><span class="n">propertyInfo</span><span class="p">.</span><span class="n">name</span><span class="p">])</span> <span class="k">continue</span><span class="p">;</span>
+            <span class="n">_YYModelPropertyMeta</span> <span class="o">*</span><span class="n">meta</span> <span class="o">=</span> <span class="p">[</span><span class="n">_YYModelPropertyMeta</span> <span class="nl">metaWithClassInfo</span><span class="p">:</span><span class="n">classInfo</span>
+                                                                    <span class="nl">propertyInfo</span><span class="p">:</span><span class="n">propertyInfo</span>
+                                                                         <span class="nl">generic</span><span class="p">:</span><span class="n">genericMapper</span><span class="p">[</span><span class="n">propertyInfo</span><span class="p">.</span><span class="n">name</span><span class="p">]];</span>
+            <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">meta</span> <span class="o">||</span> <span class="o">!</span><span class="n">meta</span><span class="o">-&gt;</span><span class="n">_name</span><span class="p">)</span> <span class="k">continue</span><span class="p">;</span>
+            <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">meta</span><span class="o">-&gt;</span><span class="n">_getter</span> <span class="o">&amp;&amp;</span> <span class="o">!</span><span class="n">meta</span><span class="o">-&gt;</span><span class="n">_setter</span><span class="p">)</span> <span class="k">continue</span><span class="p">;</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">allPropertyMetas</span><span class="p">[</span><span class="n">meta</span><span class="o">-&gt;</span><span class="n">_name</span><span class="p">])</span> <span class="k">continue</span><span class="p">;</span>
+            <span class="n">allPropertyMetas</span><span class="p">[</span><span class="n">meta</span><span class="o">-&gt;</span><span class="n">_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">meta</span><span class="p">;</span>
+        <span class="p">}</span>
+        <span class="n">curClassInfo</span> <span class="o">=</span> <span class="n">curClassInfo</span><span class="p">.</span><span class="n">superClassInfo</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">allPropertyMetas</span><span class="p">.</span><span class="n">count</span><span class="p">)</span> <span class="n">_allPropertyMetas</span> <span class="o">=</span> <span class="n">allPropertyMetas</span><span class="p">.</span><span class="n">allValues</span><span class="p">.</span><span class="k">copy</span><span class="p">;</span>
     
-    // create mapper
-    NSMutableDictionary *mapper = [NSMutableDictionary new];
-    NSMutableArray *keyPathPropertyMetas = [NSMutableArray new];
-    if ([cls respondsToSelector:@selector(modelCustomPropertyMapper)]) {
-        NSDictionary *customMapper = [(id &amp;ltYYModel&gt;)cls modelCustomPropertyMapper];
-        [customMapper enumerateKeysAndObjectsUsingBlock:^(NSString *propertyName, NSString *mappedToKey, BOOL *stop) {
-            _YYModelPropertyMeta *propertyMeta = allPropertyMetas[propertyName];
-            if (propertyMeta) {
-                NSArray *keyPath = [mappedToKey componentsSeparatedByString:@"."];
-                propertyMeta-&gt;_mappedToKey = mappedToKey;
-                if (keyPath.count &gt; 1) {
-                    propertyMeta-&gt;_mappedToKeyPath = keyPath;
-                    [keyPathPropertyMetas addObject:propertyMeta];
-                }
-                [allPropertyMetas removeObjectForKey:propertyName];
-                if (mapper[mappedToKey]) {
-                    ((_YYModelPropertyMeta *)mapper[mappedToKey])-&gt;_next = propertyMeta;
-                } else {
-                    mapper[mappedToKey] = propertyMeta;
-                }
-            }
-        }];
-    }
-    [allPropertyMetas enumerateKeysAndObjectsUsingBlock:^(NSString *name, _YYModelPropertyMeta *propertyMeta, BOOL *stop) {
-        propertyMeta-&gt;_mappedToKey = name;
-        if (mapper[name]) {
-            ((_YYModelPropertyMeta *)mapper[name])-&gt;_next = propertyMeta;
-        } else {
-            mapper[name] = propertyMeta;
-        }
-    }];
+    <span class="c1">// create mapper</span>
+    <span class="bp">NSMutableDictionary</span> <span class="o">*</span><span class="n">mapper</span> <span class="o">=</span> <span class="p">[</span><span class="bp">NSMutableDictionary</span> <span class="k">new</span><span class="p">];</span>
+    <span class="bp">NSMutableArray</span> <span class="o">*</span><span class="n">keyPathPropertyMetas</span> <span class="o">=</span> <span class="p">[</span><span class="bp">NSMutableArray</span> <span class="k">new</span><span class="p">];</span>
+    <span class="k">if</span> <span class="p">([</span><span class="n">cls</span> <span class="nl">respondsToSelector</span><span class="p">:</span><span class="k">@selector</span><span class="p">(</span><span class="n">modelCustomPropertyMapper</span><span class="p">)])</span> <span class="p">{</span>
+        <span class="bp">NSDictionary</span> <span class="o">*</span><span class="n">customMapper</span> <span class="o">=</span> <span class="p">[(</span><span class="kt">id</span> <span class="o">&lt;</span><span class="n">YYModel</span><span class="o">&gt;</span><span class="p">)</span><span class="n">cls</span> <span class="n">modelCustomPropertyMapper</span><span class="p">];</span>
+        <span class="p">[</span><span class="n">customMapper</span> <span class="nl">enumerateKeysAndObjectsUsingBlock</span><span class="p">:</span><span class="o">^</span><span class="p">(</span><span class="bp">NSString</span> <span class="o">*</span><span class="n">propertyName</span><span class="p">,</span> <span class="bp">NSString</span> <span class="o">*</span><span class="n">mappedToKey</span><span class="p">,</span> <span class="kt">BOOL</span> <span class="o">*</span><span class="n">stop</span><span class="p">)</span> <span class="p">{</span>
+            <span class="n">_YYModelPropertyMeta</span> <span class="o">*</span><span class="n">propertyMeta</span> <span class="o">=</span> <span class="n">allPropertyMetas</span><span class="p">[</span><span class="n">propertyName</span><span class="p">];</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">propertyMeta</span><span class="p">)</span> <span class="p">{</span>
+                <span class="bp">NSArray</span> <span class="o">*</span><span class="n">keyPath</span> <span class="o">=</span> <span class="p">[</span><span class="n">mappedToKey</span> <span class="nl">componentsSeparatedByString</span><span class="p">:</span><span class="s">@&quot;.&quot;</span><span class="p">];</span>
+                <span class="n">propertyMeta</span><span class="o">-&gt;</span><span class="n">_mappedToKey</span> <span class="o">=</span> <span class="n">mappedToKey</span><span class="p">;</span>
+                <span class="k">if</span> <span class="p">(</span><span class="n">keyPath</span><span class="p">.</span><span class="n">count</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">)</span> <span class="p">{</span>
+                    <span class="n">propertyMeta</span><span class="o">-&gt;</span><span class="n">_mappedToKeyPath</span> <span class="o">=</span> <span class="n">keyPath</span><span class="p">;</span>
+                    <span class="p">[</span><span class="n">keyPathPropertyMetas</span> <span class="nl">addObject</span><span class="p">:</span><span class="n">propertyMeta</span><span class="p">];</span>
+                <span class="p">}</span>
+                <span class="p">[</span><span class="n">allPropertyMetas</span> <span class="nl">removeObjectForKey</span><span class="p">:</span><span class="n">propertyName</span><span class="p">];</span>
+                <span class="k">if</span> <span class="p">(</span><span class="n">mapper</span><span class="p">[</span><span class="n">mappedToKey</span><span class="p">])</span> <span class="p">{</span>
+                    <span class="p">((</span><span class="n">_YYModelPropertyMeta</span> <span class="o">*</span><span class="p">)</span><span class="n">mapper</span><span class="p">[</span><span class="n">mappedToKey</span><span class="p">])</span><span class="o">-&gt;</span><span class="n">_next</span> <span class="o">=</span> <span class="n">propertyMeta</span><span class="p">;</span>
+                <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+                    <span class="n">mapper</span><span class="p">[</span><span class="n">mappedToKey</span><span class="p">]</span> <span class="o">=</span> <span class="n">propertyMeta</span><span class="p">;</span>
+                <span class="p">}</span>
+            <span class="p">}</span>
+        <span class="p">}];</span>
+    <span class="p">}</span>
+    <span class="p">[</span><span class="n">allPropertyMetas</span> <span class="nl">enumerateKeysAndObjectsUsingBlock</span><span class="p">:</span><span class="o">^</span><span class="p">(</span><span class="bp">NSString</span> <span class="o">*</span><span class="n">name</span><span class="p">,</span> <span class="n">_YYModelPropertyMeta</span> <span class="o">*</span><span class="n">propertyMeta</span><span class="p">,</span> <span class="kt">BOOL</span> <span class="o">*</span><span class="n">stop</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">propertyMeta</span><span class="o">-&gt;</span><span class="n">_mappedToKey</span> <span class="o">=</span> <span class="n">name</span><span class="p">;</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">mapper</span><span class="p">[</span><span class="n">name</span><span class="p">])</span> <span class="p">{</span>
+            <span class="p">((</span><span class="n">_YYModelPropertyMeta</span> <span class="o">*</span><span class="p">)</span><span class="n">mapper</span><span class="p">[</span><span class="n">name</span><span class="p">])</span><span class="o">-&gt;</span><span class="n">_next</span> <span class="o">=</span> <span class="n">propertyMeta</span><span class="p">;</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+            <span class="n">mapper</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">propertyMeta</span><span class="p">;</span>
+        <span class="p">}</span>
+    <span class="p">}];</span>
     
-    if (mapper.count) _mapper = mapper;
-    if(keyPathPropertyMetas) _keyPathPropertyMetas = keyPathPropertyMetas;
-    _keyMappedCount = _allPropertyMetas.count;
-    _nsType = YYClassGetNSType(cls);
-    _hasCustomTransformFromDictonary = ([cls instancesRespondToSelector:@selector(modelCustomTransformFromDictionary:)]);
-    _hasCustomTransformToDictionary = ([cls instancesRespondToSelector:@selector(modelCustomTransformToDictionary:)]);
+    <span class="k">if</span> <span class="p">(</span><span class="n">mapper</span><span class="p">.</span><span class="n">count</span><span class="p">)</span> <span class="n">_mapper</span> <span class="o">=</span> <span class="n">mapper</span><span class="p">;</span>
+    <span class="k">if</span><span class="p">(</span><span class="n">keyPathPropertyMetas</span><span class="p">)</span> <span class="n">_keyPathPropertyMetas</span> <span class="o">=</span> <span class="n">keyPathPropertyMetas</span><span class="p">;</span>
+    <span class="n">_keyMappedCount</span> <span class="o">=</span> <span class="n">_allPropertyMetas</span><span class="p">.</span><span class="n">count</span><span class="p">;</span>
+    <span class="n">_nsType</span> <span class="o">=</span> <span class="n">YYClassGetNSType</span><span class="p">(</span><span class="n">cls</span><span class="p">);</span>
+    <span class="n">_hasCustomTransformFromDictonary</span> <span class="o">=</span> <span class="p">([</span><span class="n">cls</span> <span class="nl">instancesRespondToSelector</span><span class="p">:</span><span class="k">@selector</span><span class="p">(</span><span class="nl">modelCustomTransformFromDictionary</span><span class="p">:)]);</span>
+    <span class="n">_hasCustomTransformToDictionary</span> <span class="o">=</span> <span class="p">([</span><span class="n">cls</span> <span class="nl">instancesRespondToSelector</span><span class="p">:</span><span class="k">@selector</span><span class="p">(</span><span class="nl">modelCustomTransformToDictionary</span><span class="p">:)]);</span>
     
-    return self;
-}
-</pre>
+    <span class="k">return</span> <span class="nb">self</span><span class="p">;</span>
+<span class="p">}</span></code></pre></div>
+
 <p>翻译成伪代码就是：</p>
+
 <ul>
-<li>1.获取属性的白名单、黑名单和解析的key-value映射表。</li>
-<li>2.根据这些信息生成Json字典里的key和类定义中的映射关系，保存在一个map中。</li>
+  <li>1.获取属性的白名单、黑名单和解析的key-value映射表。</li>
+  <li>2.根据这些信息生成Json字典里的key和类定义中的映射关系，保存在一个map中。</li>
 </ul>
+
 <p>白名单的作用就是如果存在白名单则在实例化的时候只管白名单里面的属性，_YYModelMeta里面也只保存白名单里面的属性映射。黑名单的作用就是过滤掉黑名单里面的属性，其他的属性映射都保存。
 当然一般简单地序列化是不需要这些个定制化的东西的，作者还额外实现了一些特殊属性的特殊映射关系，比如一些类定义里面的字典或者数组该如何实例化，我们就需要知道这些数组和字典里面储存的是
 什么类型的value，作者通过modelContainerPropertyGenericClass这个接口，让用户自己来设置。作者还额外提供了一个接口modelCustomPropertyMapper，顾名思义，某些属性的名字跟
 json字典中的key不一样或者本身就需要映射到跟属性不同名的key上，用户就可以通过这个接口返回一个字典来设置：</p>
-<pre class="brush: cpp;auto-links: true;collapse: true;first-line: 1;gutter: true;html-script: true;light: true;ruler: false;smart-tabs: true;tab-size: 4;toolbar: true;">
-/**
- Custom property mapper.
- 
- @discussion If the key in JSON/Dictionary does not match to the model's property name,
- implements this method and returns the additional mapper.
- 
- Example:
-    
-    json: 
-        {
-            "n":"Harry Pottery",
-            "p": 256,
-            "ext" : {
-                "desc" : "A book written by J.K.Rowing."
-            }
-        }
- 
-    model:
-        @interface YYBook : NSObject
-        @property NSString *name;
-        @property NSInteger page;
-        @property NSString *desc;
-        @end
- 
-        @implementation YYBook
-        + (NSDictionary *)modelCustomPropertyMapper {
-            return @{@"name" : @"n",
-                     @"page" : @"p",
-                     @"desc" : @"ext.desc"};
-        }
-        @end
- 
- @return A custom mapper for properties.
- */
-+ (NSDictionary *)modelCustomPropertyMapper;
-</pre>
+
+<div class="highlight"><pre><code class="language-logos" data-lang="logos"><span class="cm">/**</span>
+<span class="cm"> Custom property mapper.</span>
+<span class="cm"> </span>
+<span class="cm"> @discussion If the key in JSON/Dictionary does not match to the model&#39;s property name,</span>
+<span class="cm"> implements this method and returns the additional mapper.</span>
+<span class="cm"> </span>
+<span class="cm"> Example:</span>
+<span class="cm">    </span>
+<span class="cm">    json: </span>
+<span class="cm">        {</span>
+<span class="cm">            &quot;n&quot;:&quot;Harry Pottery&quot;,</span>
+<span class="cm">            &quot;p&quot;: 256,</span>
+<span class="cm">            &quot;ext&quot; : {</span>
+<span class="cm">                &quot;desc&quot; : &quot;A book written by J.K.Rowing.&quot;</span>
+<span class="cm">            }</span>
+<span class="cm">        }</span>
+<span class="cm"> </span>
+<span class="cm">    model:</span>
+<span class="cm">        @interface YYBook : NSObject</span>
+<span class="cm">        @property NSString *name;</span>
+<span class="cm">        @property NSInteger page;</span>
+<span class="cm">        @property NSString *desc;</span>
+<span class="cm">        @end</span>
+<span class="cm"> </span>
+<span class="cm">        @implementation YYBook</span>
+<span class="cm">        + (NSDictionary *)modelCustomPropertyMapper {</span>
+<span class="cm">            return @{@&quot;name&quot; : @&quot;n&quot;,</span>
+<span class="cm">                     @&quot;page&quot; : @&quot;p&quot;,</span>
+<span class="cm">                     @&quot;desc&quot; : @&quot;ext.desc&quot;};</span>
+<span class="cm">        }</span>
+<span class="cm">        @end</span>
+<span class="cm"> </span>
+<span class="cm"> @return A custom mapper for properties.</span>
+<span class="cm"> */</span>
+<span class="p">+</span> <span class="p">(</span><span class="bp">NSDictionary</span> <span class="o">*</span><span class="p">)</span><span class="nf">modelCustomPropertyMapper</span><span class="p">;</span></code></pre></div>
+
 <p>在生成映射表的时候有个问题，那就是一个key只能对应一个value，加入类A中的属性B、C都要对应到json字典中的KeyB字段，则这个映射表是没办法实现的，
 这也是为什么作者在_YYModelPropertyMeta的定义中添加_YYModelPropertyMeta *_next;这个属性。_YYModelPropertyMeta的完整定义如下:</p>
-<pre class="brush: cpp;auto-links: true;collapse: true;first-line: 1;gutter: true;html-script: true;light: true;ruler: false;smart-tabs: true;tab-size: 4;toolbar: true;">
-// A property info in object model.
-@interface _YYModelPropertyMeta : NSObject {
-@public
-    NSString *_name;             //&amp;lt property's name
-    YYEncodingType _type;        //&amp;lt property's type
-    YYEncodingNSType _nsType;    //&amp;lt property's Foundation type
-    BOOL _isCNumber;             //&amp;lt is c number type
-    Class _cls;                  //&amp;lt property's class, or nil
-    Class _genericCls;           //&amp;lt container's generic class, or nil if threr's no generic class
-    SEL _getter;                 //&amp;lt getter, or nil if the instances cannot respond
-    SEL _setter;                 //&amp;lt setter, or nil if the instances cannot respond
+
+<div class="highlight"><pre><code class="language-logos" data-lang="logos"><span class="c1">// A property info in object model.</span>
+<span class="k">@interface</span> <span class="nc">_YYModelPropertyMeta</span> : <span class="bp">NSObject</span> <span class="p">{</span>
+<span class="k">@public</span>
+    <span class="bp">NSString</span> <span class="o">*</span><span class="n">_name</span><span class="p">;</span>             <span class="c1">//&lt; property&#39;s name</span>
+    <span class="n">YYEncodingType</span> <span class="n">_type</span><span class="p">;</span>        <span class="c1">//&lt; property&#39;s type</span>
+    <span class="n">YYEncodingNSType</span> <span class="n">_nsType</span><span class="p">;</span>    <span class="c1">//&lt; property&#39;s Foundation type</span>
+    <span class="kt">BOOL</span> <span class="n">_isCNumber</span><span class="p">;</span>             <span class="c1">//&lt; is c number type</span>
+    <span class="kt">Class</span> <span class="n">_cls</span><span class="p">;</span>                  <span class="c1">//&lt; property&#39;s class, or nil</span>
+    <span class="kt">Class</span> <span class="n">_genericCls</span><span class="p">;</span>           <span class="c1">//&lt; container&#39;s generic class, or nil if threr&#39;s no generic class</span>
+    <span class="kt">SEL</span> <span class="n">_getter</span><span class="p">;</span>                 <span class="c1">//&lt; getter, or nil if the instances cannot respond</span>
+    <span class="kt">SEL</span> <span class="n">_setter</span><span class="p">;</span>                 <span class="c1">//&lt; setter, or nil if the instances cannot respond</span>
     
-    NSString *_mappedToKey;      //&amp;lt the key mapped to
-    NSArray *_mappedToKeyPath;   //&amp;lt the key path mapped to (nil if the name is not key path)
-    _YYModelPropertyMeta *_next; //&amp;lt next meta if there are multiple properties mapped to the same key.
-}
-@end
-</pre>
+    <span class="bp">NSString</span> <span class="o">*</span><span class="n">_mappedToKey</span><span class="p">;</span>      <span class="c1">//&lt; the key mapped to</span>
+    <span class="bp">NSArray</span> <span class="o">*</span><span class="n">_mappedToKeyPath</span><span class="p">;</span>   <span class="c1">//&lt; the key path mapped to (nil if the name is not key path)</span>
+    <span class="n">_YYModelPropertyMeta</span> <span class="o">*</span><span class="n">_next</span><span class="p">;</span> <span class="c1">//&lt; next meta if there are multiple properties mapped to the same key.</span>
+<span class="p">}</span>
+<span class="k">@end</span></code></pre></div>
+
 <p>我们已经知道了YYClassInfo和_YYModelMeta的关系，那么_YYModelPropertyMeta和YYClassPropertyInfo是什么关系呢？我们看到YYClassPropertyInfo中
 保存的是属性的原始模板信息，而且代码里有一段：</p>
-<pre class="brush: cpp;auto-links: true;collapse: true;first-line: 1;gutter: true;html-script: true;light: true;ruler: false;smart-tabs: true;tab-size: 4;toolbar: true;">
-_YYModelPropertyMeta *meta = [_YYModelPropertyMeta metaWithClassInfo:classInfo
-                                                                    propertyInfo:propertyInfo
-                                                                         generic:genericMapper[propertyInfo.name]];
-</pre>
+
+<div class="highlight"><pre><code class="language-logos" data-lang="logos"><span class="n">_YYModelPropertyMeta</span> <span class="o">*</span><span class="n">meta</span> <span class="o">=</span> <span class="p">[</span><span class="n">_YYModelPropertyMeta</span> <span class="nl">metaWithClassInfo</span><span class="p">:</span><span class="n">classInfo</span>
+                                                                    <span class="nl">propertyInfo</span><span class="p">:</span><span class="n">propertyInfo</span>
+                                                                         <span class="nl">generic</span><span class="p">:</span><span class="n">genericMapper</span><span class="p">[</span><span class="n">propertyInfo</span><span class="p">.</span><span class="n">name</span><span class="p">]];</span></code></pre></div>
+
 <p>可以看到_YYModelPropertyMeta是通过YYClassPropertyInfo模板生成的，_YYModelPropertyMeta里面保存的信息相对于YYClassPropertyInfo来说更少也更针对，
 _YYModelPropertyMeta把YYClassPropertyInfo中的get和set方法名转化成了SEL类型的对象，我学OC时间不长，也不知道该怎么称呼SEL对象，叫方法选择器？Whatever。。。
 习惯了C++的朋友直接理解成函数地址也行，习惯了Window的消息分发机制的也可以理解为接受消息的对象，反正得到这个之后想要设置属性的值就只需要调用OC的发送消息接口就行了，比如下面的代码：</p>
-<pre class="brush: cpp;auto-links: true;collapse: true;first-line: 1;gutter: true;html-script: true;light: true;ruler: false;smart-tabs: true;tab-size: 4;toolbar: true;">
-/**
- Set number to property.
- @discussion Caller should hold strong reference to the parameters before this function returns.
- @param model Should not be nil.
- @param num   Can be nil.
- @param meta  Should not be nil, meta.isCNumber should be YES, meta.setter should not be nil.
- */
-static force_inline void ModelSetNumberToProperty(__unsafe_unretained id model,
-                                                  __unsafe_unretained NSNumber *num,
-                                                  __unsafe_unretained _YYModelPropertyMeta *meta) {
-    switch (meta-&gt;_type &amp; YYEncodingTypeMask) {
-        case YYEncodingTypeBool: {
-            ((void (*)(id, SEL, bool))(void *) objc_msgSend)((id)model, meta-&gt;_setter, num.boolValue);
-        } break;
-        case YYEncodingTypeInt8: {
-            ((void (*)(id, SEL, int8_t))(void *) objc_msgSend)((id)model, meta-&gt;_setter, (int8_t)num.charValue);
-        } break;
-        case YYEncodingTypeUInt8: {
-            ((void (*)(id, SEL, uint8_t))(void *) objc_msgSend)((id)model, meta-&gt;_setter, (uint8_t)num.unsignedCharValue);
-        } break;
-        case YYEncodingTypeInt16: {
-            ((void (*)(id, SEL, int16_t))(void *) objc_msgSend)((id)model, meta-&gt;_setter, (int16_t)num.shortValue);
-        } break;
-        case YYEncodingTypeUInt16: {
-            ((void (*)(id, SEL, uint16_t))(void *) objc_msgSend)((id)model, meta-&gt;_setter, (uint16_t)num.unsignedShortValue);
-        } break;
-        case YYEncodingTypeInt32: {
-            ((void (*)(id, SEL, int32_t))(void *) objc_msgSend)((id)model, meta-&gt;_setter, (int32_t)num.intValue);
-        }
-        case YYEncodingTypeUInt32: {
-            ((void (*)(id, SEL, uint32_t))(void *) objc_msgSend)((id)model, meta-&gt;_setter, (uint32_t)num.unsignedIntValue);
-        } break;
-        case YYEncodingTypeInt64: {
-            ((void (*)(id, SEL, int64_t))(void *) objc_msgSend)((id)model, meta-&gt;_setter, (int64_t)num.longLongValue);
-        }
-        case YYEncodingTypeUInt64: {
-            ((void (*)(id, SEL, uint64_t))(void *) objc_msgSend)((id)model, meta-&gt;_setter, (uint64_t)num.unsignedLongLongValue);
-        } break;
-        case YYEncodingTypeFloat: {
-            float f = num.floatValue;
-            if (isnan(f) || isinf(f)) f = 0;
-            ((void (*)(id, SEL, float))(void *) objc_msgSend)((id)model, meta-&gt;_setter, f);
-        } break;
-        case YYEncodingTypeDouble: {
-            double d = num.floatValue;
-            if (isnan(d) || isinf(d)) d = 0;
-            ((void (*)(id, SEL, double))(void *) objc_msgSend)((id)model, meta-&gt;_setter, d);
-        } break;
-        case YYEncodingTypeLongDouble: {
-            double d = num.floatValue;
-            if (isnan(d) || isinf(d)) d = 0;
-            ((void (*)(id, SEL, long double))(void *) objc_msgSend)((id)model, meta-&gt;_setter, (long double)d);
-        } break;
-        default: break;
-    }
-}
-</pre>
+
+<div class="highlight"><pre><code class="language-logos" data-lang="logos"><span class="cm">/**</span>
+<span class="cm"> Set number to property.</span>
+<span class="cm"> @discussion Caller should hold strong reference to the parameters before this function returns.</span>
+<span class="cm"> @param model Should not be nil.</span>
+<span class="cm"> @param num   Can be nil.</span>
+<span class="cm"> @param meta  Should not be nil, meta.isCNumber should be YES, meta.setter should not be nil.</span>
+<span class="cm"> */</span>
+<span class="k">static</span> <span class="n">force_inline</span> <span class="kt">void</span> <span class="nf">ModelSetNumberToProperty</span><span class="p">(</span><span class="n">__unsafe_unretained</span> <span class="kt">id</span> <span class="n">model</span><span class="p">,</span>
+                                                  <span class="n">__unsafe_unretained</span> <span class="bp">NSNumber</span> <span class="o">*</span><span class="n">num</span><span class="p">,</span>
+                                                  <span class="n">__unsafe_unretained</span> <span class="n">_YYModelPropertyMeta</span> <span class="o">*</span><span class="n">meta</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">switch</span> <span class="p">(</span><span class="n">meta</span><span class="o">-&gt;</span><span class="n">_type</span> <span class="o">&amp;</span> <span class="n">YYEncodingTypeMask</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">case</span> <span class="nl">YYEncodingTypeBool</span><span class="p">:</span> <span class="p">{</span>
+            <span class="p">((</span><span class="kt">void</span> <span class="p">(</span><span class="o">*</span><span class="p">)(</span><span class="kt">id</span><span class="p">,</span> <span class="kt">SEL</span><span class="p">,</span> <span class="kt">bool</span><span class="p">))(</span><span class="kt">void</span> <span class="o">*</span><span class="p">)</span> <span class="n">objc_msgSend</span><span class="p">)((</span><span class="kt">id</span><span class="p">)</span><span class="n">model</span><span class="p">,</span> <span class="n">meta</span><span class="o">-&gt;</span><span class="n">_setter</span><span class="p">,</span> <span class="n">num</span><span class="p">.</span><span class="n">boolValue</span><span class="p">);</span>
+        <span class="p">}</span> <span class="k">break</span><span class="p">;</span>
+        <span class="k">case</span> <span class="nl">YYEncodingTypeInt8</span><span class="p">:</span> <span class="p">{</span>
+            <span class="p">((</span><span class="kt">void</span> <span class="p">(</span><span class="o">*</span><span class="p">)(</span><span class="kt">id</span><span class="p">,</span> <span class="kt">SEL</span><span class="p">,</span> <span class="kt">int8_t</span><span class="p">))(</span><span class="kt">void</span> <span class="o">*</span><span class="p">)</span> <span class="n">objc_msgSend</span><span class="p">)((</span><span class="kt">id</span><span class="p">)</span><span class="n">model</span><span class="p">,</span> <span class="n">meta</span><span class="o">-&gt;</span><span class="n">_setter</span><span class="p">,</span> <span class="p">(</span><span class="kt">int8_t</span><span class="p">)</span><span class="n">num</span><span class="p">.</span><span class="n">charValue</span><span class="p">);</span>
+        <span class="p">}</span> <span class="k">break</span><span class="p">;</span>
+        <span class="k">case</span> <span class="nl">YYEncodingTypeUInt8</span><span class="p">:</span> <span class="p">{</span>
+            <span class="p">((</span><span class="kt">void</span> <span class="p">(</span><span class="o">*</span><span class="p">)(</span><span class="kt">id</span><span class="p">,</span> <span class="kt">SEL</span><span class="p">,</span> <span class="kt">uint8_t</span><span class="p">))(</span><span class="kt">void</span> <span class="o">*</span><span class="p">)</span> <span class="n">objc_msgSend</span><span class="p">)((</span><span class="kt">id</span><span class="p">)</span><span class="n">model</span><span class="p">,</span> <span class="n">meta</span><span class="o">-&gt;</span><span class="n">_setter</span><span class="p">,</span> <span class="p">(</span><span class="kt">uint8_t</span><span class="p">)</span><span class="n">num</span><span class="p">.</span><span class="n">unsignedCharValue</span><span class="p">);</span>
+        <span class="p">}</span> <span class="k">break</span><span class="p">;</span>
+        <span class="k">case</span> <span class="nl">YYEncodingTypeInt16</span><span class="p">:</span> <span class="p">{</span>
+            <span class="p">((</span><span class="kt">void</span> <span class="p">(</span><span class="o">*</span><span class="p">)(</span><span class="kt">id</span><span class="p">,</span> <span class="kt">SEL</span><span class="p">,</span> <span class="kt">int16_t</span><span class="p">))(</span><span class="kt">void</span> <span class="o">*</span><span class="p">)</span> <span class="n">objc_msgSend</span><span class="p">)((</span><span class="kt">id</span><span class="p">)</span><span class="n">model</span><span class="p">,</span> <span class="n">meta</span><span class="o">-&gt;</span><span class="n">_setter</span><span class="p">,</span> <span class="p">(</span><span class="kt">int16_t</span><span class="p">)</span><span class="n">num</span><span class="p">.</span><span class="n">shortValue</span><span class="p">);</span>
+        <span class="p">}</span> <span class="k">break</span><span class="p">;</span>
+        <span class="k">case</span> <span class="nl">YYEncodingTypeUInt16</span><span class="p">:</span> <span class="p">{</span>
+            <span class="p">((</span><span class="kt">void</span> <span class="p">(</span><span class="o">*</span><span class="p">)(</span><span class="kt">id</span><span class="p">,</span> <span class="kt">SEL</span><span class="p">,</span> <span class="kt">uint16_t</span><span class="p">))(</span><span class="kt">void</span> <span class="o">*</span><span class="p">)</span> <span class="n">objc_msgSend</span><span class="p">)((</span><span class="kt">id</span><span class="p">)</span><span class="n">model</span><span class="p">,</span> <span class="n">meta</span><span class="o">-&gt;</span><span class="n">_setter</span><span class="p">,</span> <span class="p">(</span><span class="kt">uint16_t</span><span class="p">)</span><span class="n">num</span><span class="p">.</span><span class="n">unsignedShortValue</span><span class="p">);</span>
+        <span class="p">}</span> <span class="k">break</span><span class="p">;</span>
+        <span class="k">case</span> <span class="nl">YYEncodingTypeInt32</span><span class="p">:</span> <span class="p">{</span>
+            <span class="p">((</span><span class="kt">void</span> <span class="p">(</span><span class="o">*</span><span class="p">)(</span><span class="kt">id</span><span class="p">,</span> <span class="kt">SEL</span><span class="p">,</span> <span class="kt">int32_t</span><span class="p">))(</span><span class="kt">void</span> <span class="o">*</span><span class="p">)</span> <span class="n">objc_msgSend</span><span class="p">)((</span><span class="kt">id</span><span class="p">)</span><span class="n">model</span><span class="p">,</span> <span class="n">meta</span><span class="o">-&gt;</span><span class="n">_setter</span><span class="p">,</span> <span class="p">(</span><span class="kt">int32_t</span><span class="p">)</span><span class="n">num</span><span class="p">.</span><span class="n">intValue</span><span class="p">);</span>
+        <span class="p">}</span>
+        <span class="k">case</span> <span class="nl">YYEncodingTypeUInt32</span><span class="p">:</span> <span class="p">{</span>
+            <span class="p">((</span><span class="kt">void</span> <span class="p">(</span><span class="o">*</span><span class="p">)(</span><span class="kt">id</span><span class="p">,</span> <span class="kt">SEL</span><span class="p">,</span> <span class="kt">uint32_t</span><span class="p">))(</span><span class="kt">void</span> <span class="o">*</span><span class="p">)</span> <span class="n">objc_msgSend</span><span class="p">)((</span><span class="kt">id</span><span class="p">)</span><span class="n">model</span><span class="p">,</span> <span class="n">meta</span><span class="o">-&gt;</span><span class="n">_setter</span><span class="p">,</span> <span class="p">(</span><span class="kt">uint32_t</span><span class="p">)</span><span class="n">num</span><span class="p">.</span><span class="n">unsignedIntValue</span><span class="p">);</span>
+        <span class="p">}</span> <span class="k">break</span><span class="p">;</span>
+        <span class="k">case</span> <span class="nl">YYEncodingTypeInt64</span><span class="p">:</span> <span class="p">{</span>
+            <span class="p">((</span><span class="kt">void</span> <span class="p">(</span><span class="o">*</span><span class="p">)(</span><span class="kt">id</span><span class="p">,</span> <span class="kt">SEL</span><span class="p">,</span> <span class="kt">int64_t</span><span class="p">))(</span><span class="kt">void</span> <span class="o">*</span><span class="p">)</span> <span class="n">objc_msgSend</span><span class="p">)((</span><span class="kt">id</span><span class="p">)</span><span class="n">model</span><span class="p">,</span> <span class="n">meta</span><span class="o">-&gt;</span><span class="n">_setter</span><span class="p">,</span> <span class="p">(</span><span class="kt">int64_t</span><span class="p">)</span><span class="n">num</span><span class="p">.</span><span class="n">longLongValue</span><span class="p">);</span>
+        <span class="p">}</span>
+        <span class="k">case</span> <span class="nl">YYEncodingTypeUInt64</span><span class="p">:</span> <span class="p">{</span>
+            <span class="p">((</span><span class="kt">void</span> <span class="p">(</span><span class="o">*</span><span class="p">)(</span><span class="kt">id</span><span class="p">,</span> <span class="kt">SEL</span><span class="p">,</span> <span class="kt">uint64_t</span><span class="p">))(</span><span class="kt">void</span> <span class="o">*</span><span class="p">)</span> <span class="n">objc_msgSend</span><span class="p">)((</span><span class="kt">id</span><span class="p">)</span><span class="n">model</span><span class="p">,</span> <span class="n">meta</span><span class="o">-&gt;</span><span class="n">_setter</span><span class="p">,</span> <span class="p">(</span><span class="kt">uint64_t</span><span class="p">)</span><span class="n">num</span><span class="p">.</span><span class="n">unsignedLongLongValue</span><span class="p">);</span>
+        <span class="p">}</span> <span class="k">break</span><span class="p">;</span>
+        <span class="k">case</span> <span class="nl">YYEncodingTypeFloat</span><span class="p">:</span> <span class="p">{</span>
+            <span class="kt">float</span> <span class="n">f</span> <span class="o">=</span> <span class="n">num</span><span class="p">.</span><span class="n">floatValue</span><span class="p">;</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">isnan</span><span class="p">(</span><span class="n">f</span><span class="p">)</span> <span class="o">||</span> <span class="n">isinf</span><span class="p">(</span><span class="n">f</span><span class="p">))</span> <span class="n">f</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+            <span class="p">((</span><span class="kt">void</span> <span class="p">(</span><span class="o">*</span><span class="p">)(</span><span class="kt">id</span><span class="p">,</span> <span class="kt">SEL</span><span class="p">,</span> <span class="kt">float</span><span class="p">))(</span><span class="kt">void</span> <span class="o">*</span><span class="p">)</span> <span class="n">objc_msgSend</span><span class="p">)((</span><span class="kt">id</span><span class="p">)</span><span class="n">model</span><span class="p">,</span> <span class="n">meta</span><span class="o">-&gt;</span><span class="n">_setter</span><span class="p">,</span> <span class="n">f</span><span class="p">);</span>
+        <span class="p">}</span> <span class="k">break</span><span class="p">;</span>
+        <span class="k">case</span> <span class="nl">YYEncodingTypeDouble</span><span class="p">:</span> <span class="p">{</span>
+            <span class="kt">double</span> <span class="n">d</span> <span class="o">=</span> <span class="n">num</span><span class="p">.</span><span class="n">floatValue</span><span class="p">;</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">isnan</span><span class="p">(</span><span class="n">d</span><span class="p">)</span> <span class="o">||</span> <span class="n">isinf</span><span class="p">(</span><span class="n">d</span><span class="p">))</span> <span class="n">d</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+            <span class="p">((</span><span class="kt">void</span> <span class="p">(</span><span class="o">*</span><span class="p">)(</span><span class="kt">id</span><span class="p">,</span> <span class="kt">SEL</span><span class="p">,</span> <span class="kt">double</span><span class="p">))(</span><span class="kt">void</span> <span class="o">*</span><span class="p">)</span> <span class="n">objc_msgSend</span><span class="p">)((</span><span class="kt">id</span><span class="p">)</span><span class="n">model</span><span class="p">,</span> <span class="n">meta</span><span class="o">-&gt;</span><span class="n">_setter</span><span class="p">,</span> <span class="n">d</span><span class="p">);</span>
+        <span class="p">}</span> <span class="k">break</span><span class="p">;</span>
+        <span class="k">case</span> <span class="nl">YYEncodingTypeLongDouble</span><span class="p">:</span> <span class="p">{</span>
+            <span class="kt">double</span> <span class="n">d</span> <span class="o">=</span> <span class="n">num</span><span class="p">.</span><span class="n">floatValue</span><span class="p">;</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">isnan</span><span class="p">(</span><span class="n">d</span><span class="p">)</span> <span class="o">||</span> <span class="n">isinf</span><span class="p">(</span><span class="n">d</span><span class="p">))</span> <span class="n">d</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+            <span class="p">((</span><span class="kt">void</span> <span class="p">(</span><span class="o">*</span><span class="p">)(</span><span class="kt">id</span><span class="p">,</span> <span class="kt">SEL</span><span class="p">,</span> <span class="kt">long</span> <span class="kt">double</span><span class="p">))(</span><span class="kt">void</span> <span class="o">*</span><span class="p">)</span> <span class="n">objc_msgSend</span><span class="p">)((</span><span class="kt">id</span><span class="p">)</span><span class="n">model</span><span class="p">,</span> <span class="n">meta</span><span class="o">-&gt;</span><span class="n">_setter</span><span class="p">,</span> <span class="p">(</span><span class="kt">long</span> <span class="kt">double</span><span class="p">)</span><span class="n">d</span><span class="p">);</span>
+        <span class="p">}</span> <span class="k">break</span><span class="p">;</span>
+        <span class="k">default</span><span class="o">:</span> <span class="k">break</span><span class="p">;</span>
+    <span class="p">}</span>
+<span class="p">}</span></code></pre></div>
+
 <p>当然_YYModelPropertyMeta跟YYClassPropertyInfo的关系也是一个我们解析时使用的映射表，一个只是属性模板。
 到这里我不产生了疑问：YYClassIvarInfo和YYClassMethodInfo对应的映射表呢？YYClassMethodInfo不需要映射，因为他不是属性，不需要赋值，但是YYClassIvarInfo
 就不一样了，他表示一个实例变量。但是我们看作者的代码里前前后后好像就没YYClassIvarInfo的事儿。什么才是实例变量呢？一个类里面的实例变量是什么呢？不是属性么？一大串问号。。。。。
 我们都知道OC的定义可以像下面这么写：</p>
-<pre class="brush: cpp;auto-links: true;collapse: true;first-line: 1;gutter: true;html-script: true;light: true;ruler: false;smart-tabs: true;tab-size: 4;toolbar: true;">
-@interface A : NSObject{
-    NSString *_name;
-}
-@property (nonatomic, strong) NSString *name;
-@end
-@implementation A
-@synthesize name = _name;
-@end
-</pre>
+
+<div class="highlight"><pre><code class="language-logos" data-lang="logos"><span class="k">@interface</span> <span class="nc">A</span> : <span class="bp">NSObject</span><span class="p">{</span>
+    <span class="bp">NSString</span> <span class="o">*</span><span class="n">_name</span><span class="p">;</span>
+<span class="p">}</span>
+<span class="k">@property</span> <span class="p">(</span><span class="k">nonatomic</span><span class="p">,</span> <span class="k">strong</span><span class="p">)</span> <span class="bp">NSString</span> <span class="o">*</span><span class="n">name</span><span class="p">;</span>
+<span class="k">@end</span>
+<span class="k">@implementation</span> <span class="nc">A</span>
+<span class="k">@synthesize</span> <span class="n">name</span> <span class="o">=</span> <span class="n">_name</span><span class="p">;</span>
+<span class="k">@end</span></code></pre></div>
+
 <p>或者：</p>
-<pre class="brush: cpp;auto-links: true;collapse: true;first-line: 1;gutter: true;html-script: true;light: true;ruler: false;smart-tabs: true;tab-size: 4;toolbar: true;">
-@interface A : NSObject{
-    NSString *name;
-}
-@property (nonatomic, strong) NSString *name;
-@implementation A
-@synthesize name;
-@end
-</pre>
+
+<div class="highlight"><pre><code class="language-logos" data-lang="logos"><span class="k">@interface</span> <span class="nc">A</span> : <span class="bp">NSObject</span><span class="p">{</span>
+    <span class="bp">NSString</span> <span class="o">*</span><span class="n">name</span><span class="p">;</span>
+<span class="p">}</span>
+<span class="k">@property</span> <span class="p">(</span><span class="k">nonatomic</span><span class="p">,</span> <span class="k">strong</span><span class="p">)</span> <span class="bp">NSString</span> <span class="o">*</span><span class="n">name</span><span class="p">;</span>
+<span class="k">@implementation</span> <span class="nc">A</span>
+<span class="k">@synthesize</span> <span class="n">name</span><span class="p">;</span>
+<span class="k">@end</span></code></pre></div>
+
 <p>或者</p>
-<pre class="brush: cpp;auto-links: true;collapse: true;first-line: 1;gutter: true;html-script: true;light: true;ruler: false;smart-tabs: true;tab-size: 4;toolbar: true;">
-@interface A : NSObject
-@property (nonatomic, strong) NSString *name;
-@implementation A
-@synthesize name;
-@end
-</pre>
+
+<div class="highlight"><pre><code class="language-logos" data-lang="logos"><span class="k">@interface</span> <span class="nc">A</span> : <span class="bp">NSObject</span>
+<span class="k">@property</span> <span class="p">(</span><span class="k">nonatomic</span><span class="p">,</span> <span class="k">strong</span><span class="p">)</span> <span class="bp">NSString</span> <span class="o">*</span><span class="n">name</span><span class="p">;</span>
+<span class="k">@implementation</span> <span class="nc">A</span>
+<span class="k">@synthesize</span> <span class="n">name</span><span class="p">;</span>
+<span class="k">@end</span></code></pre></div>
+
 <p>区别是什么呢？看知乎大神的回答：</p>
 
-<p>著作权归作者所有。
+<blockquote>
+  <p>著作权归作者所有。
 商业转载请联系作者获得授权，非商业转载请注明出处。
 作者：RefuseBT
 链接：http://www.zhihu.com/question/22195598/answer/39593235
 来源：知乎</p>
+</blockquote>
 
-<p>对于方式1，定义最完备。继承时，子类直接访问父类成员变量无需再@synthesize。缺点就是麻烦，重构也麻烦。第二种的问题，在于成员变量没有下划线。这个修改的好处你可能一开始体会不到。其实加下划线最大的好处在于局部变量命名不会冲突。比如你一个成员变量叫name，你的入参也叫name，就会出现覆盖。这个时候简便的办法是对name加冠词，比如aName、anObj，看起来还是挺恶心的。虽然OC也这样干。这个时候如果声明为_name就一劳永逸了，况且编译器还能替你做了这个事。第三种的问题，也是第一种的优势，就是你在父类中可以直接访问成员变量，但是子类中你无法访问，只能通过属性访问到。如果属性还是在.m中声明的，麻烦更多。另外从命名上还兼有第二种的缺陷。那么最好的写法写法一：@interface Person : NSObject
+<blockquote>
+  <p>对于方式1，定义最完备。继承时，子类直接访问父类成员变量无需再@synthesize。缺点就是麻烦，重构也麻烦。第二种的问题，在于成员变量没有下划线。这个修改的好处你可能一开始体会不到。其实加下划线最大的好处在于局部变量命名不会冲突。比如你一个成员变量叫name，你的入参也叫name，就会出现覆盖。这个时候简便的办法是对name加冠词，比如aName、anObj，看起来还是挺恶心的。虽然OC也这样干。这个时候如果声明为_name就一劳永逸了，况且编译器还能替你做了这个事。第三种的问题，也是第一种的优势，就是你在父类中可以直接访问成员变量，但是子类中你无法访问，只能通过属性访问到。如果属性还是在.m中声明的，麻烦更多。另外从命名上还兼有第二种的缺陷。
+那么最好的写法写法一：
+@interface Person : NSObject
 {
 }
 @property (nonatomic, strong) NSString *name;
 @end</p>
 
-<p>@implementation Person
+  <p>@implementation Person
 @end
 这个适用与一般情况，编译器自动生成成员变量_name，而且写法最简单，不必重复声明。写法二，针对继承情况下，向子类暴露父类成员变量：@interface Person : NSObject
 {
@@ -751,55 +757,55 @@ static force_inline void ModelSetNumberToProperty(__unsafe_unretained id model,
 @property (nonatomic, strong) NSString *name;
 @end</p>
 
-<p>@implementation Person
+  <p>@implementation Person
 @synthesize name = _name;
 @end
 其实@synthesize那条你不写也行，不过我还是喜欢声明完备，毕竟同一个成员变量，两个地方声明。</p>
+</blockquote>
 
-<p>OK这下我们知道了其实我们上面说的属性和实例变量基本就是一个东西了。但是我们一个属性对象YYClassPropertyInfo只是包含了get和set方法的名字以及属性名等一些基本信息
-YYClassIvarInfo里面最特殊的就是@property (nonatomic, assign, readonly) ptrdiff_t offset; //&lt; Ivar’s offset这个属性了
-学过C的都知道，所有数据的访问最后都是要转化为地址的，一个char[10]数组要访问第8个数据，就要知道第发布数据的地址，offset就相当于实例变量的地址索引。offset加上
-首地址就得到了实例变量的地址。但是我不得不说作者把这些数据保存下来之后貌似并没有使用。。。。。。</p>
+<p>OK，这下我们知道了其实我们上面说的属性和实例变量基本就是一个东西了。但是我们一个属性对象YYClassPropertyInfo只是包含了get和set方法的名字以及属性名等一些基本信息。YYClassIvarInfo里面最特殊的就是@property (nonatomic, assign, readonly) ptrdiff_t offset; //&lt; Ivar’s offset这个属性了。
+学过C的都知道，所有数据的访问最后都是要转化为地址的，一个char[10]数组要访问第8个数据，就要知道第发布数据的地址，offset就相当于实例变量的地址索引。offset加上首地址就得到了实例变量的地址。但是我不得不说作者把这些数据保存下来之后貌似并没有使用。。。。。。</p>
 
 <p>Anyway，我们已经得到了如何解析的映射表，愉快的进入了下一个步骤，解析Json数据。
 作者在解析前加了很多道防线，防止用户传入的数据格式错误，不是一个字典或者jsonData类型的数据，这些这里就不表了。解析代码如下：</p>
-<pre class="brush: cpp;auto-links: true;collapse: true;first-line: 1;gutter: true;html-script: true;light: true;ruler: false;smart-tabs: true;tab-size: 4;toolbar: true;">
-- (BOOL)yy_modelSetWithDictionary:(NSDictionary *)dic {
-    if (!dic || dic == (id)kCFNull) return NO;
-    if (![dic isKindOfClass:[NSDictionary class]]) return NO;
+
+<div class="highlight"><pre><code class="language-logos" data-lang="logos"><span class="p">-</span> <span class="p">(</span><span class="kt">BOOL</span><span class="p">)</span><span class="nf">yy_modelSetWithDictionary:</span><span class="p">(</span><span class="bp">NSDictionary</span> <span class="o">*</span><span class="p">)</span><span class="nv">dic</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">dic</span> <span class="o">||</span> <span class="n">dic</span> <span class="o">==</span> <span class="p">(</span><span class="kt">id</span><span class="p">)</span><span class="n">kCFNull</span><span class="p">)</span> <span class="k">return</span> <span class="nb">NO</span><span class="p">;</span>
+    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="p">[</span><span class="n">dic</span> <span class="nl">isKindOfClass</span><span class="p">:[</span><span class="bp">NSDictionary</span> <span class="k">class</span><span class="p">]])</span> <span class="k">return</span> <span class="nb">NO</span><span class="p">;</span>
     
-    _YYModelMeta *modelMeta = [_YYModelMeta metaWithClass:object_getClass(self)];
-    if (modelMeta-&gt;_keyMappedCount == 0) return NO;
-    ModelSetContext context = {0};
-    context.modelMeta = (__bridge void *)(modelMeta);
-    context.model = (__bridge void *)(self);
-    context.dictionary = (__bridge void *)(dic);
+    <span class="n">_YYModelMeta</span> <span class="o">*</span><span class="n">modelMeta</span> <span class="o">=</span> <span class="p">[</span><span class="n">_YYModelMeta</span> <span class="nl">metaWithClass</span><span class="p">:</span><span class="n">object_getClass</span><span class="p">(</span><span class="nb">self</span><span class="p">)];</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">modelMeta</span><span class="o">-&gt;</span><span class="n">_keyMappedCount</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="k">return</span> <span class="nb">NO</span><span class="p">;</span>
+    <span class="n">ModelSetContext</span> <span class="n">context</span> <span class="o">=</span> <span class="p">{</span><span class="mi">0</span><span class="p">};</span>
+    <span class="n">context</span><span class="p">.</span><span class="n">modelMeta</span> <span class="o">=</span> <span class="p">(</span><span class="k">__bridge</span> <span class="kt">void</span> <span class="o">*</span><span class="p">)(</span><span class="n">modelMeta</span><span class="p">);</span>
+    <span class="n">context</span><span class="p">.</span><span class="n">model</span> <span class="o">=</span> <span class="p">(</span><span class="k">__bridge</span> <span class="kt">void</span> <span class="o">*</span><span class="p">)(</span><span class="nb">self</span><span class="p">);</span>
+    <span class="n">context</span><span class="p">.</span><span class="n">dictionary</span> <span class="o">=</span> <span class="p">(</span><span class="k">__bridge</span> <span class="kt">void</span> <span class="o">*</span><span class="p">)(</span><span class="n">dic</span><span class="p">);</span>
     
-    if (modelMeta-&gt;_keyMappedCount &gt;= CFDictionaryGetCount((CFDictionaryRef)dic)) {
-        CFDictionaryApplyFunction((CFDictionaryRef)dic, ModelSetWithDictionaryFunction, &amp;context);
-        if (modelMeta-&gt;_keyPathPropertyMetas) {
-            CFArrayApplyFunction((CFArrayRef)modelMeta-&gt;_keyPathPropertyMetas,
-                                 CFRangeMake(0, CFArrayGetCount((CFArrayRef)modelMeta-&gt;_keyPathPropertyMetas)),
-                                 ModelSetWithPropertyMetaArrayFunction,
-                                 &amp;context);
-        }
-    } else {
-        CFArrayApplyFunction((CFArrayRef)modelMeta-&gt;_allPropertyMetas,
-                             CFRangeMake(0, modelMeta-&gt;_keyMappedCount),
-                             ModelSetWithPropertyMetaArrayFunction,
-                             &amp;context);
-    }
+    <span class="k">if</span> <span class="p">(</span><span class="n">modelMeta</span><span class="o">-&gt;</span><span class="n">_keyMappedCount</span> <span class="o">&gt;=</span> <span class="n">CFDictionaryGetCount</span><span class="p">((</span><span class="n">CFDictionaryRef</span><span class="p">)</span><span class="n">dic</span><span class="p">))</span> <span class="p">{</span>
+        <span class="n">CFDictionaryApplyFunction</span><span class="p">((</span><span class="n">CFDictionaryRef</span><span class="p">)</span><span class="n">dic</span><span class="p">,</span> <span class="n">ModelSetWithDictionaryFunction</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">context</span><span class="p">);</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">modelMeta</span><span class="o">-&gt;</span><span class="n">_keyPathPropertyMetas</span><span class="p">)</span> <span class="p">{</span>
+            <span class="n">CFArrayApplyFunction</span><span class="p">((</span><span class="n">CFArrayRef</span><span class="p">)</span><span class="n">modelMeta</span><span class="o">-&gt;</span><span class="n">_keyPathPropertyMetas</span><span class="p">,</span>
+                                 <span class="n">CFRangeMake</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">CFArrayGetCount</span><span class="p">((</span><span class="n">CFArrayRef</span><span class="p">)</span><span class="n">modelMeta</span><span class="o">-&gt;</span><span class="n">_keyPathPropertyMetas</span><span class="p">)),</span>
+                                 <span class="n">ModelSetWithPropertyMetaArrayFunction</span><span class="p">,</span>
+                                 <span class="o">&amp;</span><span class="n">context</span><span class="p">);</span>
+        <span class="p">}</span>
+    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+        <span class="n">CFArrayApplyFunction</span><span class="p">((</span><span class="n">CFArrayRef</span><span class="p">)</span><span class="n">modelMeta</span><span class="o">-&gt;</span><span class="n">_allPropertyMetas</span><span class="p">,</span>
+                             <span class="n">CFRangeMake</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">modelMeta</span><span class="o">-&gt;</span><span class="n">_keyMappedCount</span><span class="p">),</span>
+                             <span class="n">ModelSetWithPropertyMetaArrayFunction</span><span class="p">,</span>
+                             <span class="o">&amp;</span><span class="n">context</span><span class="p">);</span>
+    <span class="p">}</span>
     
-    if (modelMeta-&gt;_hasCustomTransformFromDictonary) {
-        return [((id&amp;ltYYModel&gt;)self) modelCustomTransformFromDictionary:dic];
-    }
-    return YES;
-}
-</pre>
+    <span class="k">if</span> <span class="p">(</span><span class="n">modelMeta</span><span class="o">-&gt;</span><span class="n">_hasCustomTransformFromDictonary</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="p">[((</span><span class="kt">id</span><span class="o">&lt;</span><span class="n">YYModel</span><span class="o">&gt;</span><span class="p">)</span><span class="nb">self</span><span class="p">)</span> <span class="nl">modelCustomTransformFromDictionary</span><span class="p">:</span><span class="n">dic</span><span class="p">];</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="nb">YES</span><span class="p">;</span>
+<span class="p">}</span></code></pre></div>
+
 <p>很简单，如果我们的映射表中的key超过了提供的json字典中的key的个数，我们就认为有些字段是不要设置值的，所以对json字典进行遍历，反之就对映射表进行遍历。
 最后如果我们有一些自定义的转化规则，在最后调用用户自己写的modelCustomTransformFromDictionary方法。至此YYModel的解析就结束了</p>
 
 <h3 id="section-1">总结</h3>
+<hr />
 <p>YYModel的作者真的是一个大神，我真心佩服这样的一个90后(同为90的我惭愧不已)，他写了很多开源的第三方库，而这些第三方库都是他在这两年内通公司项目总结等归纳出来的，
 其中有很多很强大的YYText等控件（解决了文字竖排的问题，也是我下一个要学习的库）也得到了很多人的关注。其中YYModel只是这位大神利用业余时间2周写出来的随笔。。。。我
 花了近1一个月时间才勉强弄懂了七八分，要让我自己写那是万万不能的。一个阶段的学习计划应该是先把YYModel再重新吃一边，直到吃透了，然后花两周时间默写出来。。。

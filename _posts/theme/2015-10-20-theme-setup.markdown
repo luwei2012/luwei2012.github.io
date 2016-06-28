@@ -1,6 +1,7 @@
 ---
 layout: page
 title: Theme Setup
+date: 2015-10-20T17:10:07+08:00
 description: "Instructions on how to install and customize the modern Jekyll theme HPSTR."
 image:
   feature: abstract-11.jpg
