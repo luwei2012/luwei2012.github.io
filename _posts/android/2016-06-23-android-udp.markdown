@@ -72,7 +72,7 @@ public class UDPConnection {
     ......
 }
 {% endhighlight %}
-从成员变量里面就可以看出来，与NIO的教程里面说的一样有三个角色：`buffer`、`Channel`和`SelectionKey`。同时还有另一个角色：`Serialization`，也就是我们下面着重会讲的数据解析协议，这个类规定了
+从成员变量里面就可以看出来，与NIO的教程里面说的一样有三个角色：buffer、Channel和SelectionKey。同时还有另一个角色：Serialization，也就是我们下面着重会讲的数据解析协议，这个类规定了
 
 1. 如何从ByteBuffer转化为我们需要的Java对象
 2. 如何从Java对象转化为ByteBuffer
@@ -99,8 +99,8 @@ public class UDPConnection {
         }
     }
 {% endhighlight %}
-先看构造函数和bind。构造函数中传入了具体的`Serialization`，以及各个缓存的大小。
-bind函数作用就是在给定的端口上监听UDP报文，这里使用`selector.provider().openDatagramChannel()`而不是`DatagramChannel.open()`还是有一点区别的，方便了我们扩展代码。
+先看构造函数和bind。构造函数中传入了具体的Serialization，以及各个缓存的大小。
+bind函数作用就是在给定的端口上监听UDP报文，这里使用selector.provider().openDatagramChannel()而不是DatagramChannel.open()还是有一点区别的，方便了我们扩展代码。
 {% highlight logos %}
     public void connect(Selector selector, InetSocketAddress remoteAddress) throws IOException {
         close();
@@ -175,22 +175,22 @@ bind函数作用就是在给定的端口上监听UDP报文，这里使用`select
             }
         }
 {% endhighlight %}
-这三个方法中`readFromAddress`是从通道中读取数据到`ByteBuffer`，`readObject`使用规定的`Serialization`从`ByteBuffer`转为Java对象，`send`将Java对象写入通道。有了这些基础方法后就可以在上层设计UDP连接框架了。
+这三个方法中readFromAddress是从通道中读取数据到ByteBuffer，readObject使用规定的Serialization从ByteBuffer转为Java对象，send将Java对象写入通道。有了这些基础方法后就可以在上层设计UDP连接框架了。
 
-这里使用了静态代理的设计思路，`UDPConnection`是`IConnection`的一个实现，`ConnectionWrapper`是`IConnection`的一个代理；`ConnectionWrapper`中使用的是`UDPConnection`的实现。`ConnectionWrapper`中还有一个属性是`EndPoint`类型的对象，`ConnectionWrapper`中主要使用的是`EndPoint`的`reconnect`实现。
+这里使用了静态代理的设计思路，UDPConnection是IConnection的一个实现，ConnectionWrapper是IConnection的一个代理；ConnectionWrapper中使用的是UDPConnection的实现。ConnectionWrapper中还有一个属性是EndPoint类型的对象，ConnectionWrapper中主要使用的是EndPoint的reconnect实现。
 
 EndPoint定义了一个UDP端的控制接口。
 
-1. `Serialization getSerialization();` 获取数据序列化的实现
-2. `addListener(Listener listener);` 添加上面所说的五中状态的监听
-3. `removeListener(Listener listener);`删除状态监听
-4. `run();`继承的`Runnable`，读取消息的循环，运行在独立线程中
-5. `reconnect();`重连
-6. `start();`开启一个线程运行`run()`
-7. `stop();`停止run()并重置Selector状态
-8. `close();`状态置为关闭，关闭通道，重置`Selector`
-9. `update(int timeout);`读取一次数据的实现，`run`中会循环调用该方法
-10. `getUpdateThread();`获取读取数据的线程，这是为了判断建立连接的线程与读取数据的线程是否相同，建立连接的过程会block线程，因此不能使用同一个线程，否则会卡死。
+1. Serialization getSerialization(); 获取数据序列化的实现
+2. addListener(Listener listener); 添加上面所说的五中状态的监听
+3. removeListener(Listener listener);删除状态监听
+4. run();继承的Runnable，读取消息的循环，运行在独立线程中
+5. reconnect();重连
+6. start();开启一个线程运行run()
+7. stop();停止run()并重置Selector状态
+8. close();状态置为关闭，关闭通道，重置Selector
+9. update(int timeout);读取一次数据的实现，run中会循环调用该方法
+10. getUpdateThread();获取读取数据的线程，这是为了判断建立连接的线程与读取数据的线程是否相同，建立连接的过程会block线程，因此不能使用同一个线程，否则会卡死。
 
 这些接口里面只有1、2、3、5、6、7、8是提供给外部控制Client状态的。
 
@@ -198,13 +198,13 @@ EndPoint定义了一个UDP端的控制接口。
 
 1. 创建Client
 
-   `client = new Client() {};` 
+   client = new Client() {}; 
         
 2. 配置状态回调，启动Client，开始监听UDP报文
 
-   `client.start();`
+   client.start();
    
-   `client.addListener(new com.transport.Listener());`
+   client.addListener(new com.transport.Listener());
 
 3. 开启另一个线程开始连接服务器
 
@@ -227,17 +227,17 @@ EndPoint定义了一个UDP端的控制接口。
 
 1. 创建Server
 
-   `server = new Server() {};`
+   server = new Server() {};
    
 2. 配置状态回调，启动Client，开始监听UDP报文，收到报文后默认返回ACK
 
-   `server.addListener(new Listener());`
+   server.addListener(new Listener());
    
-   `server.start();` 
+   server.start(); 
         
 3. 绑定端口，服务器没有建立连接的步骤，不会造成线程block
 
-   `server.bind(54555);`
+   server.bind(54555);
 
 
 ### 可靠地数据传输
@@ -252,12 +252,12 @@ EndPoint定义了一个UDP端的控制接口。
 2. ACK检查时发现了超出重发次数的数据包。我们认为服务器失联了，需要重联，确认连接可用。
 3. 发送数据包失败。与1一样，认为数据通道破坏了。
 
-对应的代码调用可以全局搜索`reconnect();`的调用
+对应的代码调用可以全局搜索reconnect();的调用
 
 #### 超时重发
-上面在介绍`EndPoint`的时候说过了`update(int timeout)`，运行在独立的线程中，这个方法做了3件事情：
+上面在介绍EndPoint的时候说过了update(int timeout)，运行在独立的线程中，这个方法做了3件事情：
 
-1. 检测`Selector`是否有数据通道处于ready状态，如果有，进入读取数据的逻辑。
+1. 检测Selector是否有数据通道处于ready状态，如果有，进入读取数据的逻辑。
 2. 检测并发送心跳包。
 3. 检测等待ACK的包，是否有等待的包超时了，有并且已经超出重发次数上线，重连；没有超出重发次数上线则重发数据包，并将该数据包移出等待ACK的列表。
 
@@ -265,7 +265,7 @@ EndPoint定义了一个UDP端的控制接口。
 
 #### 心跳
 
-心跳也是在`update`函数中检测的，目前定义的是一分钟一次，在update函数中判断距离上次发送心跳的时间，到了一分钟就发送一次心跳，然后重置最近一次发送心跳的时间。这里需要注意的
+心跳也是在update函数中检测的，目前定义的是一分钟一次，在update函数中判断距离上次发送心跳的时间，到了一分钟就发送一次心跳，然后重置最近一次发送心跳的时间。这里需要注意的
 是重置发送心跳的时间是写在发送数据包的函数中的，因为我们有可能会出现心跳包重发的情况，因此在发送数据包的时候来判断是否属心跳包，以此为依据来更新最新一次数据包的发送时间。
 重连的时候不会发送还在等待ACK的心跳包，心跳包会直接抛弃。
 
@@ -292,7 +292,7 @@ public interface Serialization {
 }
 {% endhighlight %} 
 
-这里我们规定了`ByteBuffer`与`PacketMessage`之间的互相转化接口，具体实现写在`PacketSerialization`中。这里不太想赘述了，代码中已经写得很详细了。
+这里我们规定了ByteBuffer与PacketMessage之间的互相转化接口，具体实现写在PacketSerialization中。这里不太想赘述了，代码中已经写得很详细了。
 
 ### 如何运行Demo
 
