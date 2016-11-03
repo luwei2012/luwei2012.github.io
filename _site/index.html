@@ -134,7 +134,7 @@
       <span class="entry-reading-time">
         <i class="fa fa-clock-o"></i>
         
-        Reading time ~1 minute
+        Reading time ~6 minutes
       </span><!-- /.entry-reading-time -->
       
     </div><!-- /.entry-meta -->
@@ -143,7 +143,315 @@
     
   </header>
   <div class="entry-content">
+    <h3 id="kryonet">已经有的轮子：KryoNet</h3>
+
+<p><a href="https://github.com/EsotericSoftware/kryonet">KryoNet</a> is a Java library that provides a clean and simple API for efficient TCP and UDP client/server network 
+communication using NIO. KryoNet uses the Kryo serialization library to automatically and efficiently transfer object graphs across the network.</p>
+
+<p>正如KryoNet的描述，这个框架已经提供了可用的udp服务器和客户端实现，但是使用的是<a href="https://github.com/EsotericSoftware/kryo">Kryo</a>来做字节的序列化和反序列化。
+我只是想要一个UDP服务器的demo，不想绑定Kryo，而且由于项目需求，字节码解析协议需要定制，于是就有了这篇博客。</p>
+
+<h3 id="udpdemo">一个完整的UDP服务器Demo应该有什么？</h3>
+
+<p>先帖一发<a href="https://luoqiaowei@bitbucket.org/luoqiaowei/udpdemo.git">代码库</a>。这里使用的bibucket建仓库，实在是点不开github…
+一个完整的UDP服务器应该能做到下面的事情：</p>
+
+<p>Server端：</p>
+
+<ol>
+  <li>端口监听。防止dos攻击、报文过滤等等都应该做在这一层。</li>
+  <li>连接池。接收到UDP报文后肯定需要创建连接然后发送ACK或者其他数据，如果不考虑性能，连接池可以省略，我的demo里面也没有实现，都是直接new出来的。</li>
+  <li>连接记录。虽然都说UDP是无连接的协议，但是大部分需求都是需要记录UDP连接的，这样才能发送广播之类的消息；同时如果想要使用UDP来实现一套IM系统，肯定还是需要连接记录的。</li>
+  <li>数据解析处理。</li>
+  <li>可靠的数据传递。(超时重发、超重发次数离线)</li>
+  <li>心跳检测。独立的线程遍历连接记录，发现有心跳超时的记录就”断开连接”，连接池回收。</li>
+</ol>
+
+<p>Client端：</p>
+
+<ol>
+  <li>端口监听。逻辑跟服务器一样一样。</li>
+  <li>建立连接。不要以为UDP服务无连接就不需要这一步，一般都是发送一个心跳包，等待服务器的ACK，如果等到了就说明链路通了，否则需要提示用户无法建立连接</li>
+  <li>可靠的数据传递。超时重发、超重发次数离线并且重连、超重连次数通知上层逻辑处理。</li>
+  <li>数据解析处理。</li>
+  <li>心跳。</li>
+</ol>
+
+<p>目前我的Demo里面实现的功能很简陋，Server端什么都没有，收到消息直接返回ACK。这个Server本身也只是在项目中用来测试客户端是否正确，并没有花时间来做。Client端相对丰满点，实现了：</p>
+
+<ol>
+  <li>端口监听。没有防DOS攻击等复杂逻辑，简单地收取报文。</li>
+  <li>建立连接。</li>
+  <li>可靠的数据传递。只做了超时重发、超重发次数重连，没有保存本地数据库。</li>
+  <li>数据解析处理。</li>
+  <li>心跳</li>
+</ol>
+
+<h3 id="udp">UDP连接框架</h3>
+<figure>
+	<img src="/images/android/UDP/UDP_Connection.png" alt="UDP连接ER图" />
+	<figcaption>UDP连接ER图</figcaption>
+</figure>
+<p>首先需要熟悉下<a href="http://tutorials.jenkov.com/java-nio/selectors.html">Java里面的NIO</a>，有一个对应的<a href="http://ifeve.com/overview/">翻译</a>，最主要的是要看到第9篇，
+这样就知道了如果搭建一个简单地UDP服务器了。
+这些最基础的UDP连接，对应封装在UDPConnection类中：</p>
+
+<div class="highlight"><pre><code class="language-logos" data-lang="logos"><span class="k">public</span> <span class="k">class</span> <span class="n">UDPConnection</span> <span class="p">{</span>
+    <span class="n">InetSocketAddress</span> <span class="n">connectedAddress</span><span class="p">;</span>
+    <span class="n">DatagramChannel</span> <span class="n">datagramChannel</span><span class="p">;</span>
+    <span class="k">final</span> <span class="n">ByteBuffer</span> <span class="n">readBuffer</span><span class="p">,</span> <span class="n">writeBuffer</span><span class="p">;</span>
+    <span class="k">private</span> <span class="k">final</span> <span class="n">Serialization</span> <span class="n">serialization</span><span class="p">;</span>
+    <span class="k">private</span> <span class="n">SelectionKey</span> <span class="n">selectionKey</span><span class="p">;</span>
+    <span class="k">private</span> <span class="k">final</span> <span class="n">Object</span> <span class="n">writeLock</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Object</span><span class="p">();</span>
+    <span class="p">......</span>
+<span class="p">}</span></code></pre></div>
+
+<p>从成员变量里面就可以看出来，与NIO的教程里面说的一样有三个角色：<code>buffer</code>、<code>Channel</code>和<code>SelectionKey</code>。同时还有另一个角色：<code>Serialization</code>，也就是我们下面着重会讲的数据解析协议，这个类规定了</p>
+
+<ol>
+  <li>如何从ByteBuffer转化为我们需要的Java对象</li>
+  <li>如何从Java对象转化为ByteBuffer</li>
+</ol>
+
+<div class="highlight"><pre><code class="language-logos" data-lang="logos"><span class="k">public</span> <span class="nf">UDPConnection</span><span class="p">(</span><span class="n">Serialization</span> <span class="n">serialization</span><span class="p">,</span> <span class="kt">int</span> <span class="n">writeBufferSize</span><span class="p">,</span> <span class="kt">int</span> <span class="n">objectBufferSize</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">this</span><span class="p">.</span><span class="n">serialization</span> <span class="o">=</span> <span class="n">serialization</span><span class="p">;</span>
+        <span class="n">readBuffer</span> <span class="o">=</span> <span class="n">ByteBuffer</span><span class="p">.</span><span class="n">allocate</span><span class="p">(</span><span class="n">objectBufferSize</span><span class="p">);</span>
+        <span class="n">writeBuffer</span> <span class="o">=</span> <span class="n">ByteBuffer</span><span class="p">.</span><span class="n">allocateDirect</span><span class="p">(</span><span class="n">writeBufferSize</span><span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="k">public</span> <span class="kt">void</span> <span class="nf">bind</span><span class="p">(</span><span class="n">Selector</span> <span class="n">selector</span><span class="p">,</span> <span class="n">InetSocketAddress</span> <span class="n">localPort</span><span class="p">)</span> <span class="k">throws</span> <span class="n">IOException</span> <span class="p">{</span>
+        <span class="n">close</span><span class="p">();</span>
+        <span class="n">readBuffer</span><span class="p">.</span><span class="n">clear</span><span class="p">();</span>
+        <span class="n">writeBuffer</span><span class="p">.</span><span class="n">clear</span><span class="p">();</span>
+        <span class="n">try</span> <span class="p">{</span>
+            <span class="n">datagramChannel</span> <span class="o">=</span> <span class="n">selector</span><span class="p">.</span><span class="n">provider</span><span class="p">().</span><span class="n">openDatagramChannel</span><span class="p">();</span>
+            <span class="n">datagramChannel</span><span class="p">.</span><span class="n">socket</span><span class="p">().</span><span class="n">bind</span><span class="p">(</span><span class="n">localPort</span><span class="p">);</span>
+            <span class="n">datagramChannel</span><span class="p">.</span><span class="n">configureBlocking</span><span class="p">(</span><span class="nb">false</span><span class="p">);</span>
+            <span class="n">selectionKey</span> <span class="o">=</span> <span class="n">datagramChannel</span><span class="p">.</span><span class="k">register</span><span class="p">(</span><span class="n">selector</span><span class="p">,</span> <span class="n">SelectionKey</span><span class="p">.</span><span class="n">OP_READ</span><span class="p">);</span>
+        <span class="p">}</span> <span class="k">catch</span> <span class="p">(</span><span class="n">IOException</span> <span class="n">ex</span><span class="p">)</span> <span class="p">{</span>
+            <span class="n">close</span><span class="p">();</span>
+            <span class="k">throw</span> <span class="n">ex</span><span class="p">;</span>
+        <span class="p">}</span>
+    <span class="p">}</span></code></pre></div>
+
+<p>先看构造函数和bind。构造函数中传入了具体的<code>Serialization</code>，以及各个缓存的大小。
+bind函数作用就是在给定的端口上监听UDP报文，这里使用<code>selector.provider().openDatagramChannel()</code>而不是<code>DatagramChannel.open()</code>还是有一点区别的，方便了我们扩展代码。</p>
+
+<div class="highlight"><pre><code class="language-logos" data-lang="logos"><span class="k">public</span> <span class="kt">void</span> <span class="nf">connect</span><span class="p">(</span><span class="n">Selector</span> <span class="n">selector</span><span class="p">,</span> <span class="n">InetSocketAddress</span> <span class="n">remoteAddress</span><span class="p">)</span> <span class="k">throws</span> <span class="n">IOException</span> <span class="p">{</span>
+        <span class="n">close</span><span class="p">();</span>
+        <span class="n">readBuffer</span><span class="p">.</span><span class="n">clear</span><span class="p">();</span>
+        <span class="n">writeBuffer</span><span class="p">.</span><span class="n">clear</span><span class="p">();</span>
+        <span class="n">try</span> <span class="p">{</span>
+            <span class="n">datagramChannel</span> <span class="o">=</span> <span class="n">selector</span><span class="p">.</span><span class="n">provider</span><span class="p">().</span><span class="n">openDatagramChannel</span><span class="p">();</span>
+            <span class="n">datagramChannel</span><span class="p">.</span><span class="n">configureBlocking</span><span class="p">(</span><span class="nb">false</span><span class="p">);</span>
+            <span class="n">datagramChannel</span><span class="p">.</span><span class="n">socket</span><span class="p">().</span><span class="n">bind</span><span class="p">(</span><span class="n">null</span><span class="p">);</span>
+            <span class="n">datagramChannel</span><span class="p">.</span><span class="n">socket</span><span class="p">().</span><span class="n">connect</span><span class="p">(</span><span class="n">remoteAddress</span><span class="p">);</span>
+            <span class="n">selectionKey</span> <span class="o">=</span> <span class="n">datagramChannel</span><span class="p">.</span><span class="k">register</span><span class="p">(</span><span class="n">selector</span><span class="p">,</span> <span class="n">SelectionKey</span><span class="p">.</span><span class="n">OP_READ</span><span class="p">);</span>
+            <span class="n">connectedAddress</span> <span class="o">=</span> <span class="n">remoteAddress</span><span class="p">;</span>
+        <span class="p">}</span> <span class="k">catch</span> <span class="p">(</span><span class="n">Exception</span> <span class="n">ex</span><span class="p">)</span> <span class="p">{</span>
+            <span class="n">close</span><span class="p">();</span>
+            <span class="n">IOException</span> <span class="n">ioEx</span> <span class="o">=</span> <span class="k">new</span> <span class="n">IOException</span><span class="p">(</span><span class="s">&quot;Unable to connect to: &quot;</span> <span class="o">+</span> <span class="n">remoteAddress</span><span class="p">);</span>
+            <span class="n">ioEx</span><span class="p">.</span><span class="n">initCause</span><span class="p">(</span><span class="n">ex</span><span class="p">);</span>
+            <span class="k">throw</span> <span class="n">ioEx</span><span class="p">;</span>
+        <span class="p">}</span>
+    <span class="p">}</span></code></pre></div>
+
+<p>看到这个方法可能会让人有点困惑，UDP是无连接的，为何还会有connect方法？这里的connect并不是TCP中的建立连接的意思，而是把Channel与该地址绑定，这样以后写数据的时候就会默认写给connect中传入的地址。具体描述可参见<a href="http://tool.oschina.net/uploads/apidocs/jdk-zh/java/nio/channels/DatagramChannel.html#connect(java.net.SocketAddress)">官方文档</a></p>
+
+<div class="highlight"><pre><code class="language-logos" data-lang="logos"><span class="k">public</span> <span class="n">InetSocketAddress</span> <span class="n">readFromAddress</span><span class="p">()</span> <span class="k">throws</span> <span class="n">IOException</span> <span class="p">{</span>
+            <span class="n">DatagramChannel</span> <span class="n">datagramChannel</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="n">datagramChannel</span><span class="p">;</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">datagramChannel</span> <span class="o">==</span> <span class="n">null</span><span class="p">)</span> <span class="k">throw</span> <span class="k">new</span> <span class="n">SocketException</span><span class="p">(</span><span class="s">&quot;ConnectionWrapper is closed.&quot;</span><span class="p">);</span>
+            <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">datagramChannel</span><span class="p">.</span><span class="n">isConnected</span><span class="p">())</span>
+                <span class="k">return</span> <span class="p">(</span><span class="n">InetSocketAddress</span><span class="p">)</span> <span class="n">datagramChannel</span><span class="p">.</span><span class="n">receive</span><span class="p">(</span><span class="n">readBuffer</span><span class="p">);</span> <span class="c1">// always null on Android &gt;= 5.0</span>
+            <span class="n">datagramChannel</span><span class="p">.</span><span class="n">read</span><span class="p">(</span><span class="n">readBuffer</span><span class="p">);</span>
+            <span class="k">return</span> <span class="n">connectedAddress</span><span class="p">;</span>
+        <span class="p">}</span>
     
+        <span class="k">public</span> <span class="n">PacketMessage</span> <span class="n">readObject</span><span class="p">()</span> <span class="p">{</span>
+            <span class="n">readBuffer</span><span class="p">.</span><span class="n">flip</span><span class="p">();</span>
+            <span class="n">try</span> <span class="p">{</span>
+                <span class="n">try</span> <span class="p">{</span>
+                    <span class="n">PacketMessage</span> <span class="n">object</span> <span class="o">=</span> <span class="n">serialization</span><span class="p">.</span><span class="n">read</span><span class="p">(</span><span class="n">readBuffer</span><span class="p">);</span>
+                    <span class="k">if</span> <span class="p">(</span><span class="n">readBuffer</span><span class="p">.</span><span class="n">hasRemaining</span><span class="p">())</span>
+                        <span class="k">throw</span> <span class="k">new</span> <span class="n">Exception</span><span class="p">(</span><span class="s">&quot;Incorrect number of bytes (&quot;</span> <span class="o">+</span> <span class="n">readBuffer</span><span class="p">.</span><span class="n">remaining</span><span class="p">()</span>
+                                <span class="o">+</span> <span class="s">&quot; remaining) used to deserialize object: &quot;</span> <span class="o">+</span> <span class="n">object</span><span class="p">);</span>
+                    <span class="k">if</span> <span class="p">(</span><span class="n">DEBUG</span><span class="p">)</span> <span class="n">info</span><span class="p">(</span><span class="s">&quot;readObject object : &quot;</span> <span class="o">+</span> <span class="n">object</span><span class="p">.</span><span class="n">getClass</span><span class="p">().</span><span class="n">getName</span><span class="p">());</span>
+                    <span class="k">return</span> <span class="n">object</span><span class="p">;</span>
+                <span class="p">}</span> <span class="k">catch</span> <span class="p">(</span><span class="n">Exception</span> <span class="n">ex</span><span class="p">)</span> <span class="p">{</span>
+                    <span class="k">throw</span> <span class="k">new</span> <span class="n">RuntimeException</span><span class="p">(</span><span class="s">&quot;Error during deserialization.&quot;</span><span class="p">,</span> <span class="n">ex</span><span class="p">);</span>
+                <span class="p">}</span>
+            <span class="p">}</span> <span class="n">finally</span> <span class="p">{</span>
+                <span class="n">readBuffer</span><span class="p">.</span><span class="n">clear</span><span class="p">();</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    
+        <span class="cm">/**</span>
+<span class="cm">         * This method is thread safe.</span>
+<span class="cm">         */</span>
+        <span class="k">public</span> <span class="kt">int</span> <span class="n">send</span><span class="p">(</span><span class="n">PacketMessage</span> <span class="n">object</span><span class="p">,</span> <span class="n">SocketAddress</span> <span class="n">address</span><span class="p">)</span> <span class="k">throws</span> <span class="n">IOException</span> <span class="p">{</span>
+            <span class="n">DatagramChannel</span> <span class="n">datagramChannel</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="n">datagramChannel</span><span class="p">;</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">datagramChannel</span> <span class="o">==</span> <span class="n">null</span><span class="p">)</span> <span class="k">throw</span> <span class="k">new</span> <span class="n">SocketException</span><span class="p">(</span><span class="s">&quot;ConnectionWrapper is closed.&quot;</span><span class="p">);</span>
+            <span class="n">synchronized</span> <span class="p">(</span><span class="n">writeLock</span><span class="p">)</span> <span class="p">{</span>
+                <span class="n">try</span> <span class="p">{</span>
+                    <span class="n">try</span> <span class="p">{</span>
+                        <span class="k">if</span> <span class="p">(</span><span class="n">DEBUG</span><span class="p">)</span> <span class="n">info</span><span class="p">(</span><span class="s">&quot;send object : &quot;</span> <span class="o">+</span> <span class="n">object</span><span class="p">.</span><span class="n">getClass</span><span class="p">().</span><span class="n">getName</span><span class="p">());</span>
+                        <span class="n">serialization</span><span class="p">.</span><span class="n">write</span><span class="p">(</span><span class="n">writeBuffer</span><span class="p">,</span> <span class="n">object</span><span class="p">);</span>
+                    <span class="p">}</span> <span class="k">catch</span> <span class="p">(</span><span class="n">Exception</span> <span class="n">ex</span><span class="p">)</span> <span class="p">{</span>
+                        <span class="k">throw</span> <span class="k">new</span> <span class="n">RuntimeException</span><span class="p">(</span><span class="s">&quot;Error serializing object of type: &quot;</span> <span class="o">+</span> <span class="n">object</span><span class="p">.</span><span class="n">getClass</span><span class="p">().</span><span class="n">getName</span><span class="p">(),</span> <span class="n">ex</span><span class="p">);</span>
+                    <span class="p">}</span>
+                    <span class="n">writeBuffer</span><span class="p">.</span><span class="n">flip</span><span class="p">();</span>
+                    <span class="kt">int</span> <span class="n">length</span> <span class="o">=</span> <span class="n">writeBuffer</span><span class="p">.</span><span class="n">limit</span><span class="p">();</span>
+                    <span class="n">datagramChannel</span><span class="p">.</span><span class="n">send</span><span class="p">(</span><span class="n">writeBuffer</span><span class="p">,</span> <span class="n">address</span><span class="p">);</span>
+                    <span class="n">boolean</span> <span class="n">wasFullWrite</span> <span class="o">=</span> <span class="o">!</span><span class="n">writeBuffer</span><span class="p">.</span><span class="n">hasRemaining</span><span class="p">();</span>
+                    <span class="k">return</span> <span class="n">wasFullWrite</span> <span class="o">?</span> <span class="nl">length</span> <span class="p">:</span> <span class="o">-</span><span class="mi">1</span><span class="p">;</span>
+                <span class="p">}</span> <span class="n">finally</span> <span class="p">{</span>
+                    <span class="n">writeBuffer</span><span class="p">.</span><span class="n">clear</span><span class="p">();</span>
+                <span class="p">}</span>
+            <span class="p">}</span>
+        <span class="p">}</span></code></pre></div>
+
+<p>这三个方法中<code>readFromAddress</code>是从通道中读取数据到<code>ByteBuffer</code>，<code>readObject</code>使用规定的<code>Serialization</code>从<code>ByteBuffer</code>转为Java对象，<code>send</code>将Java对象写入通道。有了这些基础方法后就可以在上层设计UDP连接框架了。</p>
+
+<p>这里使用了静态代理的设计思路，<code>UDPConnection</code>是<code>IConnection</code>的一个实现，<code>ConnectionWrapper</code>是<code>IConnection</code>的一个代理；<code>ConnectionWrapper</code>中使用的是<code>UDPConnection</code>的实现。<code>ConnectionWrapper</code>中还有一个属性是<code>EndPoint</code>类型的对象，<code>ConnectionWrapper</code>中主要使用的是<code>EndPoint</code>的<code>reconnect</code>实现。</p>
+
+<p>EndPoint定义了一个UDP端的控制接口。</p>
+
+<ol>
+  <li><code>Serialization getSerialization();</code> 获取数据序列化的实现</li>
+  <li><code>addListener(Listener listener);</code> 添加上面所说的五中状态的监听</li>
+  <li><code>removeListener(Listener listener);</code>删除状态监听</li>
+  <li><code>run();</code>继承的<code>Runnable</code>，读取消息的循环，运行在独立线程中</li>
+  <li><code>reconnect();</code>重连</li>
+  <li><code>start();</code>开启一个线程运行<code>run()</code></li>
+  <li><code>stop();</code>停止run()并重置Selector状态</li>
+  <li><code>close();</code>状态置为关闭，关闭通道，重置<code>Selector</code></li>
+  <li><code>update(int timeout);</code>读取一次数据的实现，<code>run</code>中会循环调用该方法</li>
+  <li><code>getUpdateThread();</code>获取读取数据的线程，这是为了判断建立连接的线程与读取数据的线程是否相同，建立连接的过程会block线程，因此不能使用同一个线程，否则会卡死。</li>
+</ol>
+
+<p>这些接口里面只有1、2、3、5、6、7、8是提供给外部控制Client状态的。</p>
+
+<p>下面我们来走一遍建立连接的过程:</p>
+
+<ol>
+  <li>
+    <p>创建Client</p>
+
+    <p><code>client = new Client() {};</code></p>
+  </li>
+  <li>
+    <p>配置状态回调，启动Client，开始监听UDP报文</p>
+
+    <p><code>client.start();</code></p>
+
+    <p><code>client.addListener(new com.transport.Listener());</code></p>
+  </li>
+  <li>
+    <p>开启另一个线程开始连接服务器</p>
+  </li>
+</ol>
+
+<div class="highlight"><pre><code class="language-logos" data-lang="logos"><span class="k">new</span> <span class="nf">Thread</span><span class="p">(</span><span class="s">&quot;Connect&quot;</span><span class="p">)</span> <span class="p">{</span>
+       <span class="k">public</span> <span class="kt">void</span> <span class="n">run</span><span class="p">()</span> <span class="p">{</span>
+           <span class="n">try</span> <span class="p">{</span>
+               <span class="n">client</span><span class="p">.</span><span class="n">connect</span><span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="n">Integer</span><span class="p">.</span><span class="n">parseInt</span><span class="p">(</span><span class="n">port</span><span class="p">));</span> 
+           <span class="p">}</span> <span class="k">catch</span> <span class="p">(</span><span class="n">IOException</span> <span class="n">ex</span><span class="p">)</span> <span class="p">{</span>
+               <span class="n">ex</span><span class="p">.</span><span class="n">printStackTrace</span><span class="p">();</span>
+               <span class="n">System</span><span class="p">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
+           <span class="p">}</span>
+       <span class="p">}</span>
+   <span class="p">}.</span><span class="n">start</span><span class="p">();</span></code></pre></div>
+
+<p>需要注意的是必须要先启动Client后在建立连接，因为我们这里建立连接做的事情是1.给Channel绑定服务器的地址 2.给服务器发送一个心跳包，然后block线程，等待心跳ACK，超时断开连接；收到ACK唤醒线程，通知状态监听</p>
+
+<p>服务器的逻辑与之类似：</p>
+
+<ol>
+  <li>
+    <p>创建Server</p>
+
+    <p><code>server = new Server() {};</code></p>
+  </li>
+  <li>
+    <p>配置状态回调，启动Client，开始监听UDP报文，收到报文后默认返回ACK</p>
+
+    <p><code>server.addListener(new Listener());</code></p>
+
+    <p><code>server.start();</code></p>
+  </li>
+  <li>
+    <p>绑定端口，服务器没有建立连接的步骤，不会造成线程block</p>
+
+    <p><code>server.bind(54555);</code></p>
+  </li>
+</ol>
+
+<h3 id="section">可靠地数据传输</h3>
+
+<p>要实现可靠地数据传输需要实现两个特性：1.断线重连 2.数据包ACK，超时重发 3.心跳</p>
+
+<h4 id="section-1">断线重连</h4>
+
+<p>断线重连发生在下面几种情况下：</p>
+
+<ol>
+  <li>从通道读取数据失败。我们认为数据通道被破坏了，需要重新创建。</li>
+  <li>ACK检查时发现了超出重发次数的数据包。我们认为服务器失联了，需要重联，确认连接可用。</li>
+  <li>发送数据包失败。与1一样，认为数据通道破坏了。</li>
+</ol>
+
+<p>对应的代码调用可以全局搜索<code>reconnect();</code>的调用</p>
+
+<h4 id="section-2">超时重发</h4>
+<p>上面在介绍<code>EndPoint</code>的时候说过了<code>update(int timeout)</code>，运行在独立的线程中，这个方法做了3件事情：</p>
+
+<ol>
+  <li>检测<code>Selector</code>是否有数据通道处于ready状态，如果有，进入读取数据的逻辑。</li>
+  <li>检测并发送心跳包。</li>
+  <li>检测等待ACK的包，是否有等待的包超时了，有并且已经超出重发次数上线，重连；没有超出重发次数上线则重发数据包，并将该数据包移出等待ACK的列表。</li>
+</ol>
+
+<p>我们在发送数据包时，需要将每一个发送成功的数据包保存在等待ACK的列表中，在收到了对应的ACK后才能将之移除；重连时需要把还在等待ACK的数据包重发一次。</p>
+
+<h4 id="section-3">心跳</h4>
+
+<p>心跳也是在<code>update</code>函数中检测的，目前定义的是一分钟一次，在update函数中判断距离上次发送心跳的时间，到了一分钟就发送一次心跳，然后重置最近一次发送心跳的时间。这里需要注意的
+是重置发送心跳的时间是写在发送数据包的函数中的，因为我们有可能会出现心跳包重发的情况，因此在发送数据包的时候来判断是否属心跳包，以此为依据来更新最新一次数据包的发送时间。
+重连的时候不会发送还在等待ACK的心跳包，心跳包会直接抛弃。</p>
+
+<h3 id="section-4">数据解析协议</h3>
+
+<p>首先需要看下序列化接口的定义：</p>
+
+<div class="highlight"><pre><code class="language-logos" data-lang="logos"><span class="k">public</span> <span class="n">interface</span> <span class="n">Serialization</span> <span class="p">{</span>
+
+    <span class="kt">void</span> <span class="n">write</span><span class="p">(</span><span class="n">ByteBuffer</span> <span class="n">buffer</span><span class="p">,</span> <span class="n">PacketMessage</span> <span class="n">packet</span><span class="p">);</span>
+
+    <span class="n">PacketMessage</span> <span class="nf">read</span><span class="p">(</span><span class="n">ByteBuffer</span> <span class="n">buffer</span><span class="p">);</span>
+
+    <span class="cm">/**</span>
+<span class="cm">     * The fixed number of bytes that will be written by {@link #writeLength(ByteBuffer, int)} and read by</span>
+<span class="cm">     * {@link #readLength(ByteBuffer)}.</span>
+<span class="cm">     */</span>
+    <span class="kt">int</span> <span class="nf">getLengthLength</span><span class="p">();</span>
+
+    <span class="kt">void</span> <span class="nf">writeLength</span><span class="p">(</span><span class="n">ByteBuffer</span> <span class="n">buffer</span><span class="p">,</span> <span class="kt">int</span> <span class="n">length</span><span class="p">);</span>
+
+    <span class="kt">int</span> <span class="nf">readLength</span><span class="p">(</span><span class="n">ByteBuffer</span> <span class="n">buffer</span><span class="p">);</span>
+<span class="p">}</span></code></pre></div>
+
+<p>这里我们规定了<code>ByteBuffer</code>与<code>PacketMessage</code>之间的互相转化接口，具体实现写在<code>PacketSerialization</code>中。这里不太想赘述了，代码中已经写得很详细了。</p>
+
+<h3 id="demo">如何运行Demo</h3>
+
+<p>我们虽然导入Android Studio后是一个Android工程，但是不能启动模拟器来运行，因为Android部分的代码都被我删掉了。我们可以运行代码里面的ChatClient
+和ChatServer两个Java勒种的main方法，运行方法不需要我再说了吧，附上截图：</p>
+<figure>
+	<img src="/images/android/UDP/ChatServer.png" alt="服务器运行图" /> 
+	<img src="/images/android/UDP/ChatClient01.png" alt="客户端设置服务器地址" /> 
+	<img src="/images/android/UDP/ChatClient02.png" alt="客户端设置服务器端口" /> 
+	<img src="/images/android/UDP/ChatClient03.png" alt="客户端运行图" /> 
+</figure>
 
   </div><!-- /.entry-content -->
 </article><!-- /.hentry -->
