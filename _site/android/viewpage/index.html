@@ -1,0 +1,785 @@
+<!doctype html>
+<!--[if lt IE 7]><html class="no-js lt-ie9 lt-ie8 lt-ie7" lang="en"> <![endif]-->
+<!--[if (IE 7)&!(IEMobile)]><html class="no-js lt-ie9 lt-ie8" lang="en"><![endif]-->
+<!--[if (IE 8)&!(IEMobile)]><html class="no-js lt-ie9" lang="en"><![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en"><!--<![endif]-->
+<head>
+<meta charset="utf-8">
+<title>ViewPage源代码学习(上) &#8211; Life is a Struggle</title>
+<meta name="description" content="Describe your website here.">
+<meta name="keywords" content="">
+
+
+
+<!-- Open Graph -->
+<meta property="og:locale" content="en_US">
+<meta property="og:type" content="article">
+<meta property="og:title" content="ViewPage源代码学习(上)">
+<meta property="og:description" content="Describe your website here.">
+<meta property="og:url" content="/android/viewpage/">
+<meta property="og:site_name" content="Life is a Struggle">
+
+
+
+
+
+<link rel="canonical" href="/android/viewpage/">
+<link href="/feed.xml" type="application/atom+xml" rel="alternate" title="Life is a Struggle Feed">
+
+<!-- http://t.co/dKP3o1e -->
+<meta name="HandheldFriendly" content="True">
+<meta name="MobileOptimized" content="320">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<!-- For all browsers -->
+<link rel="stylesheet" href="/assets/css/main.css">
+<!-- Webfonts -->
+<link href="//fonts.googleapis.com/css?family=Lato:300,400,700,300italic,400italic" rel="stylesheet" type="text/css">
+
+<meta http-equiv="cleartype" content="on">
+
+<!-- Load Modernizr -->
+<script src="/assets/js/vendor/modernizr-2.6.2.custom.min.js"></script>
+
+<!-- Icons -->
+<!-- 16x16 -->
+<link rel="shortcut icon" href="/favicon.ico">
+<!-- 32x32 -->
+<link rel="shortcut icon" href="/favicon.png">
+<!-- 57x57 (precomposed) for iPhone 3GS, pre-2011 iPod Touch and older Android devices -->
+<link rel="apple-touch-icon-precomposed" href="/images/apple-touch-icon-precomposed.png">
+<!-- 72x72 (precomposed) for 1st generation iPad, iPad 2 and iPad mini -->
+<link rel="apple-touch-icon-precomposed" sizes="72x72" href="/images/apple-touch-icon-72x72-precomposed.png">
+<!-- 114x114 (precomposed) for iPhone 4, 4S, 5 and post-2011 iPod Touch -->
+<link rel="apple-touch-icon-precomposed" sizes="114x114" href="/images/apple-touch-icon-114x114-precomposed.png">
+<!-- 144x144 (precomposed) for iPad 3rd and 4th generation -->
+<link rel="apple-touch-icon-precomposed" sizes="144x144" href="/images/apple-touch-icon-144x144-precomposed.png">
+
+
+
+</head>
+
+<body id="post" >
+
+<!--[if lt IE 9]><div class="upgrade"><strong><a href="http://whatbrowser.org/">Your browser is quite old!</strong> Why not upgrade to a different browser to better enjoy this site?</a></div><![endif]-->
+<nav id="dl-menu" class="dl-menuwrapper" role="navigation">
+	<button class="dl-trigger">Open Menu</button>
+	<ul class="dl-menu">
+		<li><a href="/">Home</a></li>
+		<li>
+			<a href="#">About</a>
+			<ul class="dl-submenu">
+				<li>
+					<img src="/images/avatar.png" alt="陆 伟 photo" class="author-photo">
+					<h4>陆 伟</h4>
+					<p>心有猛虎，细嗅蔷薇.</p>
+				</li>
+				<li><a href="/about/"><span class="btn btn-inverse">Learn More</span></a></li>
+				<li>
+					<a href="mailto:1071932819@qq.com"><i class="fa fa-fw fa-envelope"></i> Email</a>
+				</li>
+				
+				
+				
+				
+				<li>
+					<a href="http://github.com//luwei2012"><i class="fa fa-fw fa-github"></i> GitHub</a>
+				</li>
+				
+				
+				
+				
+			</ul><!-- /.dl-submenu -->
+		</li>
+		<li>
+			<a href="#">Posts</a>
+			<ul class="dl-submenu">
+				<li><a href="/posts/">All Posts</a></li>
+				<li><a href="/tags/">All Tags</a></li>
+			</ul>
+		</li>
+		
+	    
+	        
+	        
+	    <li><a href="https://bitbucket.org/luoqiaowei" target="_blank">Bitbucket</a></li>
+	  
+	</ul><!-- /.dl-menu -->
+</nav><!-- /.dl-menuwrapper -->
+
+
+
+
+<div id="main" role="main">
+  <article class="hentry">
+    <header class="header-title">
+      <div class="header-title-wrap">
+        
+          <h1 class="entry-title"><a href="/android/viewpage/" rel="bookmark" title="ViewPage源代码学习(上)">ViewPage源代码学习(上)</a></h1>
+        
+        <h2><span class="entry-date date published"><time datetime="2016-11-07T18:41:39+08:00">November 07, 2016</time></span></h2>
+        
+        <p class="entry-reading-time">
+          <i class="fa fa-clock-o"></i>
+          
+          Reading time ~24 minutes
+        </p><!-- /.entry-reading-time -->
+        
+      </div><!-- /.header-title-wrap -->
+    </header>
+    <div class="entry-content">
+      <p>搞android开发的不可能没用过ViewPage，这个功能强大的控件是android独有的（IOS上没有这样的玩意儿，除了一些第三方的库）。一直都想研究ViewPage的源码，自己又很懒，在百度上搜了搜，
+硬是没有一家写过这个，无奈，只能自己上来啃了。ViewPage继承自ViewGroup，所以我们在看ViewPage的代码的时候还是按照ViewGroup的功能逻辑来看。</p>
+
+<p>首先自然是构造函数，没啥东西：</p>
+
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span class="kt">void</span> <span class="nf">initViewPager</span><span class="o">()</span> <span class="o">{</span>
+        <span class="n">setWillNotDraw</span><span class="o">(</span><span class="kc">false</span><span class="o">);</span>
+        <span class="n">setDescendantFocusability</span><span class="o">(</span><span class="n">FOCUS_AFTER_DESCENDANTS</span><span class="o">);</span>
+        <span class="n">setFocusable</span><span class="o">(</span><span class="kc">true</span><span class="o">);</span>
+        <span class="kd">final</span> <span class="n">Context</span> <span class="n">context</span> <span class="o">=</span> <span class="n">getContext</span><span class="o">();</span>
+        <span class="n">mScroller</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">Scroller</span><span class="o">(</span><span class="n">context</span><span class="o">,</span> <span class="n">sInterpolator</span><span class="o">);</span>
+        <span class="kd">final</span> <span class="n">ViewConfiguration</span> <span class="n">configuration</span> <span class="o">=</span> <span class="n">ViewConfiguration</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">context</span><span class="o">);</span>
+        <span class="kd">final</span> <span class="kt">float</span> <span class="n">density</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="na">getResources</span><span class="o">().</span><span class="na">getDisplayMetrics</span><span class="o">().</span><span class="na">density</span><span class="o">;</span>
+
+        <span class="n">mTouchSlop</span> <span class="o">=</span> <span class="n">ViewConfigurationCompat</span><span class="o">.</span><span class="na">getScaledPagingTouchSlop</span><span class="o">(</span><span class="n">configuration</span><span class="o">);</span>
+        <span class="n">mMinimumVelocity</span> <span class="o">=</span> <span class="o">(</span><span class="kt">int</span><span class="o">)</span> <span class="o">(</span><span class="n">MIN_FLING_VELOCITY</span> <span class="o">*</span> <span class="n">density</span><span class="o">);</span>
+        <span class="n">mMaximumVelocity</span> <span class="o">=</span> <span class="n">configuration</span><span class="o">.</span><span class="na">getScaledMaximumFlingVelocity</span><span class="o">();</span>
+        <span class="n">mLeftEdge</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">EdgeEffectCompat</span><span class="o">(</span><span class="n">context</span><span class="o">);</span>
+        <span class="n">mRightEdge</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">EdgeEffectCompat</span><span class="o">(</span><span class="n">context</span><span class="o">);</span>
+
+        <span class="n">mFlingDistance</span> <span class="o">=</span> <span class="o">(</span><span class="kt">int</span><span class="o">)</span> <span class="o">(</span><span class="n">MIN_DISTANCE_FOR_FLING</span> <span class="o">*</span> <span class="n">density</span><span class="o">);</span>
+        <span class="n">mCloseEnough</span> <span class="o">=</span> <span class="o">(</span><span class="kt">int</span><span class="o">)</span> <span class="o">(</span><span class="n">CLOSE_ENOUGH</span> <span class="o">*</span> <span class="n">density</span><span class="o">);</span>
+        <span class="n">mDefaultGutterSize</span> <span class="o">=</span> <span class="o">(</span><span class="kt">int</span><span class="o">)</span> <span class="o">(</span><span class="n">DEFAULT_GUTTER_SIZE</span> <span class="o">*</span> <span class="n">density</span><span class="o">);</span>
+
+        <span class="n">ViewCompat</span><span class="o">.</span><span class="na">setAccessibilityDelegate</span><span class="o">(</span><span class="k">this</span><span class="o">,</span> <span class="k">new</span> <span class="nf">MyAccessibilityDelegate</span><span class="o">());</span>
+
+        <span class="k">if</span> <span class="o">(</span><span class="n">ViewCompat</span><span class="o">.</span><span class="na">getImportantForAccessibility</span><span class="o">(</span><span class="k">this</span><span class="o">)</span>
+                <span class="o">==</span> <span class="n">ViewCompat</span><span class="o">.</span><span class="na">IMPORTANT_FOR_ACCESSIBILITY_AUTO</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">ViewCompat</span><span class="o">.</span><span class="na">setImportantForAccessibility</span><span class="o">(</span><span class="k">this</span><span class="o">,</span>
+                    <span class="n">ViewCompat</span><span class="o">.</span><span class="na">IMPORTANT_FOR_ACCESSIBILITY_YES</span><span class="o">);</span>
+        <span class="o">}</span>
+    <span class="o">}</span></code></pre></div>
+
+<p>第一句话意思根据android官方注释：如果这个view自己没有做任何的draw就设置这个为true，可以优化性能。默认为false，也就是需要调用onDraw方法。如果你覆写的onDraw，则必须清除(也就是false)这个标志。</p>
+
+<p>第二句话设置焦点获取规则，这个就不详细说了，默认规则就是儿子都不要老子才要。</p>
+
+<p>接下来创建了一个Scroller，用来处理滚动事件，这个需要先储备一下Scroller的用法和作用。</p>
+
+<p>再接着感觉比较重要的就是ViewCompat.setAccessibilityDelegate(this, new MyAccessibilityDelegate());，这个具体作用现在还不清除，后面再看。
+其他的就是一些变量的初始化，我们进入下一步。在进入下一步之前我们需要知道ViewPage下一步是做什么？</p>
+
+<p>一般来说一个activity或者fragment使用ViewPage，都是在XML文件或者new出来之后添加到父View中，接着就是设置Adapter和监听器，甚至可以设置初始页面的索引。最后在View将要绘制的时候才进入View的绘制消息传递(包含measure和layout传递等)。
+所以ViewPage第二个触发的应该是跟Adapter有关的函数。</p>
+
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span class="cm">/**</span>
+<span class="cm">     * Set a PagerAdapter that will supply views for this pager as needed.</span>
+<span class="cm">     *</span>
+<span class="cm">     * @param adapter Adapter to use</span>
+<span class="cm">     */</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">setAdapter</span><span class="o">(</span><span class="n">PagerAdapter</span> <span class="n">adapter</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">mAdapter</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">mAdapter</span><span class="o">.</span><span class="na">unregisterDataSetObserver</span><span class="o">(</span><span class="n">mObserver</span><span class="o">);</span>
+            <span class="n">mAdapter</span><span class="o">.</span><span class="na">startUpdate</span><span class="o">(</span><span class="k">this</span><span class="o">);</span>
+            <span class="k">for</span> <span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">mItems</span><span class="o">.</span><span class="na">size</span><span class="o">();</span> <span class="n">i</span><span class="o">++)</span> <span class="o">{</span>
+                <span class="kd">final</span> <span class="n">ItemInfo</span> <span class="n">ii</span> <span class="o">=</span> <span class="n">mItems</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">i</span><span class="o">);</span>
+                <span class="n">mAdapter</span><span class="o">.</span><span class="na">destroyItem</span><span class="o">(</span><span class="k">this</span><span class="o">,</span> <span class="n">ii</span><span class="o">.</span><span class="na">position</span><span class="o">,</span> <span class="n">ii</span><span class="o">.</span><span class="na">object</span><span class="o">);</span>
+            <span class="o">}</span>
+            <span class="n">mAdapter</span><span class="o">.</span><span class="na">finishUpdate</span><span class="o">(</span><span class="k">this</span><span class="o">);</span>
+            <span class="n">mItems</span><span class="o">.</span><span class="na">clear</span><span class="o">();</span>
+            <span class="n">removeNonDecorViews</span><span class="o">();</span>
+            <span class="n">mCurItem</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span>
+            <span class="n">scrollTo</span><span class="o">(</span><span class="mi">0</span><span class="o">,</span> <span class="mi">0</span><span class="o">);</span>
+        <span class="o">}</span>
+
+        <span class="kd">final</span> <span class="n">PagerAdapter</span> <span class="n">oldAdapter</span> <span class="o">=</span> <span class="n">mAdapter</span><span class="o">;</span>
+        <span class="n">mAdapter</span> <span class="o">=</span> <span class="n">adapter</span><span class="o">;</span>
+        <span class="n">mExpectedAdapterCount</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span>
+
+        <span class="k">if</span> <span class="o">(</span><span class="n">mAdapter</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+            <span class="k">if</span> <span class="o">(</span><span class="n">mObserver</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+                <span class="n">mObserver</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">PagerObserver</span><span class="o">();</span>
+            <span class="o">}</span>
+            <span class="n">mAdapter</span><span class="o">.</span><span class="na">registerDataSetObserver</span><span class="o">(</span><span class="n">mObserver</span><span class="o">);</span>
+            <span class="n">mPopulatePending</span> <span class="o">=</span> <span class="kc">false</span><span class="o">;</span>
+            <span class="kd">final</span> <span class="kt">boolean</span> <span class="n">wasFirstLayout</span> <span class="o">=</span> <span class="n">mFirstLayout</span><span class="o">;</span>
+            <span class="n">mFirstLayout</span> <span class="o">=</span> <span class="kc">true</span><span class="o">;</span>
+            <span class="n">mExpectedAdapterCount</span> <span class="o">=</span> <span class="n">mAdapter</span><span class="o">.</span><span class="na">getCount</span><span class="o">();</span>
+            <span class="k">if</span> <span class="o">(</span><span class="n">mRestoredCurItem</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="o">)</span> <span class="o">{</span>
+                <span class="n">mAdapter</span><span class="o">.</span><span class="na">restoreState</span><span class="o">(</span><span class="n">mRestoredAdapterState</span><span class="o">,</span> <span class="n">mRestoredClassLoader</span><span class="o">);</span>
+                <span class="n">setCurrentItemInternal</span><span class="o">(</span><span class="n">mRestoredCurItem</span><span class="o">,</span> <span class="kc">false</span><span class="o">,</span> <span class="kc">true</span><span class="o">);</span>
+                <span class="n">mRestoredCurItem</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="o">;</span>
+                <span class="n">mRestoredAdapterState</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
+                <span class="n">mRestoredClassLoader</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
+            <span class="o">}</span> <span class="k">else</span> <span class="nf">if</span> <span class="o">(!</span><span class="n">wasFirstLayout</span><span class="o">)</span> <span class="o">{</span>
+                <span class="n">populate</span><span class="o">();</span>
+            <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+                <span class="n">requestLayout</span><span class="o">();</span>
+            <span class="o">}</span>
+        <span class="o">}</span>
+
+        <span class="k">if</span> <span class="o">(</span><span class="n">mAdapterChangeListener</span> <span class="o">!=</span> <span class="kc">null</span> <span class="o">&amp;&amp;</span> <span class="n">oldAdapter</span> <span class="o">!=</span> <span class="n">adapter</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">mAdapterChangeListener</span><span class="o">.</span><span class="na">onAdapterChanged</span><span class="o">(</span><span class="n">oldAdapter</span><span class="o">,</span> <span class="n">adapter</span><span class="o">);</span>
+        <span class="o">}</span>
+    <span class="o">}</span></code></pre></div>
+
+<p>PageAdapter是一个抽象类，常用的一般是FragmentPageAdapter。PageAdapter里面有个DataSetObservable对象，而ViewPage中有个DataSetObserver的实现：PageObserver对象，然后就把这个对象注册到PageAdapter的DataSetObservable对象中去，PageAdapter在调用notifyDataSetChanged的时候就会通知所以观察者调用onChange方法，在ViewPage中实现就是：</p>
+
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span class="kd">private</span> <span class="kd">class</span> <span class="nc">PagerObserver</span> <span class="kd">extends</span> <span class="n">DataSetObserver</span> <span class="o">{</span>
+        <span class="nd">@Override</span>
+        <span class="kd">public</span> <span class="kt">void</span> <span class="nf">onChanged</span><span class="o">()</span> <span class="o">{</span>
+            <span class="n">dataSetChanged</span><span class="o">();</span>
+        <span class="o">}</span>
+        <span class="nd">@Override</span>
+        <span class="kd">public</span> <span class="kt">void</span> <span class="nf">onInvalidated</span><span class="o">()</span> <span class="o">{</span>
+            <span class="n">dataSetChanged</span><span class="o">();</span>
+        <span class="o">}</span>
+    <span class="o">}</span></code></pre></div>
+
+<p>前面if里面的一段代码，都是重置状态，startUpdate事实上啥都没做，android官方注释：当已经显示的页面将要有改变产生的时候调用。然而PageAdapter中并没有任何实现，FragmentPageAdapter也是如此。接着一个循环，首次进入必然不会执行。然后是finishUpdate，与startUpdate成对出现，这个在抽象类中没有任何卵用，但是在FragmentPageAdapter覆写了，总结一下就是这个方法里面应该把页面变换的动画立马执行结束。然后是移除所有非Decor的View，也可以忽略，接着默认页面索引为0，滚动到0,0也就是原点位置。
+接着才是初始化操作，注册PagerObserver，初始化一些状态变量。需要注意的是mRestoredCurItem里面的逻辑不会走，而是会进入requestLayout();再后面的mAdapterChangeListener这个没怎么用过，直接忽略，根据字面意思和调用时机可以判断是对adapter变化的监听(这里的变化是指adapter对象的变化)。
+我们跟着调用逻辑走下去，进入requestLayout();额……具体代码就不看了，反正意思就是要发起一次layout传递。由此也就解释了为何首次设置adapter后不需要调用notifiydatachanged方法。</p>
+
+<p>下面应该就是进入measure方法了。额……没找到，没关系，measure里面会调用onMeasure，这个才是android真正让用户自定义测量的地方。</p>
+
+<p>第一句话自然是setMeasuredDimension(getDefaultSize(0, widthMeasureSpec),getDefaultSize(0, heightMeasureSpec));，获取父亲给自己在measure中计算出的大小，然后就是一系列计算儿子的大小：</p>
+
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span class="cm">/*</span>
+<span class="cm">         * Make sure all children have been properly measured. Decor views first.</span>
+<span class="cm">         * Right now we cheat and make this less complicated by assuming decor</span>
+<span class="cm">         * views won&#39;t intersect. We will pin to edges based on gravity.</span>
+<span class="cm">         */</span>
+        <span class="kt">int</span> <span class="n">size</span> <span class="o">=</span> <span class="n">getChildCount</span><span class="o">();</span>
+        <span class="k">for</span> <span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">size</span><span class="o">;</span> <span class="o">++</span><span class="n">i</span><span class="o">)</span> <span class="o">{</span>
+            <span class="kd">final</span> <span class="n">View</span> <span class="n">child</span> <span class="o">=</span> <span class="n">getChildAt</span><span class="o">(</span><span class="n">i</span><span class="o">);</span>
+            <span class="k">if</span> <span class="o">(</span><span class="n">child</span><span class="o">.</span><span class="na">getVisibility</span><span class="o">()</span> <span class="o">!=</span> <span class="n">GONE</span><span class="o">)</span> <span class="o">{</span>
+                <span class="kd">final</span> <span class="n">LayoutParams</span> <span class="n">lp</span> <span class="o">=</span> <span class="o">(</span><span class="n">LayoutParams</span><span class="o">)</span> <span class="n">child</span><span class="o">.</span><span class="na">getLayoutParams</span><span class="o">();</span>
+                <span class="k">if</span> <span class="o">(</span><span class="n">lp</span> <span class="o">!=</span> <span class="kc">null</span> <span class="o">&amp;&amp;</span> <span class="n">lp</span><span class="o">.</span><span class="na">isDecor</span><span class="o">)</span> <span class="o">{</span>
+                    <span class="kd">final</span> <span class="kt">int</span> <span class="n">hgrav</span> <span class="o">=</span> <span class="n">lp</span><span class="o">.</span><span class="na">gravity</span> <span class="o">&amp;</span> <span class="n">Gravity</span><span class="o">.</span><span class="na">HORIZONTAL_GRAVITY_MASK</span><span class="o">;</span>
+                    <span class="kd">final</span> <span class="kt">int</span> <span class="n">vgrav</span> <span class="o">=</span> <span class="n">lp</span><span class="o">.</span><span class="na">gravity</span> <span class="o">&amp;</span> <span class="n">Gravity</span><span class="o">.</span><span class="na">VERTICAL_GRAVITY_MASK</span><span class="o">;</span>
+                    <span class="kt">int</span> <span class="n">widthMode</span> <span class="o">=</span> <span class="n">MeasureSpec</span><span class="o">.</span><span class="na">AT_MOST</span><span class="o">;</span>
+                    <span class="kt">int</span> <span class="n">heightMode</span> <span class="o">=</span> <span class="n">MeasureSpec</span><span class="o">.</span><span class="na">AT_MOST</span><span class="o">;</span>
+                    <span class="kt">boolean</span> <span class="n">consumeVertical</span> <span class="o">=</span> <span class="n">vgrav</span> <span class="o">==</span> <span class="n">Gravity</span><span class="o">.</span><span class="na">TOP</span> <span class="o">||</span> <span class="n">vgrav</span> <span class="o">==</span> <span class="n">Gravity</span><span class="o">.</span><span class="na">BOTTOM</span><span class="o">;</span>
+                    <span class="kt">boolean</span> <span class="n">consumeHorizontal</span> <span class="o">=</span> <span class="n">hgrav</span> <span class="o">==</span> <span class="n">Gravity</span><span class="o">.</span><span class="na">LEFT</span> <span class="o">||</span> <span class="n">hgrav</span> <span class="o">==</span> <span class="n">Gravity</span><span class="o">.</span><span class="na">RIGHT</span><span class="o">;</span>
+
+                    <span class="k">if</span> <span class="o">(</span><span class="n">consumeVertical</span><span class="o">)</span> <span class="o">{</span>
+                        <span class="n">widthMode</span> <span class="o">=</span> <span class="n">MeasureSpec</span><span class="o">.</span><span class="na">EXACTLY</span><span class="o">;</span>
+                    <span class="o">}</span> <span class="k">else</span> <span class="nf">if</span> <span class="o">(</span><span class="n">consumeHorizontal</span><span class="o">)</span> <span class="o">{</span>
+                        <span class="n">heightMode</span> <span class="o">=</span> <span class="n">MeasureSpec</span><span class="o">.</span><span class="na">EXACTLY</span><span class="o">;</span>
+                    <span class="o">}</span>
+
+                    <span class="kt">int</span> <span class="n">widthSize</span> <span class="o">=</span> <span class="n">childWidthSize</span><span class="o">;</span>
+                    <span class="kt">int</span> <span class="n">heightSize</span> <span class="o">=</span> <span class="n">childHeightSize</span><span class="o">;</span>
+                    <span class="k">if</span> <span class="o">(</span><span class="n">lp</span><span class="o">.</span><span class="na">width</span> <span class="o">!=</span> <span class="n">LayoutParams</span><span class="o">.</span><span class="na">WRAP_CONTENT</span><span class="o">)</span> <span class="o">{</span>
+                        <span class="n">widthMode</span> <span class="o">=</span> <span class="n">MeasureSpec</span><span class="o">.</span><span class="na">EXACTLY</span><span class="o">;</span>
+                        <span class="k">if</span> <span class="o">(</span><span class="n">lp</span><span class="o">.</span><span class="na">width</span> <span class="o">!=</span> <span class="n">LayoutParams</span><span class="o">.</span><span class="na">FILL_PARENT</span><span class="o">)</span> <span class="o">{</span>
+                            <span class="n">widthSize</span> <span class="o">=</span> <span class="n">lp</span><span class="o">.</span><span class="na">width</span><span class="o">;</span>
+                        <span class="o">}</span>
+                    <span class="o">}</span>
+                    <span class="k">if</span> <span class="o">(</span><span class="n">lp</span><span class="o">.</span><span class="na">height</span> <span class="o">!=</span> <span class="n">LayoutParams</span><span class="o">.</span><span class="na">WRAP_CONTENT</span><span class="o">)</span> <span class="o">{</span>
+                        <span class="n">heightMode</span> <span class="o">=</span> <span class="n">MeasureSpec</span><span class="o">.</span><span class="na">EXACTLY</span><span class="o">;</span>
+                        <span class="k">if</span> <span class="o">(</span><span class="n">lp</span><span class="o">.</span><span class="na">height</span> <span class="o">!=</span> <span class="n">LayoutParams</span><span class="o">.</span><span class="na">FILL_PARENT</span><span class="o">)</span> <span class="o">{</span>
+                            <span class="n">heightSize</span> <span class="o">=</span> <span class="n">lp</span><span class="o">.</span><span class="na">height</span><span class="o">;</span>
+                        <span class="o">}</span>
+                    <span class="o">}</span>
+                    <span class="kd">final</span> <span class="kt">int</span> <span class="n">widthSpec</span> <span class="o">=</span> <span class="n">MeasureSpec</span><span class="o">.</span><span class="na">makeMeasureSpec</span><span class="o">(</span><span class="n">widthSize</span><span class="o">,</span> <span class="n">widthMode</span><span class="o">);</span>
+                    <span class="kd">final</span> <span class="kt">int</span> <span class="n">heightSpec</span> <span class="o">=</span> <span class="n">MeasureSpec</span><span class="o">.</span><span class="na">makeMeasureSpec</span><span class="o">(</span><span class="n">heightSize</span><span class="o">,</span> <span class="n">heightMode</span><span class="o">);</span>
+                    <span class="n">child</span><span class="o">.</span><span class="na">measure</span><span class="o">(</span><span class="n">widthSpec</span><span class="o">,</span> <span class="n">heightSpec</span><span class="o">);</span>
+
+                    <span class="k">if</span> <span class="o">(</span><span class="n">consumeVertical</span><span class="o">)</span> <span class="o">{</span>
+                        <span class="n">childHeightSize</span> <span class="o">-=</span> <span class="n">child</span><span class="o">.</span><span class="na">getMeasuredHeight</span><span class="o">();</span>
+                    <span class="o">}</span> <span class="k">else</span> <span class="nf">if</span> <span class="o">(</span><span class="n">consumeHorizontal</span><span class="o">)</span> <span class="o">{</span>
+                        <span class="n">childWidthSize</span> <span class="o">-=</span> <span class="n">child</span><span class="o">.</span><span class="na">getMeasuredWidth</span><span class="o">();</span>
+                    <span class="o">}</span>
+                <span class="o">}</span>
+            <span class="o">}</span>
+        <span class="o">}</span></code></pre></div>
+
+<p>看这段代码的逻辑隐约猜测这不是真正的在计算viewpage内容的大小，而是在计算viewpage出去其他控件后可供作为page页面容器的空间大小。因为getChildCount这个时候返回的只是已经添加进viewpage的子view个数，而我们这个时候page页面还没有加进去。先暂时摆在一边，继续看下去：</p>
+
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span class="n">mChildWidthMeasureSpec</span> <span class="o">=</span> <span class="n">MeasureSpec</span><span class="o">.</span><span class="na">makeMeasureSpec</span><span class="o">(</span><span class="n">childWidthSize</span><span class="o">,</span> <span class="n">MeasureSpec</span><span class="o">.</span><span class="na">EXACTLY</span><span class="o">);</span>
+        <span class="n">mChildHeightMeasureSpec</span> <span class="o">=</span> <span class="n">MeasureSpec</span><span class="o">.</span><span class="na">makeMeasureSpec</span><span class="o">(</span><span class="n">childHeightSize</span><span class="o">,</span> <span class="n">MeasureSpec</span><span class="o">.</span><span class="na">EXACTLY</span><span class="o">);</span>
+
+        <span class="c1">// Make sure we have created all fragments that we need to have shown.</span>
+        <span class="n">mInLayout</span> <span class="o">=</span> <span class="kc">true</span><span class="o">;</span>
+        <span class="n">populate</span><span class="o">();</span>
+        <span class="n">mInLayout</span> <span class="o">=</span> <span class="kc">false</span><span class="o">;</span></code></pre></div>
+
+<p>正如我所说，减去了已经存在的子view的控件后，剩下的才是page的空间，populate应该会涉及到adapter的一些接口了。我跟进去发现populate调用了populate(mCurItem);意思应该是只对当前显示的页面做populate处理，这段代码比较长，我们需要分段来看：</p>
+
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span class="n">ItemInfo</span> <span class="n">oldCurInfo</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
+        <span class="kt">int</span> <span class="n">focusDirection</span> <span class="o">=</span> <span class="n">View</span><span class="o">.</span><span class="na">FOCUS_FORWARD</span><span class="o">;</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">mCurItem</span> <span class="o">!=</span> <span class="n">newCurrentItem</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">focusDirection</span> <span class="o">=</span> <span class="n">mCurItem</span> <span class="o">&lt;</span> <span class="n">newCurrentItem</span> <span class="o">?</span> <span class="n">View</span><span class="o">.</span><span class="na">FOCUS_RIGHT</span> <span class="o">:</span> <span class="n">View</span><span class="o">.</span><span class="na">FOCUS_LEFT</span><span class="o">;</span>
+            <span class="n">oldCurInfo</span> <span class="o">=</span> <span class="n">infoForPosition</span><span class="o">(</span><span class="n">mCurItem</span><span class="o">);</span>
+            <span class="n">mCurItem</span> <span class="o">=</span> <span class="n">newCurrentItem</span><span class="o">;</span>
+        <span class="o">}</span>
+         <span class="k">if</span> <span class="o">(</span><span class="n">mAdapter</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">sortChildDrawingOrder</span><span class="o">();</span>
+            <span class="k">return</span><span class="o">;</span>
+        <span class="o">}</span></code></pre></div>
+
+<p>由于我们是初始化，所以第一个if里面不会进去。然后判断adapter是否会空，如果是空就把现有的子view排序，规则参见ViewPositionComparator。一般情况下这个排序也是白扯，我们不会在viewpage里面添加什么装饰view(就是继承了ViewPage内部定义的接口的类，反正我是没见过有这样的view)：</p>
+
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span class="cm">/**</span>
+<span class="cm">     * Used internally to tag special types of child views that should be added as</span>
+<span class="cm">     * pager decorations by default.</span>
+<span class="cm">     */</span>
+    <span class="kd">interface</span> <span class="nc">Decor</span> <span class="o">{}</span></code></pre></div>
+
+<p>再接着就比较难理解了，这里还是把android的注释一起贴出来：</p>
+
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span class="c1">// Bail now if we are waiting to populate.  This is to hold off</span>
+        <span class="c1">// on creating views from the time the user releases their finger to</span>
+        <span class="c1">// fling to a new position until we have finished the scroll to</span>
+        <span class="c1">// that position, avoiding glitches from happening at that point.</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">mPopulatePending</span><span class="o">)</span> <span class="o">{</span>
+            <span class="k">if</span> <span class="o">(</span><span class="n">DEBUG</span><span class="o">)</span> <span class="n">Log</span><span class="o">.</span><span class="na">i</span><span class="o">(</span><span class="n">TAG</span><span class="o">,</span> <span class="s">&quot;populate is pending, skipping for now...&quot;</span><span class="o">);</span>
+            <span class="n">sortChildDrawingOrder</span><span class="o">();</span>
+            <span class="k">return</span><span class="o">;</span>
+        <span class="o">}</span>
+
+        <span class="c1">// Also, don&#39;t populate until we are attached to a window.  This is to</span>
+        <span class="c1">// avoid trying to populate before we have restored our view hierarchy</span>
+        <span class="c1">// state and conflicting with what is restored.</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">getWindowToken</span><span class="o">()</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+            <span class="k">return</span><span class="o">;</span>
+        <span class="o">}</span>
+
+        <span class="n">mAdapter</span><span class="o">.</span><span class="na">startUpdate</span><span class="o">(</span><span class="k">this</span><span class="o">);</span></code></pre></div>
+
+<p>找了半天mPopulatePending，发现只有在处理ACTION_UP事件和endFakeDrag函数中才会被设置为true。endFakeDrag的只能需要看beginFakeDrag的注释，大概用途就是同步与其他可滑动页面的状态。比如我们有两个viewpage，想要达到同时滑动的效果，就在其中一个viewpage滑动的时候调用另一个viewpage的fakedrag系列方法以达到同步效果。但是不管是ACTION_UP还是endFakeDrag都是表示滑动停止，滑动停止后我们的populate函数就沦为了排序？写到这里的时候我也没找到答案，隐约感觉不对劲，但是还是继续往下走。
+下面的意思就是在view还没有添加到窗口上时就不走下去了，这里我们需要知道一个view的生命周期：
+构造View –&gt; onFinishInflate –&gt; onAttachedToWindow –&gt; onMeasure –&gt; onSizeChanged –&gt; onLayout –&gt; onDraw –&gt; onDetackedFromWindow
+再接着 mAdapter.startUpdate(this)这句代码我们上面就说过，并没有什么卵用。</p>
+
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span class="kd">final</span> <span class="kt">int</span> <span class="n">pageLimit</span> <span class="o">=</span> <span class="n">mOffscreenPageLimit</span><span class="o">;</span>
+        <span class="kd">final</span> <span class="kt">int</span> <span class="n">startPos</span> <span class="o">=</span> <span class="n">Math</span><span class="o">.</span><span class="na">max</span><span class="o">(</span><span class="mi">0</span><span class="o">,</span> <span class="n">mCurItem</span> <span class="o">-</span> <span class="n">pageLimit</span><span class="o">);</span>
+        <span class="kd">final</span> <span class="kt">int</span> <span class="n">N</span> <span class="o">=</span> <span class="n">mAdapter</span><span class="o">.</span><span class="na">getCount</span><span class="o">();</span>
+        <span class="kd">final</span> <span class="kt">int</span> <span class="n">endPos</span> <span class="o">=</span> <span class="n">Math</span><span class="o">.</span><span class="na">min</span><span class="o">(</span><span class="n">N</span><span class="o">-</span><span class="mi">1</span><span class="o">,</span> <span class="n">mCurItem</span> <span class="o">+</span> <span class="n">pageLimit</span><span class="o">);</span>
+
+        <span class="k">if</span> <span class="o">(</span><span class="n">N</span> <span class="o">!=</span> <span class="n">mExpectedAdapterCount</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">String</span> <span class="n">resName</span><span class="o">;</span>
+            <span class="k">try</span> <span class="o">{</span>
+                <span class="n">resName</span> <span class="o">=</span> <span class="n">getResources</span><span class="o">().</span><span class="na">getResourceName</span><span class="o">(</span><span class="n">getId</span><span class="o">());</span>
+            <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">Resources</span><span class="o">.</span><span class="na">NotFoundException</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
+                <span class="n">resName</span> <span class="o">=</span> <span class="n">Integer</span><span class="o">.</span><span class="na">toHexString</span><span class="o">(</span><span class="n">getId</span><span class="o">());</span>
+            <span class="o">}</span>
+            <span class="k">throw</span> <span class="k">new</span> <span class="nf">IllegalStateException</span><span class="o">(</span><span class="s">&quot;The application&#39;s PagerAdapter changed the adapter&#39;s&quot;</span> <span class="o">+</span>
+                    <span class="s">&quot; contents without calling PagerAdapter#notifyDataSetChanged!&quot;</span> <span class="o">+</span>
+                    <span class="s">&quot; Expected adapter item count: &quot;</span> <span class="o">+</span> <span class="n">mExpectedAdapterCount</span> <span class="o">+</span> <span class="s">&quot;, found: &quot;</span> <span class="o">+</span> <span class="n">N</span> <span class="o">+</span>
+                    <span class="s">&quot; Pager id: &quot;</span> <span class="o">+</span> <span class="n">resName</span> <span class="o">+</span>
+                    <span class="s">&quot; Pager class: &quot;</span> <span class="o">+</span> <span class="n">getClass</span><span class="o">()</span> <span class="o">+</span>
+                    <span class="s">&quot; Problematic adapter: &quot;</span> <span class="o">+</span> <span class="n">mAdapter</span><span class="o">.</span><span class="na">getClass</span><span class="o">());</span>
+        <span class="o">}</span></code></pre></div>
+
+<p>这一段获取正确的需要初始化的页面起始位置和结束位置。根据我们设置的缓存大小，最大初始化不超过N个页面。然后if里面的错误原因说明很清晰了，改了adapter的数据而没有调用notifyDataSetChanged方法就有可能出现。</p>
+
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span class="c1">// Locate the currently focused item or add it if needed.</span>
+        <span class="kt">int</span> <span class="n">curIndex</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="o">;</span>
+        <span class="n">ItemInfo</span> <span class="n">curItem</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
+        <span class="k">for</span> <span class="o">(</span><span class="n">curIndex</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span> <span class="n">curIndex</span> <span class="o">&lt;</span> <span class="n">mItems</span><span class="o">.</span><span class="na">size</span><span class="o">();</span> <span class="n">curIndex</span><span class="o">++)</span> <span class="o">{</span>
+            <span class="kd">final</span> <span class="n">ItemInfo</span> <span class="n">ii</span> <span class="o">=</span> <span class="n">mItems</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">curIndex</span><span class="o">);</span>
+            <span class="k">if</span> <span class="o">(</span><span class="n">ii</span><span class="o">.</span><span class="na">position</span> <span class="o">&gt;=</span> <span class="n">mCurItem</span><span class="o">)</span> <span class="o">{</span>
+                <span class="k">if</span> <span class="o">(</span><span class="n">ii</span><span class="o">.</span><span class="na">position</span> <span class="o">==</span> <span class="n">mCurItem</span><span class="o">)</span> <span class="n">curItem</span> <span class="o">=</span> <span class="n">ii</span><span class="o">;</span>
+                <span class="k">break</span><span class="o">;</span>
+            <span class="o">}</span>
+        <span class="o">}</span>
+
+        <span class="k">if</span> <span class="o">(</span><span class="n">curItem</span> <span class="o">==</span> <span class="kc">null</span> <span class="o">&amp;&amp;</span> <span class="n">N</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">curItem</span> <span class="o">=</span> <span class="n">addNewItem</span><span class="o">(</span><span class="n">mCurItem</span><span class="o">,</span> <span class="n">curIndex</span><span class="o">);</span>
+        <span class="o">}</span></code></pre></div>
+
+<p>正如注释所说，找到当前获得焦点的页面对象，没有就添加进去，很显然，咱们的页面初始化代码出现了。</p>
+
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span class="n">ItemInfo</span> <span class="nf">addNewItem</span><span class="o">(</span><span class="kt">int</span> <span class="n">position</span><span class="o">,</span> <span class="kt">int</span> <span class="n">index</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">ItemInfo</span> <span class="n">ii</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">ItemInfo</span><span class="o">();</span>
+        <span class="n">ii</span><span class="o">.</span><span class="na">position</span> <span class="o">=</span> <span class="n">position</span><span class="o">;</span>
+        <span class="n">ii</span><span class="o">.</span><span class="na">object</span> <span class="o">=</span> <span class="n">mAdapter</span><span class="o">.</span><span class="na">instantiateItem</span><span class="o">(</span><span class="k">this</span><span class="o">,</span> <span class="n">position</span><span class="o">);</span>
+        <span class="n">ii</span><span class="o">.</span><span class="na">widthFactor</span> <span class="o">=</span> <span class="n">mAdapter</span><span class="o">.</span><span class="na">getPageWidth</span><span class="o">(</span><span class="n">position</span><span class="o">);</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">index</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="o">||</span> <span class="n">index</span> <span class="o">&gt;=</span> <span class="n">mItems</span><span class="o">.</span><span class="na">size</span><span class="o">())</span> <span class="o">{</span>
+            <span class="n">mItems</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="n">ii</span><span class="o">);</span>
+        <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+            <span class="n">mItems</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="n">index</span><span class="o">,</span> <span class="n">ii</span><span class="o">);</span>
+        <span class="o">}</span>
+        <span class="k">return</span> <span class="n">ii</span><span class="o">;</span>
+    <span class="o">}</span></code></pre></div>
+
+<p>最核心的就是mAdapter.instantiateItem(this, position);和mAdapter.getPageWidth(position);这两个函数了，mAdapter.getPageWidth(position);比较简单，意思是页面占用viewpage的宽度的百分比，默认都是100%，然后看instantiateItem这个函数。instantiateItem是adapter必须实现的方法，默认实现：</p>
+
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span class="cm">/**</span>
+<span class="cm">     * Create the page for the given position.  The adapter is responsible</span>
+<span class="cm">     * for adding the view to the container given here, although it only</span>
+<span class="cm">     * must ensure this is done by the time it returns from</span>
+<span class="cm">     * {@link #finishUpdate(ViewGroup)}.</span>
+<span class="cm">     *</span>
+<span class="cm">     * @param container The containing View in which the page will be shown.</span>
+<span class="cm">     * @param position The page position to be instantiated.</span>
+<span class="cm">     * @return Returns an Object representing the new page.  This does not</span>
+<span class="cm">     * need to be a View, but can be some other container of the page.</span>
+<span class="cm">     */</span>
+    <span class="kd">public</span> <span class="n">Object</span> <span class="nf">instantiateItem</span><span class="o">(</span><span class="n">ViewGroup</span> <span class="n">container</span><span class="o">,</span> <span class="kt">int</span> <span class="n">position</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="nf">instantiateItem</span><span class="o">((</span><span class="n">View</span><span class="o">)</span> <span class="n">container</span><span class="o">,</span> <span class="n">position</span><span class="o">);</span>
+    <span class="o">}</span>
+    <span class="cm">/**</span>
+<span class="cm">     * Create the page for the given position.  The adapter is responsible</span>
+<span class="cm">     * for adding the view to the container given here, although it only</span>
+<span class="cm">     * must ensure this is done by the time it returns from</span>
+<span class="cm">     * {@link #finishUpdate(ViewGroup)}.</span>
+<span class="cm">     *</span>
+<span class="cm">     * @param container The containing View in which the page will be shown.</span>
+<span class="cm">     * @param position The page position to be instantiated.</span>
+<span class="cm">     * @return Returns an Object representing the new page.  This does not</span>
+<span class="cm">     * need to be a View, but can be some other container of the page.</span>
+<span class="cm">     *</span>
+<span class="cm">     * @deprecated Use {@link #instantiateItem(ViewGroup, int)}</span>
+<span class="cm">     */</span>
+    <span class="kd">public</span> <span class="n">Object</span> <span class="nf">instantiateItem</span><span class="o">(</span><span class="n">View</span> <span class="n">container</span><span class="o">,</span> <span class="kt">int</span> <span class="n">position</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">throw</span> <span class="k">new</span> <span class="nf">UnsupportedOperationException</span><span class="o">(</span>
+                <span class="s">&quot;Required method instantiateItem was not overridden&quot;</span><span class="o">);</span>
+    <span class="o">}</span></code></pre></div>
+
+<p>简直没天理，直接报错……而且让我们使用instantiateItem(ViewGroup, int)，好在我们常用的FragmentPageAdapter里已经实现了：</p>
+
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="n">Object</span> <span class="nf">instantiateItem</span><span class="o">(</span><span class="n">ViewGroup</span> <span class="n">container</span><span class="o">,</span> <span class="kt">int</span> <span class="n">position</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">mCurTransaction</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">mCurTransaction</span> <span class="o">=</span> <span class="n">mFragmentManager</span><span class="o">.</span><span class="na">beginTransaction</span><span class="o">();</span>
+        <span class="o">}</span>
+
+        <span class="kd">final</span> <span class="kt">long</span> <span class="n">itemId</span> <span class="o">=</span> <span class="n">getItemId</span><span class="o">(</span><span class="n">position</span><span class="o">);</span>
+
+        <span class="c1">// Do we already have this fragment?</span>
+        <span class="n">String</span> <span class="n">name</span> <span class="o">=</span> <span class="n">makeFragmentName</span><span class="o">(</span><span class="n">container</span><span class="o">.</span><span class="na">getId</span><span class="o">(),</span> <span class="n">itemId</span><span class="o">);</span>
+        <span class="n">Fragment</span> <span class="n">fragment</span> <span class="o">=</span> <span class="n">mFragmentManager</span><span class="o">.</span><span class="na">findFragmentByTag</span><span class="o">(</span><span class="n">name</span><span class="o">);</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">fragment</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+            <span class="k">if</span> <span class="o">(</span><span class="n">DEBUG</span><span class="o">)</span> <span class="n">Log</span><span class="o">.</span><span class="na">v</span><span class="o">(</span><span class="n">TAG</span><span class="o">,</span> <span class="s">&quot;Attaching item #&quot;</span> <span class="o">+</span> <span class="n">itemId</span> <span class="o">+</span> <span class="s">&quot;: f=&quot;</span> <span class="o">+</span> <span class="n">fragment</span><span class="o">);</span>
+            <span class="n">mCurTransaction</span><span class="o">.</span><span class="na">attach</span><span class="o">(</span><span class="n">fragment</span><span class="o">);</span>
+        <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+            <span class="n">fragment</span> <span class="o">=</span> <span class="n">getItem</span><span class="o">(</span><span class="n">position</span><span class="o">);</span>
+            <span class="k">if</span> <span class="o">(</span><span class="n">DEBUG</span><span class="o">)</span> <span class="n">Log</span><span class="o">.</span><span class="na">v</span><span class="o">(</span><span class="n">TAG</span><span class="o">,</span> <span class="s">&quot;Adding item #&quot;</span> <span class="o">+</span> <span class="n">itemId</span> <span class="o">+</span> <span class="s">&quot;: f=&quot;</span> <span class="o">+</span> <span class="n">fragment</span><span class="o">);</span>
+            <span class="n">mCurTransaction</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="n">container</span><span class="o">.</span><span class="na">getId</span><span class="o">(),</span> <span class="n">fragment</span><span class="o">,</span>
+                    <span class="n">makeFragmentName</span><span class="o">(</span><span class="n">container</span><span class="o">.</span><span class="na">getId</span><span class="o">(),</span> <span class="n">itemId</span><span class="o">));</span>
+        <span class="o">}</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">fragment</span> <span class="o">!=</span> <span class="n">mCurrentPrimaryItem</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">fragment</span><span class="o">.</span><span class="na">setMenuVisibility</span><span class="o">(</span><span class="kc">false</span><span class="o">);</span>
+            <span class="n">fragment</span><span class="o">.</span><span class="na">setUserVisibleHint</span><span class="o">(</span><span class="kc">false</span><span class="o">);</span>
+        <span class="o">}</span>
+
+        <span class="k">return</span> <span class="n">fragment</span><span class="o">;</span>
+    <span class="o">}</span></code></pre></div>
+
+<p>这个实现只是适合Fragment，出现了fragment特有的manager和transaction对象，但是中心思想还是一致的，就是也创建一个页面的容器对象，根据android官方注释，生成并返回的这个对象，需要添加到ViewGroup中去，可以看到代码里确实有这句：mCurTransaction.add(container.getId(), fragment, makeFragmentName(container.getId(), itemId));这里也解释了我心中的疑问，这个函数并没有限制返回对象一定需要是view或者fragment，所以理论上我们可以任意创建对象。
+接着走我们的populate函数：</p>
+
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span class="c1">// Fill 3x the available width or up to the number of offscreen</span>
+        <span class="c1">// pages requested to either side, whichever is larger.</span>
+        <span class="c1">// If we have no current item we have no work to do.</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">curItem</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+            <span class="kt">float</span> <span class="n">extraWidthLeft</span> <span class="o">=</span> <span class="mi">0</span><span class="o">.</span><span class="na">f</span><span class="o">;</span>
+            <span class="kt">int</span> <span class="n">itemIndex</span> <span class="o">=</span> <span class="n">curIndex</span> <span class="o">-</span> <span class="mi">1</span><span class="o">;</span>
+            <span class="n">ItemInfo</span> <span class="n">ii</span> <span class="o">=</span> <span class="n">itemIndex</span> <span class="o">&gt;=</span> <span class="mi">0</span> <span class="o">?</span> <span class="n">mItems</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">itemIndex</span><span class="o">)</span> <span class="o">:</span> <span class="kc">null</span><span class="o">;</span>
+            <span class="kd">final</span> <span class="kt">int</span> <span class="n">clientWidth</span> <span class="o">=</span> <span class="n">getClientWidth</span><span class="o">();</span>
+            <span class="kd">final</span> <span class="kt">float</span> <span class="n">leftWidthNeeded</span> <span class="o">=</span> <span class="n">clientWidth</span> <span class="o">&lt;=</span> <span class="mi">0</span> <span class="o">?</span> <span class="mi">0</span> <span class="o">:</span>
+                    <span class="mi">2</span><span class="o">.</span><span class="na">f</span> <span class="o">-</span> <span class="n">curItem</span><span class="o">.</span><span class="na">widthFactor</span> <span class="o">+</span> <span class="o">(</span><span class="kt">float</span><span class="o">)</span> <span class="n">getPaddingLeft</span><span class="o">()</span> <span class="o">/</span> <span class="o">(</span><span class="kt">float</span><span class="o">)</span> <span class="n">clientWidth</span><span class="o">;</span>
+            <span class="k">for</span> <span class="o">(</span><span class="kt">int</span> <span class="n">pos</span> <span class="o">=</span> <span class="n">mCurItem</span> <span class="o">-</span> <span class="mi">1</span><span class="o">;</span> <span class="n">pos</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="o">;</span> <span class="n">pos</span><span class="o">--)</span> <span class="o">{</span>
+                <span class="k">if</span> <span class="o">(</span><span class="n">extraWidthLeft</span> <span class="o">&gt;=</span> <span class="n">leftWidthNeeded</span> <span class="o">&amp;&amp;</span> <span class="n">pos</span> <span class="o">&lt;</span> <span class="n">startPos</span><span class="o">)</span> <span class="o">{</span>
+                    <span class="k">if</span> <span class="o">(</span><span class="n">ii</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+                        <span class="k">break</span><span class="o">;</span>
+                    <span class="o">}</span>
+                    <span class="k">if</span> <span class="o">(</span><span class="n">pos</span> <span class="o">==</span> <span class="n">ii</span><span class="o">.</span><span class="na">position</span> <span class="o">&amp;&amp;</span> <span class="o">!</span><span class="n">ii</span><span class="o">.</span><span class="na">scrolling</span><span class="o">)</span> <span class="o">{</span>
+                        <span class="n">mItems</span><span class="o">.</span><span class="na">remove</span><span class="o">(</span><span class="n">itemIndex</span><span class="o">);</span>
+                        <span class="n">mAdapter</span><span class="o">.</span><span class="na">destroyItem</span><span class="o">(</span><span class="k">this</span><span class="o">,</span> <span class="n">pos</span><span class="o">,</span> <span class="n">ii</span><span class="o">.</span><span class="na">object</span><span class="o">);</span>
+                        <span class="k">if</span> <span class="o">(</span><span class="n">DEBUG</span><span class="o">)</span> <span class="o">{</span>
+                            <span class="n">Log</span><span class="o">.</span><span class="na">i</span><span class="o">(</span><span class="n">TAG</span><span class="o">,</span> <span class="s">&quot;populate() - destroyItem() with pos: &quot;</span> <span class="o">+</span> <span class="n">pos</span> <span class="o">+</span>
+                                    <span class="s">&quot; view: &quot;</span> <span class="o">+</span> <span class="o">((</span><span class="n">View</span><span class="o">)</span> <span class="n">ii</span><span class="o">.</span><span class="na">object</span><span class="o">));</span>
+                        <span class="o">}</span>
+                        <span class="n">itemIndex</span><span class="o">--;</span>
+                        <span class="n">curIndex</span><span class="o">--;</span>
+                        <span class="n">ii</span> <span class="o">=</span> <span class="n">itemIndex</span> <span class="o">&gt;=</span> <span class="mi">0</span> <span class="o">?</span> <span class="n">mItems</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">itemIndex</span><span class="o">)</span> <span class="o">:</span> <span class="kc">null</span><span class="o">;</span>
+                    <span class="o">}</span>
+                <span class="o">}</span> <span class="k">else</span> <span class="nf">if</span> <span class="o">(</span><span class="n">ii</span> <span class="o">!=</span> <span class="kc">null</span> <span class="o">&amp;&amp;</span> <span class="n">pos</span> <span class="o">==</span> <span class="n">ii</span><span class="o">.</span><span class="na">position</span><span class="o">)</span> <span class="o">{</span>
+                    <span class="n">extraWidthLeft</span> <span class="o">+=</span> <span class="n">ii</span><span class="o">.</span><span class="na">widthFactor</span><span class="o">;</span>
+                    <span class="n">itemIndex</span><span class="o">--;</span>
+                    <span class="n">ii</span> <span class="o">=</span> <span class="n">itemIndex</span> <span class="o">&gt;=</span> <span class="mi">0</span> <span class="o">?</span> <span class="n">mItems</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">itemIndex</span><span class="o">)</span> <span class="o">:</span> <span class="kc">null</span><span class="o">;</span>
+                <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+                    <span class="n">ii</span> <span class="o">=</span> <span class="n">addNewItem</span><span class="o">(</span><span class="n">pos</span><span class="o">,</span> <span class="n">itemIndex</span> <span class="o">+</span> <span class="mi">1</span><span class="o">);</span>
+                    <span class="n">extraWidthLeft</span> <span class="o">+=</span> <span class="n">ii</span><span class="o">.</span><span class="na">widthFactor</span><span class="o">;</span>
+                    <span class="n">curIndex</span><span class="o">++;</span>
+                    <span class="n">ii</span> <span class="o">=</span> <span class="n">itemIndex</span> <span class="o">&gt;=</span> <span class="mi">0</span> <span class="o">?</span> <span class="n">mItems</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">itemIndex</span><span class="o">)</span> <span class="o">:</span> <span class="kc">null</span><span class="o">;</span>
+                <span class="o">}</span>
+            <span class="o">}</span>
+
+            <span class="kt">float</span> <span class="n">extraWidthRight</span> <span class="o">=</span> <span class="n">curItem</span><span class="o">.</span><span class="na">widthFactor</span><span class="o">;</span>
+            <span class="n">itemIndex</span> <span class="o">=</span> <span class="n">curIndex</span> <span class="o">+</span> <span class="mi">1</span><span class="o">;</span>
+            <span class="k">if</span> <span class="o">(</span><span class="n">extraWidthRight</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="o">.</span><span class="na">f</span><span class="o">)</span> <span class="o">{</span>
+                <span class="n">ii</span> <span class="o">=</span> <span class="n">itemIndex</span> <span class="o">&lt;</span> <span class="n">mItems</span><span class="o">.</span><span class="na">size</span><span class="o">()</span> <span class="o">?</span> <span class="n">mItems</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">itemIndex</span><span class="o">)</span> <span class="o">:</span> <span class="kc">null</span><span class="o">;</span>
+                <span class="kd">final</span> <span class="kt">float</span> <span class="n">rightWidthNeeded</span> <span class="o">=</span> <span class="n">clientWidth</span> <span class="o">&lt;=</span> <span class="mi">0</span> <span class="o">?</span> <span class="mi">0</span> <span class="o">:</span>
+                        <span class="o">(</span><span class="kt">float</span><span class="o">)</span> <span class="n">getPaddingRight</span><span class="o">()</span> <span class="o">/</span> <span class="o">(</span><span class="kt">float</span><span class="o">)</span> <span class="n">clientWidth</span> <span class="o">+</span> <span class="mi">2</span><span class="o">.</span><span class="na">f</span><span class="o">;</span>
+                <span class="k">for</span> <span class="o">(</span><span class="kt">int</span> <span class="n">pos</span> <span class="o">=</span> <span class="n">mCurItem</span> <span class="o">+</span> <span class="mi">1</span><span class="o">;</span> <span class="n">pos</span> <span class="o">&lt;</span> <span class="n">N</span><span class="o">;</span> <span class="n">pos</span><span class="o">++)</span> <span class="o">{</span>
+                    <span class="k">if</span> <span class="o">(</span><span class="n">extraWidthRight</span> <span class="o">&gt;=</span> <span class="n">rightWidthNeeded</span> <span class="o">&amp;&amp;</span> <span class="n">pos</span> <span class="o">&gt;</span> <span class="n">endPos</span><span class="o">)</span> <span class="o">{</span>
+                        <span class="k">if</span> <span class="o">(</span><span class="n">ii</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+                            <span class="k">break</span><span class="o">;</span>
+                        <span class="o">}</span>
+                        <span class="k">if</span> <span class="o">(</span><span class="n">pos</span> <span class="o">==</span> <span class="n">ii</span><span class="o">.</span><span class="na">position</span> <span class="o">&amp;&amp;</span> <span class="o">!</span><span class="n">ii</span><span class="o">.</span><span class="na">scrolling</span><span class="o">)</span> <span class="o">{</span>
+                            <span class="n">mItems</span><span class="o">.</span><span class="na">remove</span><span class="o">(</span><span class="n">itemIndex</span><span class="o">);</span>
+                            <span class="n">mAdapter</span><span class="o">.</span><span class="na">destroyItem</span><span class="o">(</span><span class="k">this</span><span class="o">,</span> <span class="n">pos</span><span class="o">,</span> <span class="n">ii</span><span class="o">.</span><span class="na">object</span><span class="o">);</span>
+                            <span class="k">if</span> <span class="o">(</span><span class="n">DEBUG</span><span class="o">)</span> <span class="o">{</span>
+                                <span class="n">Log</span><span class="o">.</span><span class="na">i</span><span class="o">(</span><span class="n">TAG</span><span class="o">,</span> <span class="s">&quot;populate() - destroyItem() with pos: &quot;</span> <span class="o">+</span> <span class="n">pos</span> <span class="o">+</span>
+                                        <span class="s">&quot; view: &quot;</span> <span class="o">+</span> <span class="o">((</span><span class="n">View</span><span class="o">)</span> <span class="n">ii</span><span class="o">.</span><span class="na">object</span><span class="o">));</span>
+                            <span class="o">}</span>
+                            <span class="n">ii</span> <span class="o">=</span> <span class="n">itemIndex</span> <span class="o">&lt;</span> <span class="n">mItems</span><span class="o">.</span><span class="na">size</span><span class="o">()</span> <span class="o">?</span> <span class="n">mItems</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">itemIndex</span><span class="o">)</span> <span class="o">:</span> <span class="kc">null</span><span class="o">;</span>
+                        <span class="o">}</span>
+                    <span class="o">}</span> <span class="k">else</span> <span class="nf">if</span> <span class="o">(</span><span class="n">ii</span> <span class="o">!=</span> <span class="kc">null</span> <span class="o">&amp;&amp;</span> <span class="n">pos</span> <span class="o">==</span> <span class="n">ii</span><span class="o">.</span><span class="na">position</span><span class="o">)</span> <span class="o">{</span>
+                        <span class="n">extraWidthRight</span> <span class="o">+=</span> <span class="n">ii</span><span class="o">.</span><span class="na">widthFactor</span><span class="o">;</span>
+                        <span class="n">itemIndex</span><span class="o">++;</span>
+                        <span class="n">ii</span> <span class="o">=</span> <span class="n">itemIndex</span> <span class="o">&lt;</span> <span class="n">mItems</span><span class="o">.</span><span class="na">size</span><span class="o">()</span> <span class="o">?</span> <span class="n">mItems</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">itemIndex</span><span class="o">)</span> <span class="o">:</span> <span class="kc">null</span><span class="o">;</span>
+                    <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+                        <span class="n">ii</span> <span class="o">=</span> <span class="n">addNewItem</span><span class="o">(</span><span class="n">pos</span><span class="o">,</span> <span class="n">itemIndex</span><span class="o">);</span>
+                        <span class="n">itemIndex</span><span class="o">++;</span>
+                        <span class="n">extraWidthRight</span> <span class="o">+=</span> <span class="n">ii</span><span class="o">.</span><span class="na">widthFactor</span><span class="o">;</span>
+                        <span class="n">ii</span> <span class="o">=</span> <span class="n">itemIndex</span> <span class="o">&lt;</span> <span class="n">mItems</span><span class="o">.</span><span class="na">size</span><span class="o">()</span> <span class="o">?</span> <span class="n">mItems</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">itemIndex</span><span class="o">)</span> <span class="o">:</span> <span class="kc">null</span><span class="o">;</span>
+                    <span class="o">}</span>
+                <span class="o">}</span>
+            <span class="o">}</span>
+
+            <span class="n">calculatePageOffsets</span><span class="o">(</span><span class="n">curItem</span><span class="o">,</span> <span class="n">curIndex</span><span class="o">,</span> <span class="n">oldCurInfo</span><span class="o">);</span>
+        <span class="o">}</span></code></pre></div>
+
+<p>从注释看，说是填满至少3个页面的内容，如果需要的缓存页面更多则填满更多，代码里面getClientWidth();获取的是一个页面的宽度，这个宽度与page页面真实的宽无关，而是viewpage根据自己可显示内容区域大小来确定。
+第一个for循环，遍历当前页面的左边，break的条件是两个：extraWidthLeft(应该就是说已经创建的页面)要大于需求的宽度leftWidthNeeded；pos已经超过了需要缓存的索引，也就是pos &lt; startPos；满足上面两个条件后发现左边还有页面对象可以实例化，但是我们不需要了，就会break。
+下面我们进入循环看看，首次进入肯定会执行最后面的分支：</p>
+
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span class="n">ii</span> <span class="o">=</span> <span class="n">addNewItem</span><span class="o">(</span><span class="n">pos</span><span class="o">,</span> <span class="n">itemIndex</span> <span class="o">+</span> <span class="mi">1</span><span class="o">);</span>
+                    <span class="n">extraWidthLeft</span> <span class="o">+=</span> <span class="n">ii</span><span class="o">.</span><span class="na">widthFactor</span><span class="o">;</span>
+                    <span class="n">curIndex</span><span class="o">++;</span>
+                    <span class="n">ii</span> <span class="o">=</span> <span class="n">itemIndex</span> <span class="o">&gt;=</span> <span class="mi">0</span> <span class="o">?</span> <span class="n">mItems</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">itemIndex</span><span class="o">)</span> <span class="o">:</span> <span class="kc">null</span><span class="o">;</span></code></pre></div>
+
+<p>我们需要搞清楚itemIndex是什么，int itemIndex = curIndex - 1;而curIndex代表的意思是当前view应该插入的位置。在我们初始化的时候curIndex=0，因此itemIndex = -1，addNewItem传入的两个参数，第一个pos表示页面索引，第二个itemIndex表示页面在ViewPage的mItems容器中的索引，如果itemIndex的值合理则插入的索引就是itemIndex，否则直接添加到队尾。至于这个在mItems容器中的顺序有何说法我们后面再看。
+到最后一句的时候，由于itemIndex = -1，ii赋值null。然后进入第二次循环，可以看到第一个if里面的条件都成立，并且ii=null，直接跳出循环。这里我们不妨假设current！=0，并且我们的mItems里面已经缓存了很多页面的内容。不难看出我们会找到所有左边的缓存，当我们需要的缓存都找到或者创建出来后，会进入：</p>
+
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span class="k">if</span> <span class="o">(</span><span class="n">pos</span> <span class="o">==</span> <span class="n">ii</span><span class="o">.</span><span class="na">position</span> <span class="o">&amp;&amp;</span> <span class="o">!</span><span class="n">ii</span><span class="o">.</span><span class="na">scrolling</span><span class="o">)</span> <span class="o">{</span>
+                        <span class="n">mItems</span><span class="o">.</span><span class="na">remove</span><span class="o">(</span><span class="n">itemIndex</span><span class="o">);</span>
+                        <span class="n">mAdapter</span><span class="o">.</span><span class="na">destroyItem</span><span class="o">(</span><span class="k">this</span><span class="o">,</span> <span class="n">pos</span><span class="o">,</span> <span class="n">ii</span><span class="o">.</span><span class="na">object</span><span class="o">);</span>
+                        <span class="k">if</span> <span class="o">(</span><span class="n">DEBUG</span><span class="o">)</span> <span class="o">{</span>
+                            <span class="n">Log</span><span class="o">.</span><span class="na">i</span><span class="o">(</span><span class="n">TAG</span><span class="o">,</span> <span class="s">&quot;populate() - destroyItem() with pos: &quot;</span> <span class="o">+</span> <span class="n">pos</span> <span class="o">+</span>
+                                    <span class="s">&quot; view: &quot;</span> <span class="o">+</span> <span class="o">((</span><span class="n">View</span><span class="o">)</span> <span class="n">ii</span><span class="o">.</span><span class="na">object</span><span class="o">));</span>
+                        <span class="o">}</span>
+                        <span class="n">itemIndex</span><span class="o">--;</span>
+                        <span class="n">curIndex</span><span class="o">--;</span>
+                        <span class="n">ii</span> <span class="o">=</span> <span class="n">itemIndex</span> <span class="o">&gt;=</span> <span class="mi">0</span> <span class="o">?</span> <span class="n">mItems</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">itemIndex</span><span class="o">)</span> <span class="o">:</span> <span class="kc">null</span><span class="o">;</span>
+                    <span class="o">}</span></code></pre></div>
+
+<p>这个分支会把所有左边多余的分支删除销毁。
+对称的，我们还需要处理当前页面的右边内容。与左边不同的是计算rightWidthNeeded的时候，我们可以看到leftWidthNeeded基本是等于1.0f的，而rightWidthNeeded确实等于2.0f，正如我们最一开始所说的，至少需要缓存3x的页面内容，但是这个分配默认是不对称的左1x右2x。
+在我们把currentItem以及左右缓存都准备好了后进入下一句：</p>
+
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span class="n">calculatePageOffsets</span><span class="o">(</span><span class="n">curItem</span><span class="o">,</span> <span class="n">curIndex</span><span class="o">,</span> <span class="n">oldCurInfo</span><span class="o">);</span></code></pre></div>
+
+<p>对于我们初始化来说可以直接变成：</p>
+
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span class="n">calculatePageOffsets</span><span class="o">(</span><span class="n">curItem</span><span class="o">,</span> <span class="mi">0</span><span class="o">,</span> <span class="kc">null</span><span class="o">);</span></code></pre></div>
+
+<p>calculatePageOffsets也是一个比较复制的函数，本来我们不需要看前面第一个if里面的逻辑，因为iewomendeoldCurInfo是null。但是当我们不是初始化的时候，calculatePageOffsets又干了什么呢？
+首先判断oldCurInfo是在curItem哪一侧，这里左右其实对称的操作，我们假设是在左侧。
+然后对oldCurInfo和curItem之间(包含curItem)的item进行遍历，统计每一个item的offset(这个offset是相对oldCurInfo来计算的)。这个过程就涉及到我们上面说的如果addNewItem的pos和itemIndex不一致的情况。calculatePageOffsets函数是这么处理的：</p>
+
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span class="k">while</span> <span class="o">(</span><span class="n">pos</span> <span class="o">&gt;</span> <span class="n">ii</span><span class="o">.</span><span class="na">position</span> <span class="o">&amp;&amp;</span> <span class="n">itemIndex</span> <span class="o">&lt;</span> <span class="n">mItems</span><span class="o">.</span><span class="na">size</span><span class="o">()</span> <span class="o">-</span> <span class="mi">1</span><span class="o">)</span> <span class="o">{</span>
+                        <span class="n">itemIndex</span><span class="o">++;</span>
+                        <span class="n">ii</span> <span class="o">=</span> <span class="n">mItems</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">itemIndex</span><span class="o">);</span>
+                    <span class="o">}</span>
+                    <span class="k">while</span> <span class="o">(</span><span class="n">pos</span> <span class="o">&lt;</span> <span class="n">ii</span><span class="o">.</span><span class="na">position</span><span class="o">)</span> <span class="o">{</span>
+                        <span class="c1">// We don&#39;t have an item populated for this,</span>
+                        <span class="c1">// ask the adapter for an offset.</span>
+                        <span class="n">offset</span> <span class="o">+=</span> <span class="n">mAdapter</span><span class="o">.</span><span class="na">getPageWidth</span><span class="o">(</span><span class="n">pos</span><span class="o">)</span> <span class="o">+</span> <span class="n">marginOffset</span><span class="o">;</span>
+                        <span class="n">pos</span><span class="o">++;</span>
+                    <span class="o">}</span></code></pre></div>
+
+<p>第一个while按照mItems里面的顺序找到pos右边(包含pos)的一个item，第二个while判断如果找到的item的position值不是pos，这说明这两个position之间的item我们没有创建（不一定是没创建，但是如果我们在addNewItem的时候pos和itemIndex不是同升同降的话就有可能会出现这种情况，这也是为何每次dataSetChanged都会对mItems排序的原因吧），我需要问adapter如何计算offset。</p>
+
+<p>正当我沾沾自喜看懂了第一段代码是计算oldCurInfo和curItem的position值之间的对应的item的基于oldCurInfo的offset后，下面一段代码就像给我一大嘴巴，下面的代码正如注释所说，计算基于curItem的每个page的offset</p>
+
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span class="c1">// Base all offsets off of curItem.</span>
+        <span class="kd">final</span> <span class="kt">int</span> <span class="n">itemCount</span> <span class="o">=</span> <span class="n">mItems</span><span class="o">.</span><span class="na">size</span><span class="o">();</span>
+        <span class="kt">float</span> <span class="n">offset</span> <span class="o">=</span> <span class="n">curItem</span><span class="o">.</span><span class="na">offset</span><span class="o">;</span>
+        <span class="kt">int</span> <span class="n">pos</span> <span class="o">=</span> <span class="n">curItem</span><span class="o">.</span><span class="na">position</span> <span class="o">-</span> <span class="mi">1</span><span class="o">;</span>
+        <span class="n">mFirstOffset</span> <span class="o">=</span> <span class="n">curItem</span><span class="o">.</span><span class="na">position</span> <span class="o">==</span> <span class="mi">0</span> <span class="o">?</span> <span class="n">curItem</span><span class="o">.</span><span class="na">offset</span> <span class="o">:</span> <span class="o">-</span><span class="n">Float</span><span class="o">.</span><span class="na">MAX_VALUE</span><span class="o">;</span>
+        <span class="n">mLastOffset</span> <span class="o">=</span> <span class="n">curItem</span><span class="o">.</span><span class="na">position</span> <span class="o">==</span> <span class="n">N</span> <span class="o">-</span> <span class="mi">1</span> <span class="o">?</span>
+                <span class="n">curItem</span><span class="o">.</span><span class="na">offset</span> <span class="o">+</span> <span class="n">curItem</span><span class="o">.</span><span class="na">widthFactor</span> <span class="o">-</span> <span class="mi">1</span> <span class="o">:</span> <span class="n">Float</span><span class="o">.</span><span class="na">MAX_VALUE</span><span class="o">;</span>
+        <span class="c1">// Previous pages</span>
+        <span class="k">for</span> <span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="n">curIndex</span> <span class="o">-</span> <span class="mi">1</span><span class="o">;</span> <span class="n">i</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="o">;</span> <span class="n">i</span><span class="o">--,</span> <span class="n">pos</span><span class="o">--)</span> <span class="o">{</span>
+            <span class="kd">final</span> <span class="n">ItemInfo</span> <span class="n">ii</span> <span class="o">=</span> <span class="n">mItems</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">i</span><span class="o">);</span>
+            <span class="k">while</span> <span class="o">(</span><span class="n">pos</span> <span class="o">&gt;</span> <span class="n">ii</span><span class="o">.</span><span class="na">position</span><span class="o">)</span> <span class="o">{</span>
+                <span class="n">offset</span> <span class="o">-=</span> <span class="n">mAdapter</span><span class="o">.</span><span class="na">getPageWidth</span><span class="o">(</span><span class="n">pos</span><span class="o">--)</span> <span class="o">+</span> <span class="n">marginOffset</span><span class="o">;</span>
+            <span class="o">}</span>
+            <span class="n">offset</span> <span class="o">-=</span> <span class="n">ii</span><span class="o">.</span><span class="na">widthFactor</span> <span class="o">+</span> <span class="n">marginOffset</span><span class="o">;</span>
+            <span class="n">ii</span><span class="o">.</span><span class="na">offset</span> <span class="o">=</span> <span class="n">offset</span><span class="o">;</span>
+            <span class="k">if</span> <span class="o">(</span><span class="n">ii</span><span class="o">.</span><span class="na">position</span> <span class="o">==</span> <span class="mi">0</span><span class="o">)</span> <span class="n">mFirstOffset</span> <span class="o">=</span> <span class="n">offset</span><span class="o">;</span>
+        <span class="o">}</span>
+        <span class="n">offset</span> <span class="o">=</span> <span class="n">curItem</span><span class="o">.</span><span class="na">offset</span> <span class="o">+</span> <span class="n">curItem</span><span class="o">.</span><span class="na">widthFactor</span> <span class="o">+</span> <span class="n">marginOffset</span><span class="o">;</span>
+        <span class="n">pos</span> <span class="o">=</span> <span class="n">curItem</span><span class="o">.</span><span class="na">position</span> <span class="o">+</span> <span class="mi">1</span><span class="o">;</span>
+        <span class="c1">// Next pages</span>
+        <span class="k">for</span> <span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="n">curIndex</span> <span class="o">+</span> <span class="mi">1</span><span class="o">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">itemCount</span><span class="o">;</span> <span class="n">i</span><span class="o">++,</span> <span class="n">pos</span><span class="o">++)</span> <span class="o">{</span>
+            <span class="kd">final</span> <span class="n">ItemInfo</span> <span class="n">ii</span> <span class="o">=</span> <span class="n">mItems</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">i</span><span class="o">);</span>
+            <span class="k">while</span> <span class="o">(</span><span class="n">pos</span> <span class="o">&lt;</span> <span class="n">ii</span><span class="o">.</span><span class="na">position</span><span class="o">)</span> <span class="o">{</span>
+                <span class="n">offset</span> <span class="o">+=</span> <span class="n">mAdapter</span><span class="o">.</span><span class="na">getPageWidth</span><span class="o">(</span><span class="n">pos</span><span class="o">++)</span> <span class="o">+</span> <span class="n">marginOffset</span><span class="o">;</span>
+            <span class="o">}</span>
+            <span class="k">if</span> <span class="o">(</span><span class="n">ii</span><span class="o">.</span><span class="na">position</span> <span class="o">==</span> <span class="n">N</span> <span class="o">-</span> <span class="mi">1</span><span class="o">)</span> <span class="o">{</span>
+                <span class="n">mLastOffset</span> <span class="o">=</span> <span class="n">offset</span> <span class="o">+</span> <span class="n">ii</span><span class="o">.</span><span class="na">widthFactor</span> <span class="o">-</span> <span class="mi">1</span><span class="o">;</span>
+            <span class="o">}</span>
+            <span class="n">ii</span><span class="o">.</span><span class="na">offset</span> <span class="o">=</span> <span class="n">offset</span><span class="o">;</span>
+            <span class="n">offset</span> <span class="o">+=</span> <span class="n">ii</span><span class="o">.</span><span class="na">widthFactor</span> <span class="o">+</span> <span class="n">marginOffset</span><span class="o">;</span>
+        <span class="o">}</span>
+
+        <span class="n">mNeedCalculatePageOffsets</span> <span class="o">=</span> <span class="kc">false</span><span class="o">;</span></code></pre></div>
+
+<p>也就是说到这儿，curItem的offset是基于oldCurInfo算出来的，然后其他的item的offset都是基于curItem算出来的。这是在弄啥咧？？我们继续回到populate的代码中去：</p>
+
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span class="n">mAdapter</span><span class="o">.</span><span class="na">setPrimaryItem</span><span class="o">(</span><span class="k">this</span><span class="o">,</span> <span class="n">mCurItem</span><span class="o">,</span> <span class="n">curItem</span> <span class="o">!=</span> <span class="kc">null</span> <span class="o">?</span> <span class="n">curItem</span><span class="o">.</span><span class="na">object</span> <span class="o">:</span> <span class="kc">null</span><span class="o">);</span>
+        <span class="n">mAdapter</span><span class="o">.</span><span class="na">finishUpdate</span><span class="o">(</span><span class="k">this</span><span class="o">);</span></code></pre></div>
+
+<p>默认实现为空，意思就是通知Page你已经成为了主page，即将要显示，做点什么吧。FragmentPageAdapter实现如下：</p>
+
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">setPrimaryItem</span><span class="o">(</span><span class="n">ViewGroup</span> <span class="n">container</span><span class="o">,</span> <span class="kt">int</span> <span class="n">position</span><span class="o">,</span> <span class="n">Object</span> <span class="n">object</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">Fragment</span> <span class="n">fragment</span> <span class="o">=</span> <span class="o">(</span><span class="n">Fragment</span><span class="o">)</span><span class="n">object</span><span class="o">;</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">fragment</span> <span class="o">!=</span> <span class="n">mCurrentPrimaryItem</span><span class="o">)</span> <span class="o">{</span>
+            <span class="k">if</span> <span class="o">(</span><span class="n">mCurrentPrimaryItem</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+                <span class="n">mCurrentPrimaryItem</span><span class="o">.</span><span class="na">setMenuVisibility</span><span class="o">(</span><span class="kc">false</span><span class="o">);</span>
+                <span class="n">mCurrentPrimaryItem</span><span class="o">.</span><span class="na">setUserVisibleHint</span><span class="o">(</span><span class="kc">false</span><span class="o">);</span>
+            <span class="o">}</span>
+            <span class="k">if</span> <span class="o">(</span><span class="n">fragment</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+                <span class="n">fragment</span><span class="o">.</span><span class="na">setMenuVisibility</span><span class="o">(</span><span class="kc">true</span><span class="o">);</span>
+                <span class="n">fragment</span><span class="o">.</span><span class="na">setUserVisibleHint</span><span class="o">(</span><span class="kc">true</span><span class="o">);</span>
+            <span class="o">}</span>
+            <span class="n">mCurrentPrimaryItem</span> <span class="o">=</span> <span class="n">fragment</span><span class="o">;</span>
+        <span class="o">}</span>
+    <span class="o">}</span></code></pre></div>
+
+<p>相信大家都不陌生，设置了fragment的menu和visible状态。最后populate还有一段代码：</p>
+
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span class="c1">// Check width measurement of current pages and drawing sort order.</span>
+        <span class="c1">// Update LayoutParams as needed.</span>
+        <span class="kd">final</span> <span class="kt">int</span> <span class="n">childCount</span> <span class="o">=</span> <span class="n">getChildCount</span><span class="o">();</span>
+        <span class="k">for</span> <span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">childCount</span><span class="o">;</span> <span class="n">i</span><span class="o">++)</span> <span class="o">{</span>
+            <span class="kd">final</span> <span class="n">View</span> <span class="n">child</span> <span class="o">=</span> <span class="n">getChildAt</span><span class="o">(</span><span class="n">i</span><span class="o">);</span>
+            <span class="kd">final</span> <span class="n">LayoutParams</span> <span class="n">lp</span> <span class="o">=</span> <span class="o">(</span><span class="n">LayoutParams</span><span class="o">)</span> <span class="n">child</span><span class="o">.</span><span class="na">getLayoutParams</span><span class="o">();</span>
+            <span class="n">lp</span><span class="o">.</span><span class="na">childIndex</span> <span class="o">=</span> <span class="n">i</span><span class="o">;</span>
+            <span class="k">if</span> <span class="o">(!</span><span class="n">lp</span><span class="o">.</span><span class="na">isDecor</span> <span class="o">&amp;&amp;</span> <span class="n">lp</span><span class="o">.</span><span class="na">widthFactor</span> <span class="o">==</span> <span class="mi">0</span><span class="o">.</span><span class="na">f</span><span class="o">)</span> <span class="o">{</span>
+                <span class="c1">// 0 means requery the adapter for this, it doesn&#39;t have a valid width.</span>
+                <span class="kd">final</span> <span class="n">ItemInfo</span> <span class="n">ii</span> <span class="o">=</span> <span class="n">infoForChild</span><span class="o">(</span><span class="n">child</span><span class="o">);</span>
+                <span class="k">if</span> <span class="o">(</span><span class="n">ii</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+                    <span class="n">lp</span><span class="o">.</span><span class="na">widthFactor</span> <span class="o">=</span> <span class="n">ii</span><span class="o">.</span><span class="na">widthFactor</span><span class="o">;</span>
+                    <span class="n">lp</span><span class="o">.</span><span class="na">position</span> <span class="o">=</span> <span class="n">ii</span><span class="o">.</span><span class="na">position</span><span class="o">;</span>
+                <span class="o">}</span>
+            <span class="o">}</span>
+        <span class="o">}</span>
+        <span class="n">sortChildDrawingOrder</span><span class="o">();</span>
+
+        <span class="k">if</span> <span class="o">(</span><span class="n">hasFocus</span><span class="o">())</span> <span class="o">{</span>
+            <span class="n">View</span> <span class="n">currentFocused</span> <span class="o">=</span> <span class="n">findFocus</span><span class="o">();</span>
+            <span class="n">ItemInfo</span> <span class="n">ii</span> <span class="o">=</span> <span class="n">currentFocused</span> <span class="o">!=</span> <span class="kc">null</span> <span class="o">?</span> <span class="n">infoForAnyChild</span><span class="o">(</span><span class="n">currentFocused</span><span class="o">)</span> <span class="o">:</span> <span class="kc">null</span><span class="o">;</span>
+            <span class="k">if</span> <span class="o">(</span><span class="n">ii</span> <span class="o">==</span> <span class="kc">null</span> <span class="o">||</span> <span class="n">ii</span><span class="o">.</span><span class="na">position</span> <span class="o">!=</span> <span class="n">mCurItem</span><span class="o">)</span> <span class="o">{</span>
+                <span class="k">for</span> <span class="o">(</span><span class="kt">int</span> <span class="n">i</span><span class="o">=</span><span class="mi">0</span><span class="o">;</span> <span class="n">i</span><span class="o">&lt;</span><span class="n">getChildCount</span><span class="o">();</span> <span class="n">i</span><span class="o">++)</span> <span class="o">{</span>
+                    <span class="n">View</span> <span class="n">child</span> <span class="o">=</span> <span class="n">getChildAt</span><span class="o">(</span><span class="n">i</span><span class="o">);</span>
+                    <span class="n">ii</span> <span class="o">=</span> <span class="n">infoForChild</span><span class="o">(</span><span class="n">child</span><span class="o">);</span>
+                    <span class="k">if</span> <span class="o">(</span><span class="n">ii</span> <span class="o">!=</span> <span class="kc">null</span> <span class="o">&amp;&amp;</span> <span class="n">ii</span><span class="o">.</span><span class="na">position</span> <span class="o">==</span> <span class="n">mCurItem</span><span class="o">)</span> <span class="o">{</span>
+                        <span class="k">if</span> <span class="o">(</span><span class="n">child</span><span class="o">.</span><span class="na">requestFocus</span><span class="o">(</span><span class="n">focusDirection</span><span class="o">))</span> <span class="o">{</span>
+                            <span class="k">break</span><span class="o">;</span>
+                        <span class="o">}</span>
+                    <span class="o">}</span>
+                <span class="o">}</span>
+            <span class="o">}</span>
+        <span class="o">}</span></code></pre></div>
+
+<p>第一段正如注释所说，更新当前viewpage上面所有子view的LayoutParam信息，然后对他们进行排序，这里的顺序是绘制顺序，规则就是先按照position顺序绘制page，最后绘制Decor对象，具体参见ViewPositionComparator的定义。后面一段是焦点的处理，究竟应该是谁来获得焦点，infoForAnyChild(currentFocused)很有意思，这个函数获取的应该是currentFocused这个view所在的page的iteminfo对象，这样来判断焦点是否处于同一个page没变化，否则就需要遍历所有子view来寻找下一个焦点应该在哪儿。具体寻找焦点的代码比较复杂，层级太深，这里就不跟进去了，以后有时间专门研究一次child.requestFocus(focusDirection)是怎么找到正确的应该获取焦点的view的。</p>
+
+<p>OK，我们终于从populate中出来了，继续回到onMeasure，onMeasure也还剩最后一段：</p>
+
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span class="c1">// Page views next.</span>
+        <span class="n">size</span> <span class="o">=</span> <span class="n">getChildCount</span><span class="o">();</span>
+        <span class="k">for</span> <span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">size</span><span class="o">;</span> <span class="o">++</span><span class="n">i</span><span class="o">)</span> <span class="o">{</span>
+            <span class="kd">final</span> <span class="n">View</span> <span class="n">child</span> <span class="o">=</span> <span class="n">getChildAt</span><span class="o">(</span><span class="n">i</span><span class="o">);</span>
+            <span class="k">if</span> <span class="o">(</span><span class="n">child</span><span class="o">.</span><span class="na">getVisibility</span><span class="o">()</span> <span class="o">!=</span> <span class="n">GONE</span><span class="o">)</span> <span class="o">{</span>
+                <span class="k">if</span> <span class="o">(</span><span class="n">DEBUG</span><span class="o">)</span> <span class="n">Log</span><span class="o">.</span><span class="na">v</span><span class="o">(</span><span class="n">TAG</span><span class="o">,</span> <span class="s">&quot;Measuring #&quot;</span> <span class="o">+</span> <span class="n">i</span> <span class="o">+</span> <span class="s">&quot; &quot;</span> <span class="o">+</span> <span class="n">child</span>
+                        <span class="o">+</span> <span class="s">&quot;: &quot;</span> <span class="o">+</span> <span class="n">mChildWidthMeasureSpec</span><span class="o">);</span>
+
+                <span class="kd">final</span> <span class="n">LayoutParams</span> <span class="n">lp</span> <span class="o">=</span> <span class="o">(</span><span class="n">LayoutParams</span><span class="o">)</span> <span class="n">child</span><span class="o">.</span><span class="na">getLayoutParams</span><span class="o">();</span>
+                <span class="k">if</span> <span class="o">(</span><span class="n">lp</span> <span class="o">==</span> <span class="kc">null</span> <span class="o">||</span> <span class="o">!</span><span class="n">lp</span><span class="o">.</span><span class="na">isDecor</span><span class="o">)</span> <span class="o">{</span>
+                    <span class="kd">final</span> <span class="kt">int</span> <span class="n">widthSpec</span> <span class="o">=</span> <span class="n">MeasureSpec</span><span class="o">.</span><span class="na">makeMeasureSpec</span><span class="o">(</span>
+                            <span class="o">(</span><span class="kt">int</span><span class="o">)</span> <span class="o">(</span><span class="n">childWidthSize</span> <span class="o">*</span> <span class="n">lp</span><span class="o">.</span><span class="na">widthFactor</span><span class="o">),</span> <span class="n">MeasureSpec</span><span class="o">.</span><span class="na">EXACTLY</span><span class="o">);</span>
+                    <span class="n">child</span><span class="o">.</span><span class="na">measure</span><span class="o">(</span><span class="n">widthSpec</span><span class="o">,</span> <span class="n">mChildHeightMeasureSpec</span><span class="o">);</span>
+                <span class="o">}</span>
+            <span class="o">}</span>
+        <span class="o">}</span></code></pre></div>
+
+<table>
+  <tbody>
+    <tr>
+      <td>我百思不得其解if (lp == null</td>
+      <td> </td>
+      <td>!lp.isDecor)为何不会出错，如果lp为null，里面的 lp.widthFactor不会报空指针异常的错误么，不过抛开这个疑问，代码的主要功能就是测量子view，与一般的viewgroup一致。</td>
+    </tr>
+  </tbody>
+</table>
+
+      <footer class="entry-meta">
+        <span class="entry-tags"></span>
+        
+        <div class="social-share">
+  <ul class="socialcount socialcount-small inline-list">
+    <li class="facebook"><a href="https://www.facebook.com/sharer/sharer.php?u=/android/viewpage/" title="Share on Facebook"><span class="count"><i class="fa fa-facebook-square"></i> Like</span></a></li>
+    <li class="twitter"><a href="https://twitter.com/intent/tweet?text=/android/viewpage/" title="Share on Twitter"><span class="count"><i class="fa fa-twitter-square"></i> Tweet</span></a></li>
+    <li class="googleplus"><a href="https://plus.google.com/share?url=/android/viewpage/" title="Share on Google Plus"><span class="count"><i class="fa fa-google-plus-square"></i> +1</span></a></li>
+  </ul>
+</div><!-- /.social-share -->
+      </footer>
+    </div><!-- /.entry-content -->
+    <section id="disqus_thread"></section><!-- /#disqus_thread -->
+    <div class="read-more">
+  
+    <div class="read-more-header">
+      <a href="/android/android-udp/" class="read-more-btn">Read More</a>
+    </div><!-- /.read-more-header -->
+    <div class="read-more-content">
+      <h3><a href="/ios/ios-udp-client/" title="ios-UDP-Client">ios-UDP-Client</a></h3>
+      <p>&hellip; <a href="/ios/ios-udp-client/">Continue reading</a></p>
+    </div><!-- /.read-more-content -->
+  
+  <div class="read-more-list">
+    
+      <div class="list-item">
+        <h4><a href="/android/android-udp/" title="Android UDP服务">Android UDP服务</a></h4>
+        <span>Published on June 23, 2016</span>
+      </div><!-- /.list-item -->
+    
+      <div class="list-item">
+        <h4><a href="/ios/record/yymodel/" title="学习YYModel">学习YYModel</a></h4>
+        <span>Published on November 05, 2015</span>
+      </div><!-- /.list-item -->
+    
+  </div><!-- /.read-more-list -->
+</div><!-- /.read-more -->
+  </article>
+</div><!-- /#main -->
+
+<div class="footer-wrapper">
+  <footer role="contentinfo">
+    <span>&copy; 2016 陆 伟. Powered by <a href="http://jekyllrb.com" rel="nofollow">Jekyll</a> using the <a href="https://mademistakes.com/work/hpstr-jekyll-theme/" rel="nofollow">HPSTR Theme</a>.</span>
+  </footer>
+</div><!-- /.footer-wrapper -->
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+<script>window.jQuery || document.write('<script src="/assets/js/vendor/jquery-1.9.1.min.js"><\/script>')</script>
+<script src="/assets/js/scripts.min.js"></script>
+
+
+
+<script type="text/javascript">
+  SyntaxHighlighter.all()
+</script>
+	        
+
+</body>
+</html>

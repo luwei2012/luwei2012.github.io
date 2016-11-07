@@ -128,6 +128,322 @@
 <article class="hentry">
   <header>
     
+    <div class="entry-meta">
+      <span class="entry-date date published updated"><time datetime="2015-10-22T17:10:07+08:00"><a href="/ios/record/scrollview/">October 22, 2015</a></time></span><span class="author vcard"><span class="fn"><a href="/about/" title="About 陆 伟">陆 伟</a></span></span>
+      
+      <span class="entry-reading-time">
+        <i class="fa fa-clock-o"></i>
+        
+        Reading time ~2 minutes
+      </span><!-- /.entry-reading-time -->
+      
+    </div><!-- /.entry-meta -->
+    
+      <h1 class="entry-title"><a href="/ios/record/scrollview/" rel="bookmark" title="关于ScrollView的学习" itemprop="url">关于ScrollView的学习</a></h1>
+    
+  </header>
+  <div class="entry-content">
+    <h3 id="section">写在前面的话</h3>
+<hr />
+<p>ScrollView应该是ios里面最常用的控件之一了，前两天在项目<a href="https://www.9panart.com/html/passport/passport_login.html?ran=19406317709945142">泛艺术App</a>里面寻找一个UI的解决方案的时候曾经想过使用ScrollView，
+虽然最后使用的是它的儿子TableView，中间还是在ScrollView上吃了点苦头，
+于是才决定写个demo好好研究下ScrollView。</p>
+
+<h3 id="scrollview">ScrollView的探究过程</h3>
+<hr />
+<p>ScrollView的特性相信大家都知道，有几个非常重要的属性：frame，contentSize，contentOffset，contentInset</p>
+
+<div class="highlight"><pre><code class="language-logos" data-lang="logos"><span class="p">-(</span><span class="bp">UIScrollView</span> <span class="o">*</span><span class="p">)</span><span class="nf">scrollView</span><span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">_scrollView</span> <span class="o">==</span> <span class="nb">nil</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">_scrollView</span>                 <span class="o">=</span> <span class="p">[[</span><span class="bp">UIScrollView</span> <span class="n">alloc</span><span class="p">]</span> <span class="n">init</span><span class="p">];</span>
+        <span class="n">_scrollView</span><span class="p">.</span><span class="n">delegate</span>        <span class="o">=</span> <span class="nb">self</span><span class="p">;</span>
+        <span class="n">_scrollView</span><span class="p">.</span><span class="n">scrollEnabled</span>   <span class="o">=</span> <span class="nb">true</span><span class="p">;</span>
+        <span class="n">_scrollView</span><span class="p">.</span><span class="n">bounces</span>         <span class="o">=</span> <span class="nb">true</span><span class="p">;</span>
+        <span class="n">_scrollView</span><span class="p">.</span><span class="n">showsHorizontalScrollIndicator</span>  <span class="o">=</span> <span class="nb">false</span><span class="p">;</span>
+        <span class="n">_scrollView</span><span class="p">.</span><span class="n">showsVerticalScrollIndicator</span>    <span class="o">=</span> <span class="nb">true</span><span class="p">;</span>
+        <span class="n">_scrollView</span><span class="p">.</span><span class="n">userInteractionEnabled</span>          <span class="o">=</span> <span class="nb">YES</span><span class="p">;</span>
+        <span class="n">_scrollView</span><span class="p">.</span><span class="n">backgroundColor</span>                 <span class="o">=</span> <span class="p">[</span><span class="bp">UIColor</span> <span class="n">blueColor</span><span class="p">];</span>
+        <span class="n">_scrollView</span><span class="p">.</span><span class="n">contentInset</span>                    <span class="o">=</span> <span class="n">UIEdgeInsetsMake</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
+        <span class="p">[</span><span class="nb">self</span><span class="p">.</span><span class="n">view</span> <span class="nl">addSubview</span><span class="p">:</span><span class="n">_scrollView</span><span class="p">];</span>
+        <span class="p">[</span><span class="n">_scrollView</span> <span class="nl">mas_makeConstraints</span><span class="p">:</span><span class="o">^</span><span class="p">(</span><span class="n">MASConstraintMaker</span> <span class="o">*</span><span class="n">make</span><span class="p">)</span> <span class="p">{</span>
+            <span class="n">make</span><span class="p">.</span><span class="n">left</span><span class="p">.</span><span class="n">equalTo</span><span class="p">(</span><span class="nb">self</span><span class="p">.</span><span class="n">view</span><span class="p">.</span><span class="n">mas_left</span><span class="p">);</span>
+            <span class="n">make</span><span class="p">.</span><span class="n">top</span><span class="p">.</span><span class="n">equalTo</span><span class="p">(</span><span class="nb">self</span><span class="p">.</span><span class="n">view</span><span class="p">.</span><span class="n">mas_top</span><span class="p">);</span>
+            <span class="n">make</span><span class="p">.</span><span class="n">right</span><span class="p">.</span><span class="n">equalTo</span><span class="p">(</span><span class="nb">self</span><span class="p">.</span><span class="n">view</span><span class="p">.</span><span class="n">mas_right</span><span class="p">);</span>
+            <span class="n">make</span><span class="p">.</span><span class="n">bottom</span><span class="p">.</span><span class="n">equalTo</span><span class="p">(</span><span class="nb">self</span><span class="p">.</span><span class="n">view</span><span class="p">.</span><span class="n">mas_bottom</span><span class="p">);</span>
+        
+  
+    <span class="k">return</span> <span class="n">_scrollView</span><span class="p">;</span>
+<span class="p">}</span>
+<span class="o">-</span><span class="p">(</span><span class="bp">UIView</span> <span class="o">*</span><span class="p">)</span><span class="n">containerView</span><span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">_containerView</span> <span class="o">==</span> <span class="nb">nil</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">_containerView</span> <span class="o">=</span> <span class="p">[[</span><span class="bp">UIView</span> <span class="n">alloc</span><span class="p">]</span> <span class="n">init</span><span class="p">];</span>
+        <span class="p">[</span><span class="nb">self</span><span class="p">.</span><span class="n">scrollView</span> <span class="nl">addSubview</span><span class="p">:</span><span class="n">_containerView</span><span class="p">];</span>
+        <span class="p">[</span><span class="n">_containerView</span> <span class="nl">mas_makeConstraints</span><span class="p">:</span><span class="o">^</span><span class="p">(</span><span class="n">MASConstraintMaker</span> <span class="o">*</span><span class="n">make</span><span class="p">)</span> <span class="p">{</span>
+            <span class="n">make</span><span class="p">.</span><span class="n">left</span><span class="p">.</span><span class="n">equalTo</span><span class="p">(</span><span class="nb">self</span><span class="p">.</span><span class="n">view</span><span class="p">.</span><span class="n">mas_left</span><span class="p">);</span>
+            <span class="n">make</span><span class="p">.</span><span class="n">top</span><span class="p">.</span><span class="n">equalTo</span><span class="p">(</span><span class="l">@(</span><span class="mi">0</span><span class="l">)</span><span class="p">);</span>
+            <span class="n">make</span><span class="p">.</span><span class="n">right</span><span class="p">.</span><span class="n">equalTo</span><span class="p">(</span><span class="nb">self</span><span class="p">.</span><span class="n">view</span><span class="p">.</span><span class="n">mas_right</span><span class="p">);</span>
+            <span class="n">make</span><span class="p">.</span><span class="n">height</span><span class="p">.</span><span class="n">equalTo</span><span class="p">(</span><span class="l">@(</span><span class="n">SCREEN_HEIGHT</span> <span class="o">*</span> <span class="mi">2</span><span class="l">)</span><span class="p">);</span>
+        <span class="p">}];</span>
+        <span class="nb">self</span><span class="p">.</span><span class="n">scrollView</span><span class="p">.</span><span class="n">contentSize</span> <span class="o">=</span> <span class="n">CGSizeMake</span><span class="p">(</span><span class="n">SCREEN_WIDTH</span><span class="p">,</span> <span class="n">SCREEN_HEIGHT</span> <span class="o">*</span> <span class="mi">2</span><span class="p">);</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="n">_containerView</span><span class="p">;</span>
+<span class="p">}</span>
+<span class="o">-</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="nl">viewDidAppear</span><span class="p">:(</span><span class="kt">BOOL</span><span class="p">)</span><span class="n">animated</span><span class="p">{</span>
+    <span class="p">[</span><span class="nb">super</span> <span class="nl">viewDidAppear</span><span class="p">:</span><span class="n">animated</span><span class="p">];</span>
+     <span class="n">NSLog</span><span class="p">(</span><span class="s">@&quot;%f %f&quot;</span><span class="p">,</span><span class="nb">self</span><span class="p">.</span><span class="n">containerView</span><span class="p">.</span><span class="n">frame</span><span class="p">.</span><span class="n">origin</span><span class="p">.</span><span class="n">x</span><span class="p">,</span><span class="nb">self</span><span class="p">.</span><span class="n">containerView</span><span class="p">.</span><span class="n">frame</span><span class="p">.</span><span class="n">origin</span><span class="p">.</span><span class="n">y</span><span class="p">);</span>
+<span class="p">}</span></code></pre></div>
+
+<ul>
+  <li>contentInset:之所以首先说contentInset这个属性是因为我自己就被网上很多不负责任的言论坑过。contentInset只是contentSize的四个边增加了一块区域，仅此而已。
+网上有人说：“contentInset是scrollView的contentView的顶点相对于scrollView的位置，例如你的contentInset = (0 ,100)，那么你的contentView就是从scrollView的(0 ,100)开始显示。”这句话完全就是在放P。
+contentInset不会对contentView产生任何影响.上面是我demo里面的一段代码，我使用了<a href="https://github.com/SnapKit/Masonry">Masonry这个库</a>在代码里面设置约束，比IOS自带的接口方便好用几百倍。
+可以看到我在scrollView中添加了一个高度为两个屏幕高度的containerView，并且设置了contentSize和contentInset。结果打印出来的containerView的坐标是(0,0)，也就是说contentInset并不会影响containerView的位置。
+这个也很合理，因为我们并不想看到contentInset，必然不能把containerView的坐标给改了，否则程序一开始显示的就会是contentInset的内容了。</li>
+  <li>frame:也是一个让我迷惑的属性。从我上面的代码里可以看到，我并没有明确的设置frame，由此可以得出结论：frame可以通过scrollView的约束条件来设置，这无疑是一个好消息。</li>
+  <li>contentSize:这个属性就更加迷惑了。我在网上看到过一篇博客，是讲如何对scrollView使用autoLayout。
+博客里面的代码很简单，一个scrollView包含一个containerView，然后在containerView里面添加子View。然后问题就简化成只需要保证containerView跟scrollView的约束正确，containerView里面的内容布局跟普通的布局一样。
+<a href="http://www.cocoachina.com/ios/20141011/9871.html">原文说：”我们知道scroll view除了自身的布局需要考虑（x, y, width, height）外，还有一个contentSize属性也必须要在布局的过程中进行确定，contentSize是UIScrollView用于确定它所 要展示的内容尺寸的大小，而这个contentSize在布局中实际上是又scroll view的子view :content view的宽和高实现的，注意：我们不能将content view的宽和高的约束设定为由scroll view决定（如和scroll view等宽、等高）,否则，Xcode会有警告：scroll view的content size不确定！在这种情况下，我们必须要对content view的布局约束引入scroll view之外其他参照物，我们拖进来一个辅助的view作为参照物or锚点。通过这个参考view，确定content view的宽度和高度，尽管content view的尺寸可以不依赖于scroll view，但我们还不得不设定content view 和其父view的关系：具体而言就是要确定content view和scroll view的top, bottom, leading和trailing contstraints，这个地方可能比较具有迷惑性，原因是苹果对于这四个约束的使用在scroll view中做了变化：它不再是确定content view尺寸的依据，而是帮助scroll view中content view四周的边界（or你可以理解为留白），进而确定scroll view的contentSize属性。”</a>
+从这些话我推测如果是通过sb文件创建出来的scrollView会自动设置contentSize大小，问题是这个大小是怎么确定的，是不是就真的是scrollView里面所有内容的大小，还是scrollView的frame大小。
+通过我写的一个demo我得出了最终结论：scrollView的contentView是根据里面所有内容的大小设定的。</li>
+  <li>contentOffset:这个属性没啥好说的，决定了scrollView显示的内容的起始点。</li>
+</ul>
+
+<h3 id="scrollview-1">ScrollView的额外问题</h3>
+<hr />
+<p>通过上面的探究过程可以知道我们可以直接在sb文件里面对scrollView使用autoLayout。由此引发了我一个疑问：能否通过修改containerView的高度约束来修改scrollView的contentSize么，还是说scrollView的contentSize在awakeFromNib的时候就定死了，只能通过手动设置重新改大小呢？
+通过demo测试发现，这个想法是可行的，但是在重新设置了约束之后需要调用<code>[self.view layoutIfNeeded];</code>这样scrollView才会重新计算contentSize。
+还有个相似的方法<code>[self.view updateConstraints];</code>这个方法不会立马更新scrollView的contentSize，而是在一定时间后更新，我猜测这个时间应该就是更新UI的动画时间。
+为了防止计算出错还是建议都使用layoutIfNeeded方法。</p>
+
+<h3 id="scrollview-2">ScrollView的总结</h3>
+<hr />
+<p>关于scrollView目前想知道的就这些，这篇博客做个总结：使用scrollView最好是只添加一个UIView作为容器View，然后再在这个容器View里面设置你的布局。
+这种方式很像Android的XML文件布局，只有一个LinearLayout作为容器。这样做的好处就是更改contentSize非常方便，直接修改容器View的高度约束，然后调用layoutIfNeeded方法就可。
+切记要给容器View设置上下左右间距以及宽高.</p>
+
+
+  </div><!-- /.entry-content -->
+</article><!-- /.hentry -->
+
+<article class="hentry">
+  <header>
+    
+      <div class="entry-image-index">
+        <a href="/ios/structure/mbxpageviewcontroller/" title="MBXPageViewController的两点优化修改"><img src="/images/photo01.jpg" alt="MBXPageViewController的两点优化修改"></a>
+      </div><!-- /.entry-image -->
+    
+    <div class="entry-meta">
+      <span class="entry-date date published updated"><time datetime="2015-10-20T19:21:56+08:00"><a href="/ios/structure/mbxpageviewcontroller/">October 20, 2015</a></time></span><span class="author vcard"><span class="fn"><a href="/about/" title="About 陆 伟">陆 伟</a></span></span>
+      
+      <span class="entry-reading-time">
+        <i class="fa fa-clock-o"></i>
+        
+        Reading time ~5 minutes
+      </span><!-- /.entry-reading-time -->
+      
+    </div><!-- /.entry-meta -->
+    
+      <h1 class="entry-title"><a href="/ios/structure/mbxpageviewcontroller/" rel="bookmark" title="MBXPageViewController的两点优化修改" itemprop="url">MBXPageViewController的两点优化修改</a></h1>
+    
+  </header>
+  <div class="entry-content">
+    <h3 id="mbxpageviewcontroller">MBXPageViewController是什么？</h3>
+<hr />
+<figure>
+	<img src="/images/IOS/structure/MBXPageViewController/scrollDelegateBefore.gif" alt="项目实例" />
+	<figcaption><a href="https://www.9panart.com/html/passport/passport_login.html?ran=19406317709945142">泛艺术客户端.</a></figcaption>
+</figure>
+<p>这里是<a href="https://github.com/Moblox/MBXPageViewController">原作者的主页</a>，Moblox也是参照的其他作者的源代码改的，为了集成更多的样式。
+这个控件是我一个同事集成到项目中来的，集成后UI那边添加了两个需求：</p>
+
+<ol>
+  <li>点击title上面的按钮需要让当前页面滚动到顶部</li>
+  <li>title下面的tabIndicator需要跟页面同步滑动。</li>
+</ol>
+
+<p>于是我不得不去研究了下MBXPageViewController的源码。</p>
+
+<p>MBXPageViewController是仿照RKSwipeBetweenViewControllers写的，通过源码可以看出并不是一个完成品，因为RKSwipeBetweenViewControllers是支持tabIndicator与页面同步滑动的。
+所以第二个问题就简单了，把MBXPageViewController完成就可以了。</p>
+
+<p>首先我对比了MBXPageViewController和RKSwipeBetweenViewControllers的优缺点。虽然MBXPageViewController的watch和fork远低于RKSwipeBetweenViewControllers，
+MBXPageViewController的使用还是远远比RKSwipeBetweenViewControllers简单清晰，而且能适应更多的特殊UI情况。</p>
+
+<p>使用MBXPageViewController.</p>
+
+<div class="highlight"><pre><code class="language-logos" data-lang="logos"><span class="n">MBXPageViewController</span> <span class="o">*</span><span class="n">MBXPageController</span> <span class="o">=</span> <span class="p">[</span><span class="n">MBXPageViewController</span> <span class="k">new</span><span class="p">];</span>
+<span class="n">MBXPageController</span><span class="p">.</span><span class="n">MBXDataSource</span> <span class="o">=</span> <span class="nb">self</span><span class="p">;</span>
+<span class="n">MBXPageController</span><span class="p">.</span><span class="n">MBXDataDelegate</span> <span class="o">=</span> <span class="nb">self</span><span class="p">;</span>
+<span class="p">[</span><span class="n">MBXPageController</span> <span class="n">reloadPages</span><span class="p">];</span></code></pre></div>
+
+<p>很简单易懂，有可能有人不理解，为什么没有看到addChildViewController或者addSubview之类的方法？其实这些都封装在了[MBXPageController reloadPages]方法里面
+进去看源码就会发现：</p>
+
+<div class="highlight"><pre><code class="language-logos" data-lang="logos"><span class="p">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="nf">loadControllerAndView</span>
+<span class="p">{</span>
+    <span class="n">NSAssert</span><span class="p">([[</span><span class="nb">self</span> <span class="n">MBXDataSource</span><span class="p">]</span> <span class="nl">isKindOfClass</span><span class="p">:[</span><span class="bp">UIViewController</span> <span class="k">class</span><span class="p">]],</span> <span class="s">@&quot;This needs to be implemented in a class that inherits from UIViewController&quot;</span><span class="p">);</span>
+    <span class="p">[(</span><span class="bp">UIViewController</span> <span class="o">*</span><span class="p">)[</span><span class="nb">self</span> <span class="n">MBXDataSource</span><span class="p">]</span> <span class="nl">addChildViewController</span><span class="p">:</span><span class="nb">self</span><span class="p">];</span>
+    <span class="p">[[[</span><span class="nb">self</span> <span class="n">MBXDataSource</span><span class="p">]</span> <span class="n">MBXPageContainer</span><span class="p">]</span> <span class="nl">addSubview</span><span class="p">:</span><span class="nb">self</span><span class="p">.</span><span class="n">view</span><span class="p">];</span>
+<span class="p">}</span></code></pre></div>
+
+<ul>
+  <li>addChildViewController我的理解就是重新设置子controller的父controller，也就是层级关系，防止后面再Push或者Present新窗口的时候出错</li>
+  <li>addSubview就更加直观了不需要多解释，没有这句话咱们就没有View可以显示了。</li>
+</ul>
+
+<p>需要注意的是[[self MBXDataSource] MBXPageContainer]这个方法，他是MBXDataSource协议里必选的方法
+说到这里就必须说说为什么我认为MBXPageViewController的使用远远比RKSwipeBetweenViewControllers简单清晰，就是因为两个协议：</p>
+
+<div class="highlight"><pre><code class="language-logos" data-lang="logos"><span class="k">@protocol</span> <span class="nc">MBXPageControllerDataSource</span> <span class="o">&amp;</span><span class="n">lt</span><span class="p">;</span><span class="bp">NSObject</span><span class="o">&amp;</span><span class="n">gt</span><span class="p">;</span>
+<span class="k">@required</span>
+<span class="o">-</span> <span class="p">(</span><span class="bp">NSArray</span> <span class="o">*</span><span class="p">)</span><span class="n">MBXPageButtons</span><span class="p">;</span>
+<span class="p">-</span> <span class="p">(</span><span class="bp">NSArray</span> <span class="o">*</span><span class="p">)</span><span class="nf">MBXPageControllers</span><span class="p">;</span>
+<span class="p">-</span> <span class="p">(</span><span class="bp">UIView</span> <span class="o">*</span><span class="p">)</span><span class="nf">MBXPageContainer</span><span class="p">;</span>
+<span class="k">@end</span>
+
+<span class="k">@protocol</span> <span class="nc">MBXPageControllerDataDelegate</span> <span class="o">&amp;</span><span class="n">lt</span><span class="p">;</span><span class="bp">NSObject</span><span class="o">&amp;</span><span class="n">gt</span><span class="p">;</span>
+<span class="k">@optional</span>
+<span class="o">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="nl">MBXPageChangedToIndex</span><span class="p">:(</span><span class="bp">NSInteger</span><span class="p">)</span><span class="n">index</span><span class="p">;</span>
+<span class="k">@end</span></code></pre></div>
+
+<ul>
+  <li>MBXPageButtons 就是标题栏上面的按钮，需要注意的是MBXPageViewController并不管按钮的显示，MBXPageViewController只负责帮我们绑定按钮的触摸事件，
+  显示正确的对应的页面</li>
+  <li>MBXPageControllers 这个就是咱们页面的数组了。</li>
+  <li>MBXPageContainer 是页面的容器，只需要返回MBXPageViewController所在的UIViewController的container就行。</li>
+  <li>MBXPageChangedToIndex 是一个提供给用户更新按钮状态的方法，当页面索引改变后就会触发这个方法，用户应该在这里跟新title
+  上面按钮和tabIndicator的状态.</li>
+</ul>
+
+<p>整个协议的完整实现大概应该是这个样子：</p>
+
+<div class="highlight"><pre><code class="language-logos" data-lang="logos"><span class="cp">#pragma mark - MBXPageViewController Data Source</span>
+
+<span class="p">-</span> <span class="p">(</span><span class="bp">NSArray</span> <span class="o">*</span><span class="p">)</span><span class="nf">MBXPageButtons</span>
+<span class="p">{</span>
+    <span class="k">return</span> <span class="l">@[</span><span class="nb">self</span><span class="p">.</span><span class="n">button1</span><span class="p">,</span> <span class="nb">self</span><span class="p">.</span><span class="n">button2</span><span class="p">,</span> <span class="nb">self</span><span class="p">.</span><span class="n">button3</span><span class="l">]</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="p">-</span> <span class="p">(</span><span class="bp">UIView</span> <span class="o">*</span><span class="p">)</span><span class="nf">MBXPageContainer</span>
+<span class="p">{</span>
+    <span class="k">return</span> <span class="nb">self</span><span class="p">.</span><span class="n">container</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="p">-</span> <span class="p">(</span><span class="bp">NSArray</span> <span class="o">*</span><span class="p">)</span><span class="nf">MBXPageControllers</span>
+<span class="p">{</span>
+    <span class="c1">// You can Load a VC directly from Storyboard</span>
+    <span class="bp">UIStoryboard</span><span class="o">*</span> <span class="n">mainStoryboard</span> <span class="o">=</span> <span class="p">[</span><span class="bp">UIStoryboard</span> <span class="nl">storyboardWithName</span><span class="p">:</span><span class="s">@&quot;Main&quot;</span> <span class="nl">bundle</span><span class="p">:</span><span class="nb">nil</span><span class="p">];</span>
+
+    <span class="bp">UIViewController</span> <span class="o">*</span><span class="n">demo</span>  <span class="o">=</span> <span class="p">[</span><span class="n">mainStoryboard</span> <span class="nl">instantiateViewControllerWithIdentifier</span><span class="p">:</span><span class="s">@&quot;firstController&quot;</span><span class="p">];</span>
+    <span class="bp">UIViewController</span> <span class="o">*</span><span class="n">demo2</span>  <span class="o">=</span> <span class="p">[</span><span class="n">mainStoryboard</span> <span class="nl">instantiateViewControllerWithIdentifier</span><span class="p">:</span><span class="s">@&quot;secondController&quot;</span><span class="p">];</span>
+
+    <span class="c1">// Or Load it from a xib file</span>
+    <span class="bp">UIViewController</span> <span class="o">*</span><span class="n">demo3</span> <span class="o">=</span> <span class="p">[</span><span class="bp">UIViewController</span> <span class="k">new</span><span class="p">];</span>
+    <span class="n">demo3</span><span class="p">.</span><span class="n">view</span> <span class="o">=</span> <span class="p">[[[</span><span class="bp">NSBundle</span> <span class="n">mainBundle</span><span class="p">]</span> <span class="nl">loadNibNamed</span><span class="p">:</span><span class="s">@&quot;View&quot;</span> <span class="nl">owner</span><span class="p">:</span><span class="nb">self</span> <span class="nl">options</span><span class="p">:</span><span class="nb">nil</span><span class="p">]</span> <span class="nl">objectAtIndex</span><span class="p">:</span><span class="mi">0</span><span class="p">];</span>
+
+    <span class="c1">// Or create it programatically</span>
+    <span class="bp">UIViewController</span> <span class="o">*</span><span class="n">demo4</span> <span class="o">=</span> <span class="p">[[</span><span class="bp">UIViewController</span> <span class="n">alloc</span><span class="p">]</span> <span class="n">init</span><span class="p">];</span>
+    <span class="n">demo4</span><span class="p">.</span><span class="n">view</span><span class="p">.</span><span class="n">backgroundColor</span> <span class="o">=</span> <span class="p">[</span><span class="bp">UIColor</span> <span class="n">orangeColor</span><span class="p">];</span>
+
+    <span class="bp">UILabel</span> <span class="o">*</span><span class="n">fromLabel</span> <span class="o">=</span> <span class="p">[[</span><span class="bp">UILabel</span> <span class="n">alloc</span><span class="p">]</span><span class="nl">initWithFrame</span><span class="p">:</span><span class="n">CGRectMake</span><span class="p">(</span> <span class="p">(</span><span class="nb">self</span><span class="p">.</span><span class="n">view</span><span class="p">.</span><span class="n">frame</span><span class="p">.</span><span class="n">size</span><span class="p">.</span><span class="n">width</span> <span class="o">-</span> <span class="mi">130</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span> <span class="p">,</span> <span class="mi">40</span><span class="p">,</span> <span class="mi">130</span><span class="p">,</span> <span class="mi">40</span><span class="p">)];</span>
+    <span class="n">fromLabel</span><span class="p">.</span><span class="n">text</span> <span class="o">=</span> <span class="s">@&quot;Fourth Controller&quot;</span><span class="p">;</span>
+
+    <span class="p">[</span><span class="n">demo4</span><span class="p">.</span><span class="n">view</span> <span class="nl">addSubview</span><span class="p">:</span><span class="n">fromLabel</span><span class="p">];</span>
+
+    <span class="c1">// The order matters.</span>
+    <span class="k">return</span> <span class="l">@[</span><span class="n">demo</span><span class="p">,</span><span class="n">demo2</span><span class="p">,</span> <span class="n">demo3</span><span class="l">]</span><span class="p">;</span>
+<span class="p">}</span></code></pre></div>
+
+<p>怎么样，是不是非常简单清晰。下面需要解决的就是我们UI提出的需求问题了，也很简单，修改绑定button的事件：</p>
+
+<div class="highlight"><pre><code class="language-logos" data-lang="logos"><span class="p">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="nf">controllerModeLogicForDestination:</span><span class="p">(</span><span class="bp">NSInteger</span><span class="p">)</span><span class="nv">destination</span>
+<span class="p">{</span>
+    <span class="k">__weak</span> <span class="n">__typeof</span><span class="p">(</span><span class="o">&amp;*</span><span class="nb">self</span><span class="p">)</span><span class="n">weakSelf</span> <span class="o">=</span> <span class="nb">self</span><span class="p">;</span>
+    <span class="bp">NSInteger</span> <span class="n">tempIndex</span> <span class="o">=</span> <span class="n">_currentPageIndex</span><span class="p">;</span>
+    <span class="c1">// Check to see which way are you going (Left -&gt; Right or Right -&gt; Left)</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">destination</span> <span class="o">&gt;</span> <span class="n">tempIndex</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="p">(</span><span class="kt">int</span><span class="p">)</span><span class="n">tempIndex</span><span class="o">+</span><span class="mi">1</span><span class="p">;</span> <span class="n">i</span><span class="o">&lt;=</span><span class="n">destination</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+            <span class="p">[</span><span class="nb">self</span> <span class="nl">setPageControllerForIndex</span><span class="p">:</span><span class="n">i</span> <span class="nl">direction</span><span class="p">:</span><span class="n">UIPageViewControllerNavigationDirectionForward</span> <span class="nl">currentMBXViewController</span><span class="p">:</span><span class="n">weakSelf</span> <span class="nl">destionation</span><span class="p">:</span><span class="n">destination</span><span class="p">];</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="c1">// Right -&gt; Left</span>
+    <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">destination</span> <span class="o">&lt;</span> <span class="n">tempIndex</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="p">(</span><span class="kt">int</span><span class="p">)</span><span class="n">tempIndex</span><span class="o">-</span><span class="mi">1</span><span class="p">;</span> <span class="n">i</span> <span class="o">&gt;=</span> <span class="n">destination</span><span class="p">;</span> <span class="n">i</span><span class="o">--</span><span class="p">)</span> <span class="p">{</span>
+            <span class="p">[</span><span class="nb">self</span> <span class="nl">setPageControllerForIndex</span><span class="p">:</span><span class="n">i</span> <span class="nl">direction</span><span class="p">:</span><span class="n">UIPageViewControllerNavigationDirectionReverse</span> <span class="nl">currentMBXViewController</span><span class="p">:</span><span class="n">weakSelf</span> <span class="nl">destionation</span><span class="p">:</span><span class="n">destination</span><span class="p">];</span>
+        <span class="p">}</span>
+    <span class="p">}</span><span class="k">else</span><span class="p">{</span>
+        <span class="p">[</span><span class="n">weakSelf</span> <span class="nl">updateCurrentPageIndex</span><span class="p">:</span><span class="n">tempIndex</span><span class="p">];</span>
+    <span class="p">}</span>
+<span class="p">}</span></code></pre></div>
+
+<p>只加了一句[weakSelf updateCurrentPageIndex:tempIndex];然后我们可以自己在updateCurrentPageIndex方法里判断，如果当前索引跟传入的索引相同则当成点击事件来处理，否则则是页面切换事件，需要跟新button的状态，
+这样我们就解决了第一个问题。第二个问题比较复杂，我到现在都还没完成搞清楚why，只知道要这么做。
+我们先把MBXPageControllerDataDelegate协议拓展一下，添加两个方法：</p>
+
+<div class="highlight"><pre><code class="language-logos" data-lang="logos"><span class="k">@protocol</span> <span class="nc">MBXPageControllerDataDelegate</span> <span class="o">&amp;</span><span class="n">lt</span><span class="p">;</span><span class="bp">NSObject</span><span class="o">&amp;</span><span class="n">gt</span><span class="p">;</span>
+<span class="k">@optional</span>
+<span class="o">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="nl">MBXPageChangedToIndex</span><span class="p">:(</span><span class="bp">NSInteger</span><span class="p">)</span><span class="n">index</span><span class="p">;</span>
+<span class="p">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="nf">MBXPageSelectdViewOffset:</span><span class="p">(</span><span class="n">CGFloat</span><span class="p">)</span><span class="nv">offset</span><span class="p">;</span>
+<span class="p">-</span> <span class="p">(</span><span class="n">CGFloat</span><span class="p">)</span><span class="nf">MBXPageTabIndicatorStartOffset:</span><span class="p">(</span><span class="bp">NSInteger</span><span class="p">)</span><span class="nv">tabIndex</span><span class="p">;</span>
+<span class="k">@end</span></code></pre></div>
+
+<ul>
+  <li>MBXPageTabIndicatorStartOffset返回tabIndex被选中时的tabIndicator的X坐标。别问我为什么要这么做，我也是一知半解。</li>
+  <li>MBXPageSelectdViewOffset就是事实跟新tabIndicator的X坐标的方法，offset就是X的新坐标。这两个接口有了之后就需要判断在那里加了。</li>
+</ul>
+
+<p>通过分析源码可以看到有个很诡异的事情：</p>
+
+<div class="highlight"><pre><code class="language-logos" data-lang="logos"><span class="p">-</span>  <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="nf">syncScrollView</span>
+<span class="p">{</span>
+    <span class="k">for</span> <span class="p">(</span><span class="bp">UIView</span><span class="o">*</span> <span class="n">view</span> <span class="k">in</span> <span class="n">_pageController</span><span class="p">.</span><span class="n">view</span><span class="p">.</span><span class="n">subviews</span><span class="p">){</span>
+        <span class="k">if</span><span class="p">([</span><span class="n">view</span> <span class="nl">isKindOfClass</span><span class="p">:[</span><span class="bp">UIScrollView</span> <span class="k">class</span><span class="p">]])</span>
+        <span class="p">{</span>
+            <span class="n">_pageScrollView</span> <span class="o">=</span> <span class="p">(</span><span class="bp">UIScrollView</span> <span class="o">*</span><span class="p">)</span><span class="n">view</span><span class="p">;</span>
+            <span class="n">_pageScrollView</span><span class="p">.</span><span class="n">delegate</span> <span class="o">=</span> <span class="nb">self</span><span class="p">;</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span></code></pre></div>
+
+<p>_pageScrollView.delegate = self;可以整个代码里并没有实现ScrollDelegate的方法，我对比了一下RKSwipeBetweenViewControllers才发现原作者并没有copy这个delegate，原因可能是他的项目里当时不需要这个特性。
+很显然我们需要实现这个ScrollDelegate，并在滑动过程中同步调用MBXPageSelectdViewOffset来跟新tabIndicator的X坐标：</p>
+
+<div class="highlight"><pre><code class="language-logos" data-lang="logos"><span class="cp">#pragma mark - scroll view delegate</span>
+<span class="c1">//It extracts the xcoordinate from the center point and instructs the selection bar to move accordingly</span>
+<span class="p">-(</span><span class="kt">void</span><span class="p">)</span><span class="nf">scrollViewDidScroll:</span><span class="p">(</span><span class="bp">UIScrollView</span> <span class="o">*</span><span class="p">)</span><span class="nv">scrollView</span><span class="p">{</span>
+    <span class="k">if</span> <span class="p">([</span><span class="nb">self</span> <span class="n">MBXDataDelegate</span><span class="p">]</span>
+        <span class="o">&amp;&amp;</span> <span class="p">[</span><span class="nb">self</span><span class="p">.</span><span class="n">MBXDataDelegate</span> <span class="nl">respondsToSelector</span><span class="p">:</span><span class="k">@selector</span><span class="p">(</span><span class="nl">MBXPageSelectdViewOffset</span><span class="p">:)]</span>
+        <span class="o">&amp;&amp;</span> <span class="p">[</span><span class="nb">self</span><span class="p">.</span><span class="n">MBXDataDelegate</span> <span class="nl">respondsToSelector</span><span class="p">:</span><span class="k">@selector</span><span class="p">(</span><span class="nl">MBXPageTabIndicatorStartOffset</span><span class="p">:)])</span> <span class="p">{</span>
+<span class="c1">//        CGFloat offsetPercent = scrollView.contentOffset.x / scrollView.contentSize.width;</span>
+<span class="c1">//        [self.MBXDataDelegate MBXPageSelectdViewOffset:offsetPercent];</span>
+<span class="c1">//        NSLog(@&quot;Scrolled percentage: %f   %f&quot;, scrollView.contentOffset.x,scrollView.contentSize.width);</span>
+        <span class="n">CGFloat</span> <span class="n">xFromCenter</span> <span class="o">=</span> <span class="nb">self</span><span class="p">.</span><span class="n">view</span><span class="p">.</span><span class="n">frame</span><span class="p">.</span><span class="n">size</span><span class="p">.</span><span class="n">width</span><span class="o">-</span><span class="n">scrollView</span><span class="p">.</span><span class="n">contentOffset</span><span class="p">.</span><span class="n">x</span><span class="p">;</span> <span class="c1">//%%% positive for right swipe, negative for left</span>
+
+        <span class="c1">//%%% checks to see what page you are on and adjusts the xCoor accordingly.</span>
+        <span class="c1">//i.e. if you&#39;re on the second page, it makes sure that the bar starts from the frame.origin.x of the</span>
+        <span class="c1">//second tab instead of the beginning</span>
+        <span class="bp">NSInteger</span> <span class="n">xCoor</span> <span class="o">=</span> <span class="p">[</span><span class="nb">self</span><span class="p">.</span><span class="n">MBXDataDelegate</span> <span class="nl">MBXPageTabIndicatorStartOffset</span><span class="p">:</span><span class="nb">self</span><span class="p">.</span><span class="n">currentPageIndex</span><span class="p">];</span>
+        <span class="p">[</span><span class="nb">self</span><span class="p">.</span><span class="n">MBXDataDelegate</span> <span class="nl">MBXPageSelectdViewOffset</span><span class="p">:(</span><span class="n">xCoor</span><span class="o">-</span><span class="n">xFromCenter</span><span class="o">/</span><span class="p">[</span><span class="nb">self</span><span class="p">.</span><span class="n">viewControllerArray</span> <span class="n">count</span><span class="p">])];;</span>
+    <span class="p">}</span>
+<span class="p">}</span></code></pre></div>
+
+<p>必须得承认，如果没有看RKSwipeBetweenViewControllers我到死都不可能完成这个方法。了解pageController这个容器的都知道，这个容器为了节省内容，会在他认为合适的时候把看不到的子controller移除。
+这可真是个要命的特性，我刚开始的想法理所当然的认为scrollView.contentOffset.x/scrollView.contentSize.width就是滚动的比例，然后根据这个比例来更新咱们的tabIndicator。可是当我
+把scrollView.contentOffset.x和scrollView.contentSize.width打印出来后我傻眼了，简直混乱的不要不要的，完全不对头。之后在一段时间的探索后我猛然发现，原来RKSwipeBetweenViewControllers有
+同步跟新tabIndicator这个特性。。。
+下面是最后的效果图：</p>
+<figure>
+	<img src="/images/IOS/structure/MBXPageViewController/scrollDelegateAfter.gif" alt="项目实例" />
+	<figcaption><a href="https://www.9panart.com/html/passport/passport_login.html?ran=19406317709945142">泛艺术客户端.</a></figcaption>
+</figure>
+
+  </div><!-- /.entry-content -->
+</article><!-- /.hentry -->
+
+<article class="hentry">
+  <header>
+    
       <div class="entry-image-index">
         <a href="/elixir/phoenix/elixir-on-phoenix/" title="Elixir on Phoenix"><img src="/images/photo01.jpg" alt="Elixir on Phoenix"></a>
       </div><!-- /.entry-image -->
@@ -188,295 +504,6 @@ $ mix phoenix.server
 </pre>
 
 <p>按照提示一步步做，然后成了。。。。。。心中十万个草泥马奔腾而过，劳资满心欢喜的想学习这个框架，结果一上来就给劳资出了这么个Bug，后面还玩得动么。。。</p>
-
-  </div><!-- /.entry-content -->
-</article><!-- /.hentry -->
-
-<article class="hentry">
-  <header>
-    
-      <div class="entry-image-index">
-        <a href="/theme-setup/" title="Theme Setup"><img src="/images/abstract-11.jpg" alt="Theme Setup"></a>
-      </div><!-- /.entry-image -->
-    
-    <div class="entry-meta">
-      <span class="entry-date date published updated"><time datetime="2015-10-20T17:10:07+08:00"><a href="/theme-setup/">October 20, 2015</a></time></span><span class="author vcard"><span class="fn"><a href="/about/" title="About 陆 伟">陆 伟</a></span></span>
-      
-      <span class="entry-reading-time">
-        <i class="fa fa-clock-o"></i>
-        
-        Reading time ~10 minutes
-      </span><!-- /.entry-reading-time -->
-      
-    </div><!-- /.entry-meta -->
-    
-      <h1 class="entry-title"><a href="/theme-setup/" rel="bookmark" title="Theme Setup" itemprop="url">Theme Setup</a></h1>
-    
-  </header>
-  <div class="entry-content">
-    <p>General notes and suggestions for customizing <strong>HPSTR</strong>.</p>
-
-<h2 id="basic-setup-for-a-new-jekyll-site">Basic Setup for a new Jekyll site</h2>
-
-<ol>
-  <li><a href="http://bundler.io">Install Bundler</a> <code>gem install bundler</code> and then install <a href="http://jekyllrb.com">Jekyll</a> and all dependencies <code>bundle install</code>.</li>
-  <li>Fork the <a href="https://github.com/mmistakes/hpstr-jekyll-theme/fork">HPSTR Jekyll Theme repo</a>.</li>
-  <li>Clone the repo you just forked and rename it.</li>
-  <li>Edit <code>_config.yml</code> to personalize your site.</li>
-  <li>Check out the sample posts in <code>_posts</code> to see examples for pulling in large feature images, assigning categories and tags, and other YAML data.</li>
-  <li>Read the documentation below for further customization pointers and documentation.</li>
-</ol>
-
-<div><a href="https://github.com/mmistakes/hpstr-jekyll-theme/archive/master.zip" class="btn">Download the Theme</a></div>
-
-<p class="notice"><strong>Pro-tip:</strong> Delete the <code>gh-pages</code> branch after cloning and start fresh by branching off <code>master</code>. There is a bunch of garbage in <code>gh-pages</code> used for the theme’s demo site that I’m guessing you don’t want on your site.</p>
-
-<hr />
-
-<h2 id="setup-for-an-existing-jekyll-site">Setup for an Existing Jekyll site</h2>
-
-<ol>
-  <li>Clone the following folders: <code>_includes</code>, <code>_layouts</code>, ‘_sass’, <code>assets</code>, and <code>images</code>.</li>
-  <li>Clone the following folders/files and personalize content as need: <code>about/</code>, <code>posts/</code>, <code>tags/</code>, <code>feed.xml</code>. and ‘index.html’.</li>
-  <li>Set the following variables in your <code>config.yml</code> file:</li>
-</ol>
-
-<div class="highlight"><pre><code class="language-yaml" data-lang="yaml"><span class="l-Scalar-Plain">title</span><span class="p-Indicator">:</span>            <span class="l-Scalar-Plain">Site Title</span>
-<span class="l-Scalar-Plain">description</span><span class="p-Indicator">:</span>      <span class="l-Scalar-Plain">Describe your website here.</span>
-<span class="l-Scalar-Plain">disqus_shortname</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">shortname</span>
-<span class="c1"># Your site&#39;s domain goes here (eg: //mmistakes.github.io, http://mademistakes.com, etc)</span>
-<span class="c1"># When testing locally leave blank or use http://localhost:4000</span>
-<span class="l-Scalar-Plain">url</span><span class="p-Indicator">:</span>              <span class="l-Scalar-Plain">//mmistakes.github.io</span>
-
-<span class="c1"># Owner/author information</span>
-<span class="l-Scalar-Plain">owner</span><span class="p-Indicator">:</span>
-  <span class="l-Scalar-Plain">name</span><span class="p-Indicator">:</span>           <span class="l-Scalar-Plain">Your Name</span>
-  <span class="l-Scalar-Plain">avatar</span><span class="p-Indicator">:</span>         <span class="l-Scalar-Plain">avatar.jpg</span>
-  <span class="l-Scalar-Plain">bio</span><span class="p-Indicator">:</span>            <span class="s">&quot;Your</span><span class="nv"> </span><span class="s">bio</span><span class="nv"> </span><span class="s">goes</span><span class="nv"> </span><span class="s">here.</span><span class="nv"> </span><span class="s">It</span><span class="nv"> </span><span class="s">shouldn&#39;t</span><span class="nv"> </span><span class="s">be</span><span class="nv"> </span><span class="s">super</span><span class="nv"> </span><span class="s">long</span><span class="nv"> </span><span class="s">but</span><span class="nv"> </span><span class="s">a</span><span class="nv"> </span><span class="s">good</span><span class="nv"> </span><span class="s">two</span><span class="nv"> </span><span class="s">sentences</span><span class="nv"> </span><span class="s">or</span><span class="nv"> </span><span class="s">two</span><span class="nv"> </span><span class="s">should</span><span class="nv"> </span><span class="s">suffice.&quot;</span>
-  <span class="l-Scalar-Plain">email</span><span class="p-Indicator">:</span>          <span class="l-Scalar-Plain">you@email.com</span>
-  <span class="c1"># Social networking links used in footer. Update and remove as you like.</span>
-  <span class="l-Scalar-Plain">twitter</span><span class="p-Indicator">:</span>        
-  <span class="l-Scalar-Plain">facebook</span><span class="p-Indicator">:</span>       
-  <span class="l-Scalar-Plain">github</span><span class="p-Indicator">:</span>         
-  <span class="l-Scalar-Plain">stackexchange</span><span class="p-Indicator">:</span>  
-  <span class="l-Scalar-Plain">linkedin</span><span class="p-Indicator">:</span>       
-  <span class="l-Scalar-Plain">instagram</span><span class="p-Indicator">:</span>      
-  <span class="l-Scalar-Plain">flickr</span><span class="p-Indicator">:</span>         
-  <span class="l-Scalar-Plain">tumblr</span><span class="p-Indicator">:</span>         
-  <span class="c1"># google plus id, include the &#39;+&#39;, eg +mmistakes</span>
-  <span class="l-Scalar-Plain">google_plus</span><span class="p-Indicator">:</span>    <span class="l-Scalar-Plain">+yourid</span>
-
-<span class="c1"># Analytics and webmaster tools stuff goes here</span>
-<span class="l-Scalar-Plain">google_analytics</span><span class="p-Indicator">:</span>   
-<span class="l-Scalar-Plain">google_verify</span><span class="p-Indicator">:</span>      
-<span class="c1"># https://ssl.bing.com/webmaster/configure/verify/ownership Option 2 content= goes here</span>
-<span class="l-Scalar-Plain">bing_verify</span><span class="p-Indicator">:</span>         
-
-<span class="c1"># http://en.wikipedia.org/wiki/List_of_tz_database_time_zones</span>
-<span class="l-Scalar-Plain">timezone</span><span class="p-Indicator">:</span>    <span class="l-Scalar-Plain">America/New_York</span>
-<span class="l-Scalar-Plain">future</span><span class="p-Indicator">:</span>      <span class="l-Scalar-Plain">true</span>
-<span class="l-Scalar-Plain">pygments</span><span class="p-Indicator">:</span>    <span class="l-Scalar-Plain">true</span>
-<span class="l-Scalar-Plain">markdown</span><span class="p-Indicator">:</span>    <span class="l-Scalar-Plain">kramdown</span>
-
-<span class="c1"># Amount of posts to show on home page</span>
-<span class="l-Scalar-Plain">paginate</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">5</span></code></pre></div>
-
-<hr />
-
-<h2 id="running-jekyll">Running Jekyll</h2>
-
-<p>If <code>jekyll build</code> and <code>jekyll serve</code> throw errors you may have to run Jekyll with <code>bundled exec</code> instead.</p>
-
-<blockquote>
-  <p>In some cases, running executables without bundle exec may work, if the executable happens to be installed in your system and does not pull in any gems that conflict with your bundle.</p>
-
-  <p>However, this is unreliable and is the source of considerable pain. Even if it looks like it works, it may not work in the future or on another machine.</p>
-</blockquote>
-
-<div class="highlight"><pre><code class="language-text" data-lang="text">bundle exec jekyll build
-
-bundle exec jekyll serve</code></pre></div>
-
-<hr />
-
-<h2 id="folder-structure">Folder Structure</h2>
-
-<div class="highlight"><pre><code class="language-bash" data-lang="bash">hpstr-jekyll-theme/
-├── _includes
-<span class="p">|</span>    ├── browser-upgrade.html       <span class="c"># prompt to upgrade browser on &lt; IE8</span>
-<span class="p">|</span>    ├── footer.html                <span class="c"># site footer</span>
-<span class="p">|</span>    ├── head.html                  <span class="c"># site head</span>
-<span class="p">|</span>    ├── navigation.html            <span class="c"># site navigation</span>
-<span class="p">|</span>    └── scripts.html               <span class="c"># jQuery, plugins, GA, etc</span>
-├── _layouts
-<span class="p">|</span>    ├── page.html                  <span class="c"># page layout</span>
-<span class="p">|</span>    ├── page.html                  <span class="c"># post-index layout used on home page</span>
-<span class="p">|</span>    └── post.html                  <span class="c"># post layout</span>
-├── _posts
-├── _sass                           <span class="c"># Sass partials</span>
-├── assets
-<span class="p">|</span>    ├── css                        <span class="c"># compiled stylesheets</span>
-<span class="p">|</span>    ├── js
-<span class="p">|</span>    <span class="p">|</span>   ├── _main.js               <span class="c"># plugin options</span>
-<span class="p">|</span>    <span class="p">|</span>   ├── scripts.min.js         <span class="c"># concatenated and minifed site scripts</span>
-<span class="p">|</span>    <span class="p">|</span>   ├── plugins                <span class="c"># plugin scripts</span>
-<span class="p">|</span>    └── └── vendor                 <span class="c"># jQuery and Modernizr scripts</span>
-├── images                          <span class="c"># images for posts and pages</span>
-├── _config.yml                     <span class="c"># Jekyll options</span>
-├── about/                          <span class="c"># about page</span>
-├── posts/                          <span class="c"># all posts</span>
-├── tags/                           <span class="c"># all posts grouped by tag</span>
-└── index.html                      <span class="c"># home page with pagination</span></code></pre></div>
-
-<hr />
-
-<h2 id="customization">Customization</h2>
-
-<p>Most of the variables found here are used in the .html files found in <code>_includes</code> if you need to add or remove anything. A good place to start would be to add the <code>title</code>, <code>description</code>, and <code>url</code> for your site. Links are absolute and prefixed with <code>{{ site.url }}</code> in the various <code>_includes</code> and <code>_layouts</code>, so remember to properly set <code>url</code><sup id="fnref:1"><a href="#fn:1" class="footnote">1</a></sup> to <code>http://localhost:4000</code> when developing locally.</p>
-
-<h3 id="disqus-comments">Disqus Comments</h3>
-
-<p>Create a <a href="http://disqus.com">Disqus</a> account and change <code>disqus_shortname</code> in <code>_config.yml</code> to the Disqus <em>shortname</em> you just setup. By default comments appear on all post and pages if you assigned a shortname. To disable commenting on a post or page, add the following to its YAML Front Matter:</p>
-
-<div class="highlight"><pre><code class="language-yaml" data-lang="yaml"><span class="l-Scalar-Plain">comments</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">false</span></code></pre></div>
-
-<h3 id="social-share-links">Social Share Links</h3>
-
-<p>To enable Facebook, Twitter, and Google+ share links on a post or page, add the following to its front matter:</p>
-
-<div class="highlight"><pre><code class="language-yaml" data-lang="yaml"><span class="l-Scalar-Plain">share</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">false</span></code></pre></div>
-
-<h3 id="ownerauthor-information">Owner/Author Information</h3>
-
-<p>Change your name, and avatar photo (200x200 pixels or larger), email, and social networking URLs. If you want to link to an external image on Gravatar or something similar you’ll need to edit the path in <code>head.html</code> since it assumes it is located in <code>/images</code>.</p>
-
-<h3 id="google-analytics-and-webmaster-tools">Google Analytics and Webmaster Tools</h3>
-
-<p>Your Google Analytics ID goes here along with meta tags for <a href="http://support.google.com/webmasters/bin/answer.py?hl=en&amp;answer=35179">Google Webmaster Tools</a> and <a href="https://ssl.bing.com/webmaster/configure/verify/ownershi">Bing Webmaster Tools</a> site verification.</p>
-
-<h3 id="navigation-links">Navigation Links</h3>
-
-<p>To add additional links in the drop down menu edit <code>_data/navigation.yml</code>. Use the following format to set the URL and title for as many links as you’d like. <em>External links will open in a new window.</em></p>
-
-<div class="highlight"><pre><code class="language-yaml" data-lang="yaml"><span class="p-Indicator">-</span> <span class="l-Scalar-Plain">title</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">Portfolio</span>
-  <span class="l-Scalar-Plain">url</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">/portfolio/</span>
-
-<span class="p-Indicator">-</span> <span class="l-Scalar-Plain">title</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">Made Mistakes</span>
-  <span class="l-Scalar-Plain">url</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">http://mademistakes.com</span></code></pre></div>
-
-<hr />
-
-<h2 id="adding-new-content-with-octopress">Adding New Content with Octopress</h2>
-
-<p>While completely optional, I’ve included Octopress and some starter templates to automate the creation of new posts and pages. To take advantage of it start by installing the <a href="https://github.com/octopress/octopress">Octopress</a> gem if it isn’t already.</p>
-
-<div class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="nv">$ </span>gem install octopress --pre</code></pre></div>
-
-<h3 id="new-post">New Post</h3>
-
-<p>Default command</p>
-
-<div class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="nv">$ </span>octopress new post <span class="s2">&quot;Post Title&quot;</span></code></pre></div>
-
-<p>Default works great if you want all your posts in one directory, but if you’re like me and want to group them into subfolders like <code>/posts</code>, <code>/portfolio</code>, etc. Then this is the command for you. By specifying the DIR it will create a new post in that folder and populate the <code>categories:</code> YAML with the same value.</p>
-
-<div class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="nv">$ </span>octopress new post <span class="s2">&quot;New Post Title&quot;</span> --dir posts</code></pre></div>
-
-<h3 id="new-page">New Page</h3>
-
-<p>To create a new page use the following command.</p>
-
-<div class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="nv">$ </span>octopress new page new-page/</code></pre></div>
-
-<hr />
-
-<h3 id="jekyll-includes">Jekyll _includes</h3>
-
-<p>For the most part you can leave these as is since the author/owner details are pulled from <code>_config.yml</code>. That said you’ll probably want to customize the copyright stuff in <code>footer.html</code> to your liking.</p>
-
-<h3 id="reading-time">Reading Time</h3>
-
-<p>On by default. To turn off remove <code>reading_time</code> from <code>_config.yml. Default words per minute is set at 200 and can changed by updating </code>words_per_minute<code> in </code>_config.yml`.</p>
-
-<h3 id="feature-images">Feature Images</h3>
-
-<p>A good rule of thumb is to keep feature images nice and wide so you don’t push the body text too far down. An image cropped around around 1024 x 256 pixels will keep file size down with an acceptable resolution for most devices. If you want to serve these images responsively I’d suggest looking at the <a href="https://github.com/scottjehl/picturefill">Jekyll Picture Tag</a><sup id="fnref:2"><a href="#fn:2" class="footnote">2</a></sup> plugin.</p>
-
-<p>The two layouts make the assumption that the feature images live in the <em>images</em> folder. To add a feature image to a post or page just include the filename in the front matter like so.</p>
-
-<div class="highlight"><pre><code class="language-yaml" data-lang="yaml"><span class="l-Scalar-Plain">image</span><span class="p-Indicator">:</span>
-  <span class="l-Scalar-Plain">feature</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">feature-image-filename.jpg</span>
-  <span class="l-Scalar-Plain">thumb</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">thumbnail-image.jpg</span> <span class="c1">#keep it square 200x200 px is good</span></code></pre></div>
-
-<p>If you want to apply attribution to a feature image use the following YAML front matter on posts or pages. Image credits appear directly below the feature image with a link back to the original source.</p>
-
-<div class="highlight"><pre><code class="language-yaml" data-lang="yaml"><span class="l-Scalar-Plain">image</span><span class="p-Indicator">:</span>
-  <span class="l-Scalar-Plain">feature</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">feature-image-filename.jpg</span>
-  <span class="l-Scalar-Plain">credit</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">Michael Rose</span> <span class="c1">#name of the person or site you want to credit</span>
-  <span class="l-Scalar-Plain">creditlink</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">http://mademistakes.com</span> <span class="c1">#url to their site or licensing</span></code></pre></div>
-
-<h4 id="postpage-thumbnails-for-og-and-twitter-cards">Post/Page Thumbnails for OG and Twitter Cards</h4>
-
-<p>Post and page thumbnails work the same way. These are used by <a href="https://developers.facebook.com/docs/opengraph/">Open Graph</a> and <a href="https://dev.twitter.com/docs/cards">Twitter Cards</a> meta tags found in <code>head.html</code>. If you don’t assign a thumbnail the image you assigned to <code>site.owner.avatar</code> in <code>_config.yml</code> will be used.</p>
-
-<p>Here’s an example of what a tweet to your site could look like if you activate Twitter Cards and include all the metas in your post’s YAML.</p>
-
-<p><img src="/images/twitter-card-summary-large-image.jpg" alt="Twitter Card summary large image screenshot" /></p>
-
-<h3 id="videos">Videos</h3>
-
-<p>Video embeds are responsive and scale with the width of the main content block with the help of <a href="http://fitvidsjs.com/">FitVids</a>.</p>
-
-<p>Not sure if this only effects Kramdown or if it’s an issue with Markdown in general. But adding YouTube video embeds causes errors when building your Jekyll site. To fix add a space between the <code>&lt;iframe&gt;</code> tags and remove <code>allowfullscreen</code>. Example below:</p>
-
-<div class="highlight"><pre><code class="language-html" data-lang="html"><span class="nt">&lt;iframe</span> <span class="na">width=</span><span class="s">&quot;560&quot;</span> <span class="na">height=</span><span class="s">&quot;315&quot;</span> <span class="na">src=</span><span class="s">&quot;http://www.youtube.com/embed/PWf4WUoMXwg&quot;</span> <span class="na">frameborder=</span><span class="s">&quot;0&quot;</span><span class="nt">&gt;</span> <span class="nt">&lt;/iframe&gt;</span></code></pre></div>
-
-<h3 id="twitter-cards">Twitter Cards</h3>
-
-<p>Twitter cards make it possible to attach images and post summaries to Tweets that link to your content. Summary Card meta tags have been added to <code>head.html</code> to support this, you just need to <a href="https://dev.twitter.com/docs/cards">validate and apply your domain</a> to turn it on.</p>
-
-<h3 id="link-post-type">Link Post Type</h3>
-
-<p>Link blog like a champ by adding <code>link: http://url-you-want-linked</code> to a post’s YAML front matter. Arrow glyph links to the post’s permalink and the the <code>post-title</code> links to the source URL. Here’s an <a href="/sample-link-post/">example of a link post</a> if you need a visual.</p>
-
-<hr />
-
-<h2 id="further-customization">Further Customization</h2>
-
-<p>Jekyll 2.x added support for Sass files making it much easier to modify a theme’s fonts and colors. By editing values found in <code>_sass/variables.scss</code> you can fine tune the site’s colors and typography.</p>
-
-<p>For example if you wanted a red background instead of white you’d change <code>$bodycolor: #fff;</code> to <code>$bodycolor: $cc0033;</code>.</p>
-
-<p>To modify the site’s JavaScript files I setup a Grunt build script to lint/concatenate/minify all scripts into <code>scripts.min.js</code>. <a href="http://nodejs.org/">Install Node.js</a>, then <a href="http://gruntjs.com/getting-started">install Grunt</a>, and then finally install the dependencies for the theme contained in <code>package.json</code>:</p>
-
-<div class="highlight"><pre><code class="language-bash" data-lang="bash">npm install</code></pre></div>
-
-<p>From the theme’s root, use <code>grunt</code> concatenate JavaScript files, and optimize .jpg, .png, and .svg files in the <code>images/</code> folder. You can also use <code>grunt dev</code> in combination with <code>jekyll build --watch</code> to watch for updates JS files that Grunt will then automatically re-build as you write your code which will in turn auto-generate your Jekyll site when developing locally.</p>
-
-<hr />
-
-<h2 id="questions">Questions?</h2>
-
-<p>Having a problem getting something to work or want to know why I setup something in a certain way? Ping me on Twitter <a href="http://twitter.com/mmistakes">@mmistakes</a> or <a href="https://github.com/mmistakes/hpstr-jekyll-theme/issues/new">file a GitHub Issue</a>. And if you make something cool with this theme feel free to let me know.</p>
-
-<hr />
-
-<h2 id="license">License</h2>
-
-<p>This theme is free and open source software, distributed under the <a href="/LICENSE">MIT License</a> version 2 or later. So feel free to to modify this theme to suit your needs.</p>
-
-<hr />
-
-<div class="footnotes">
-  <ol>
-    <li id="fn:1">
-      <p>Used to generate absolute URLs in <code>feed.xml</code>, and for canonical URLs in <code>head.html</code>. Don’t include a trailing <code>/</code> in your base url ie: http://mademistakes.com. When developing locally I suggest using http://localhost:4000 or whatever localhost you’re using to properly load all theme stylesheets, scripts, and image assets. If you leave this variable blank all links will resolve correctly except those pointing to home. <a href="#fnref:1" class="reversefootnote">&#8617;</a></p>
-    </li>
-    <li id="fn:2">
-      <p>If you’re using GitHub Pages to host your site be aware that plugins are disabled. So you’ll need to build your site locally and then manually deploy if you want to use this sweet plugin. <a href="#fnref:2" class="reversefootnote">&#8617;</a></p>
-    </li>
-  </ol>
-</div>
 
   </div><!-- /.entry-content -->
 </article><!-- /.hentry -->

@@ -61,7 +61,7 @@ Client端：
 首先需要熟悉下[Java里面的NIO](http://tutorials.jenkov.com/java-nio/selectors.html)，有一个对应的[翻译](http://ifeve.com/overview/)，最主要的是要看到第9篇，
 这样就知道了如果搭建一个简单地UDP服务器了。
 这些最基础的UDP连接，对应封装在UDPConnection类中：
-{% highlight logos %}
+{% highlight java %}
 public class UDPConnection {
     InetSocketAddress connectedAddress;
     DatagramChannel datagramChannel;
@@ -77,7 +77,7 @@ public class UDPConnection {
 1. 如何从ByteBuffer转化为我们需要的Java对象
 2. 如何从Java对象转化为ByteBuffer
 
-{% highlight logos %}
+{% highlight java %}
     public UDPConnection(Serialization serialization, int writeBufferSize, int objectBufferSize) {
         this.serialization = serialization;
         readBuffer = ByteBuffer.allocate(objectBufferSize);
@@ -101,7 +101,7 @@ public class UDPConnection {
 {% endhighlight %}
 先看构造函数和bind。构造函数中传入了具体的Serialization，以及各个缓存的大小。
 bind函数作用就是在给定的端口上监听UDP报文，这里使用selector.provider().openDatagramChannel()而不是DatagramChannel.open()还是有一点区别的，方便了我们扩展代码。
-{% highlight logos %}
+{% highlight java %}
     public void connect(Selector selector, InetSocketAddress remoteAddress) throws IOException {
         close();
         readBuffer.clear();
@@ -122,7 +122,7 @@ bind函数作用就是在给定的端口上监听UDP报文，这里使用selecto
     }
 {% endhighlight %}
 看到这个方法可能会让人有点困惑，UDP是无连接的，为何还会有connect方法？这里的connect并不是TCP中的建立连接的意思，而是把Channel与该地址绑定，这样以后写数据的时候就会默认写给connect中传入的地址。具体描述可参见[官方文档](http://tool.oschina.net/uploads/apidocs/jdk-zh/java/nio/channels/DatagramChannel.html#connect(java.net.SocketAddress))
-{% highlight logos %}
+{% highlight java %}
        public InetSocketAddress readFromAddress() throws IOException {
             DatagramChannel datagramChannel = this.datagramChannel;
             if (datagramChannel == null) throw new SocketException("ConnectionWrapper is closed.");
@@ -208,7 +208,7 @@ EndPoint定义了一个UDP端的控制接口。
 
 3. 开启另一个线程开始连接服务器
 
-{% highlight logos %}
+{% highlight java %}
    new Thread("Connect") {
        public void run() {
            try {
@@ -273,7 +273,7 @@ EndPoint定义了一个UDP端的控制接口。
 
 首先需要看下序列化接口的定义：
 
-{% highlight logos %}
+{% highlight java %}
 public interface Serialization {
 
     void write(ByteBuffer buffer, PacketMessage packet);

@@ -1,0 +1,602 @@
+---
+layout: post
+title: "ViewPage源代码学习(上)"
+modified:
+categories: android
+description:
+tags: []
+image:
+  feature:
+  credit:
+  creditlink:
+comments:
+share:
+date: 2016-11-07T18:41:39+08:00
+---
+搞android开发的不可能没用过ViewPage，这个功能强大的控件是android独有的（IOS上没有这样的玩意儿，除了一些第三方的库）。一直都想研究ViewPage的源码，自己又很懒，在百度上搜了搜，
+硬是没有一家写过这个，无奈，只能自己上来啃了。ViewPage继承自ViewGroup，所以我们在看ViewPage的代码的时候还是按照ViewGroup的功能逻辑来看。
+
+首先自然是构造函数，没啥东西：
+{% highlight java %}
+    void initViewPager() {
+        setWillNotDraw(false);
+        setDescendantFocusability(FOCUS_AFTER_DESCENDANTS);
+        setFocusable(true);
+        final Context context = getContext();
+        mScroller = new Scroller(context, sInterpolator);
+        final ViewConfiguration configuration = ViewConfiguration.get(context);
+        final float density = context.getResources().getDisplayMetrics().density;
+
+        mTouchSlop = ViewConfigurationCompat.getScaledPagingTouchSlop(configuration);
+        mMinimumVelocity = (int) (MIN_FLING_VELOCITY * density);
+        mMaximumVelocity = configuration.getScaledMaximumFlingVelocity();
+        mLeftEdge = new EdgeEffectCompat(context);
+        mRightEdge = new EdgeEffectCompat(context);
+
+        mFlingDistance = (int) (MIN_DISTANCE_FOR_FLING * density);
+        mCloseEnough = (int) (CLOSE_ENOUGH * density);
+        mDefaultGutterSize = (int) (DEFAULT_GUTTER_SIZE * density);
+
+        ViewCompat.setAccessibilityDelegate(this, new MyAccessibilityDelegate());
+
+        if (ViewCompat.getImportantForAccessibility(this)
+                == ViewCompat.IMPORTANT_FOR_ACCESSIBILITY_AUTO) {
+            ViewCompat.setImportantForAccessibility(this,
+                    ViewCompat.IMPORTANT_FOR_ACCESSIBILITY_YES);
+        }
+    }
+{% endhighlight %}
+第一句话意思根据android官方注释：如果这个view自己没有做任何的draw就设置这个为true，可以优化性能。默认为false，也就是需要调用onDraw方法。如果你覆写的onDraw，则必须清除(也就是false)这个标志。
+
+第二句话设置焦点获取规则，这个就不详细说了，默认规则就是儿子都不要老子才要。
+
+接下来创建了一个Scroller，用来处理滚动事件，这个需要先储备一下Scroller的用法和作用。
+
+再接着感觉比较重要的就是ViewCompat.setAccessibilityDelegate(this, new MyAccessibilityDelegate());，这个具体作用现在还不清除，后面再看。
+其他的就是一些变量的初始化，我们进入下一步。在进入下一步之前我们需要知道ViewPage下一步是做什么？
+
+一般来说一个activity或者fragment使用ViewPage，都是在XML文件或者new出来之后添加到父View中，接着就是设置Adapter和监听器，甚至可以设置初始页面的索引。最后在View将要绘制的时候才进入View的绘制消息传递(包含measure和layout传递等)。
+所以ViewPage第二个触发的应该是跟Adapter有关的函数。
+{% highlight java %}
+    /**
+     * Set a PagerAdapter that will supply views for this pager as needed.
+     *
+     * @param adapter Adapter to use
+     */
+    public void setAdapter(PagerAdapter adapter) {
+        if (mAdapter != null) {
+            mAdapter.unregisterDataSetObserver(mObserver);
+            mAdapter.startUpdate(this);
+            for (int i = 0; i < mItems.size(); i++) {
+                final ItemInfo ii = mItems.get(i);
+                mAdapter.destroyItem(this, ii.position, ii.object);
+            }
+            mAdapter.finishUpdate(this);
+            mItems.clear();
+            removeNonDecorViews();
+            mCurItem = 0;
+            scrollTo(0, 0);
+        }
+
+        final PagerAdapter oldAdapter = mAdapter;
+        mAdapter = adapter;
+        mExpectedAdapterCount = 0;
+
+        if (mAdapter != null) {
+            if (mObserver == null) {
+                mObserver = new PagerObserver();
+            }
+            mAdapter.registerDataSetObserver(mObserver);
+            mPopulatePending = false;
+            final boolean wasFirstLayout = mFirstLayout;
+            mFirstLayout = true;
+            mExpectedAdapterCount = mAdapter.getCount();
+            if (mRestoredCurItem >= 0) {
+                mAdapter.restoreState(mRestoredAdapterState, mRestoredClassLoader);
+                setCurrentItemInternal(mRestoredCurItem, false, true);
+                mRestoredCurItem = -1;
+                mRestoredAdapterState = null;
+                mRestoredClassLoader = null;
+            } else if (!wasFirstLayout) {
+                populate();
+            } else {
+                requestLayout();
+            }
+        }
+
+        if (mAdapterChangeListener != null && oldAdapter != adapter) {
+            mAdapterChangeListener.onAdapterChanged(oldAdapter, adapter);
+        }
+    }
+ {% endhighlight %}
+PageAdapter是一个抽象类，常用的一般是FragmentPageAdapter。PageAdapter里面有个DataSetObservable对象，而ViewPage中有个DataSetObserver的实现：PageObserver对象，然后就把这个对象注册到PageAdapter的DataSetObservable对象中去，PageAdapter在调用notifyDataSetChanged的时候就会通知所以观察者调用onChange方法，在ViewPage中实现就是：
+  {% highlight java %}
+    private class PagerObserver extends DataSetObserver {
+        @Override
+        public void onChanged() {
+            dataSetChanged();
+        }
+        @Override
+        public void onInvalidated() {
+            dataSetChanged();
+        }
+    }
+  {% endhighlight %}
+前面if里面的一段代码，都是重置状态，startUpdate事实上啥都没做，android官方注释：当已经显示的页面将要有改变产生的时候调用。然而PageAdapter中并没有任何实现，FragmentPageAdapter也是如此。接着一个循环，首次进入必然不会执行。然后是finishUpdate，与startUpdate成对出现，这个在抽象类中没有任何卵用，但是在FragmentPageAdapter覆写了，总结一下就是这个方法里面应该把页面变换的动画立马执行结束。然后是移除所有非Decor的View，也可以忽略，接着默认页面索引为0，滚动到0,0也就是原点位置。
+接着才是初始化操作，注册PagerObserver，初始化一些状态变量。需要注意的是mRestoredCurItem里面的逻辑不会走，而是会进入requestLayout();再后面的mAdapterChangeListener这个没怎么用过，直接忽略，根据字面意思和调用时机可以判断是对adapter变化的监听(这里的变化是指adapter对象的变化)。
+我们跟着调用逻辑走下去，进入requestLayout();额......具体代码就不看了，反正意思就是要发起一次layout传递。由此也就解释了为何首次设置adapter后不需要调用notifiydatachanged方法。
+
+下面应该就是进入measure方法了。额......没找到，没关系，measure里面会调用onMeasure，这个才是android真正让用户自定义测量的地方。
+
+第一句话自然是setMeasuredDimension(getDefaultSize(0, widthMeasureSpec),getDefaultSize(0, heightMeasureSpec));，获取父亲给自己在measure中计算出的大小，然后就是一系列计算儿子的大小：
+    {% highlight java %}
+      /*
+         * Make sure all children have been properly measured. Decor views first.
+         * Right now we cheat and make this less complicated by assuming decor
+         * views won't intersect. We will pin to edges based on gravity.
+         */
+        int size = getChildCount();
+        for (int i = 0; i < size; ++i) {
+            final View child = getChildAt(i);
+            if (child.getVisibility() != GONE) {
+                final LayoutParams lp = (LayoutParams) child.getLayoutParams();
+                if (lp != null && lp.isDecor) {
+                    final int hgrav = lp.gravity & Gravity.HORIZONTAL_GRAVITY_MASK;
+                    final int vgrav = lp.gravity & Gravity.VERTICAL_GRAVITY_MASK;
+                    int widthMode = MeasureSpec.AT_MOST;
+                    int heightMode = MeasureSpec.AT_MOST;
+                    boolean consumeVertical = vgrav == Gravity.TOP || vgrav == Gravity.BOTTOM;
+                    boolean consumeHorizontal = hgrav == Gravity.LEFT || hgrav == Gravity.RIGHT;
+
+                    if (consumeVertical) {
+                        widthMode = MeasureSpec.EXACTLY;
+                    } else if (consumeHorizontal) {
+                        heightMode = MeasureSpec.EXACTLY;
+                    }
+
+                    int widthSize = childWidthSize;
+                    int heightSize = childHeightSize;
+                    if (lp.width != LayoutParams.WRAP_CONTENT) {
+                        widthMode = MeasureSpec.EXACTLY;
+                        if (lp.width != LayoutParams.FILL_PARENT) {
+                            widthSize = lp.width;
+                        }
+                    }
+                    if (lp.height != LayoutParams.WRAP_CONTENT) {
+                        heightMode = MeasureSpec.EXACTLY;
+                        if (lp.height != LayoutParams.FILL_PARENT) {
+                            heightSize = lp.height;
+                        }
+                    }
+                    final int widthSpec = MeasureSpec.makeMeasureSpec(widthSize, widthMode);
+                    final int heightSpec = MeasureSpec.makeMeasureSpec(heightSize, heightMode);
+                    child.measure(widthSpec, heightSpec);
+
+                    if (consumeVertical) {
+                        childHeightSize -= child.getMeasuredHeight();
+                    } else if (consumeHorizontal) {
+                        childWidthSize -= child.getMeasuredWidth();
+                    }
+                }
+            }
+        }
+    {% endhighlight %}
+看这段代码的逻辑隐约猜测这不是真正的在计算viewpage内容的大小，而是在计算viewpage出去其他控件后可供作为page页面容器的空间大小。因为getChildCount这个时候返回的只是已经添加进viewpage的子view个数，而我们这个时候page页面还没有加进去。先暂时摆在一边，继续看下去：
+ {% highlight java %}
+        mChildWidthMeasureSpec = MeasureSpec.makeMeasureSpec(childWidthSize, MeasureSpec.EXACTLY);
+        mChildHeightMeasureSpec = MeasureSpec.makeMeasureSpec(childHeightSize, MeasureSpec.EXACTLY);
+
+        // Make sure we have created all fragments that we need to have shown.
+        mInLayout = true;
+        populate();
+        mInLayout = false;
+ {% endhighlight %}
+正如我所说，减去了已经存在的子view的控件后，剩下的才是page的空间，populate应该会涉及到adapter的一些接口了。我跟进去发现populate调用了populate(mCurItem);意思应该是只对当前显示的页面做populate处理，这段代码比较长，我们需要分段来看：
+{% highlight java %}
+        ItemInfo oldCurInfo = null;
+        int focusDirection = View.FOCUS_FORWARD;
+        if (mCurItem != newCurrentItem) {
+            focusDirection = mCurItem < newCurrentItem ? View.FOCUS_RIGHT : View.FOCUS_LEFT;
+            oldCurInfo = infoForPosition(mCurItem);
+            mCurItem = newCurrentItem;
+        }
+         if (mAdapter == null) {
+            sortChildDrawingOrder();
+            return;
+        }
+{% endhighlight %}
+由于我们是初始化，所以第一个if里面不会进去。然后判断adapter是否会空，如果是空就把现有的子view排序，规则参见ViewPositionComparator。一般情况下这个排序也是白扯，我们不会在viewpage里面添加什么装饰view(就是继承了ViewPage内部定义的接口的类，反正我是没见过有这样的view)：
+{% highlight java %}
+    /**
+     * Used internally to tag special types of child views that should be added as
+     * pager decorations by default.
+     */
+    interface Decor {}
+{% endhighlight %}
+再接着就比较难理解了，这里还是把android的注释一起贴出来：
+{% highlight java %}
+       // Bail now if we are waiting to populate.  This is to hold off
+        // on creating views from the time the user releases their finger to
+        // fling to a new position until we have finished the scroll to
+        // that position, avoiding glitches from happening at that point.
+        if (mPopulatePending) {
+            if (DEBUG) Log.i(TAG, "populate is pending, skipping for now...");
+            sortChildDrawingOrder();
+            return;
+        }
+
+        // Also, don't populate until we are attached to a window.  This is to
+        // avoid trying to populate before we have restored our view hierarchy
+        // state and conflicting with what is restored.
+        if (getWindowToken() == null) {
+            return;
+        }
+
+        mAdapter.startUpdate(this);
+{% endhighlight %}
+找了半天mPopulatePending，发现只有在处理ACTION_UP事件和endFakeDrag函数中才会被设置为true。endFakeDrag的只能需要看beginFakeDrag的注释，大概用途就是同步与其他可滑动页面的状态。比如我们有两个viewpage，想要达到同时滑动的效果，就在其中一个viewpage滑动的时候调用另一个viewpage的fakedrag系列方法以达到同步效果。但是不管是ACTION_UP还是endFakeDrag都是表示滑动停止，滑动停止后我们的populate函数就沦为了排序？写到这里的时候我也没找到答案，隐约感觉不对劲，但是还是继续往下走。
+下面的意思就是在view还没有添加到窗口上时就不走下去了，这里我们需要知道一个view的生命周期：
+构造View --> onFinishInflate --> onAttachedToWindow --> onMeasure --> onSizeChanged --> onLayout --> onDraw --> onDetackedFromWindow
+再接着 mAdapter.startUpdate(this)这句代码我们上面就说过，并没有什么卵用。
+{% highlight java %}
+        final int pageLimit = mOffscreenPageLimit;
+        final int startPos = Math.max(0, mCurItem - pageLimit);
+        final int N = mAdapter.getCount();
+        final int endPos = Math.min(N-1, mCurItem + pageLimit);
+
+        if (N != mExpectedAdapterCount) {
+            String resName;
+            try {
+                resName = getResources().getResourceName(getId());
+            } catch (Resources.NotFoundException e) {
+                resName = Integer.toHexString(getId());
+            }
+            throw new IllegalStateException("The application's PagerAdapter changed the adapter's" +
+                    " contents without calling PagerAdapter#notifyDataSetChanged!" +
+                    " Expected adapter item count: " + mExpectedAdapterCount + ", found: " + N +
+                    " Pager id: " + resName +
+                    " Pager class: " + getClass() +
+                    " Problematic adapter: " + mAdapter.getClass());
+        }
+{% endhighlight %}
+这一段获取正确的需要初始化的页面起始位置和结束位置。根据我们设置的缓存大小，最大初始化不超过N个页面。然后if里面的错误原因说明很清晰了，改了adapter的数据而没有调用notifyDataSetChanged方法就有可能出现。
+{% highlight java %}
+        // Locate the currently focused item or add it if needed.
+        int curIndex = -1;
+        ItemInfo curItem = null;
+        for (curIndex = 0; curIndex < mItems.size(); curIndex++) {
+            final ItemInfo ii = mItems.get(curIndex);
+            if (ii.position >= mCurItem) {
+                if (ii.position == mCurItem) curItem = ii;
+                break;
+            }
+        }
+
+        if (curItem == null && N > 0) {
+            curItem = addNewItem(mCurItem, curIndex);
+        }
+{% endhighlight %}
+正如注释所说，找到当前获得焦点的页面对象，没有就添加进去，很显然，咱们的页面初始化代码出现了。
+{% highlight java %}
+    ItemInfo addNewItem(int position, int index) {
+        ItemInfo ii = new ItemInfo();
+        ii.position = position;
+        ii.object = mAdapter.instantiateItem(this, position);
+        ii.widthFactor = mAdapter.getPageWidth(position);
+        if (index < 0 || index >= mItems.size()) {
+            mItems.add(ii);
+        } else {
+            mItems.add(index, ii);
+        }
+        return ii;
+    }
+{% endhighlight %}
+最核心的就是mAdapter.instantiateItem(this, position);和mAdapter.getPageWidth(position);这两个函数了，mAdapter.getPageWidth(position);比较简单，意思是页面占用viewpage的宽度的百分比，默认都是100%，然后看instantiateItem这个函数。instantiateItem是adapter必须实现的方法，默认实现：
+{% highlight java %}
+    /**
+     * Create the page for the given position.  The adapter is responsible
+     * for adding the view to the container given here, although it only
+     * must ensure this is done by the time it returns from
+     * {@link #finishUpdate(ViewGroup)}.
+     *
+     * @param container The containing View in which the page will be shown.
+     * @param position The page position to be instantiated.
+     * @return Returns an Object representing the new page.  This does not
+     * need to be a View, but can be some other container of the page.
+     */
+    public Object instantiateItem(ViewGroup container, int position) {
+        return instantiateItem((View) container, position);
+    }
+    /**
+     * Create the page for the given position.  The adapter is responsible
+     * for adding the view to the container given here, although it only
+     * must ensure this is done by the time it returns from
+     * {@link #finishUpdate(ViewGroup)}.
+     *
+     * @param container The containing View in which the page will be shown.
+     * @param position The page position to be instantiated.
+     * @return Returns an Object representing the new page.  This does not
+     * need to be a View, but can be some other container of the page.
+     *
+     * @deprecated Use {@link #instantiateItem(ViewGroup, int)}
+     */
+    public Object instantiateItem(View container, int position) {
+        throw new UnsupportedOperationException(
+                "Required method instantiateItem was not overridden");
+    }
+{% endhighlight %}
+简直没天理，直接报错......而且让我们使用instantiateItem(ViewGroup, int)，好在我们常用的FragmentPageAdapter里已经实现了：
+{% highlight java %}
+    @Override
+    public Object instantiateItem(ViewGroup container, int position) {
+        if (mCurTransaction == null) {
+            mCurTransaction = mFragmentManager.beginTransaction();
+        }
+
+        final long itemId = getItemId(position);
+
+        // Do we already have this fragment?
+        String name = makeFragmentName(container.getId(), itemId);
+        Fragment fragment = mFragmentManager.findFragmentByTag(name);
+        if (fragment != null) {
+            if (DEBUG) Log.v(TAG, "Attaching item #" + itemId + ": f=" + fragment);
+            mCurTransaction.attach(fragment);
+        } else {
+            fragment = getItem(position);
+            if (DEBUG) Log.v(TAG, "Adding item #" + itemId + ": f=" + fragment);
+            mCurTransaction.add(container.getId(), fragment,
+                    makeFragmentName(container.getId(), itemId));
+        }
+        if (fragment != mCurrentPrimaryItem) {
+            fragment.setMenuVisibility(false);
+            fragment.setUserVisibleHint(false);
+        }
+
+        return fragment;
+    }
+{% endhighlight %}
+这个实现只是适合Fragment，出现了fragment特有的manager和transaction对象，但是中心思想还是一致的，就是也创建一个页面的容器对象，根据android官方注释，生成并返回的这个对象，需要添加到ViewGroup中去，可以看到代码里确实有这句：mCurTransaction.add(container.getId(), fragment, makeFragmentName(container.getId(), itemId));这里也解释了我心中的疑问，这个函数并没有限制返回对象一定需要是view或者fragment，所以理论上我们可以任意创建对象。
+接着走我们的populate函数：
+{% highlight java %}
+        // Fill 3x the available width or up to the number of offscreen
+        // pages requested to either side, whichever is larger.
+        // If we have no current item we have no work to do.
+        if (curItem != null) {
+            float extraWidthLeft = 0.f;
+            int itemIndex = curIndex - 1;
+            ItemInfo ii = itemIndex >= 0 ? mItems.get(itemIndex) : null;
+            final int clientWidth = getClientWidth();
+            final float leftWidthNeeded = clientWidth <= 0 ? 0 :
+                    2.f - curItem.widthFactor + (float) getPaddingLeft() / (float) clientWidth;
+            for (int pos = mCurItem - 1; pos >= 0; pos--) {
+                if (extraWidthLeft >= leftWidthNeeded && pos < startPos) {
+                    if (ii == null) {
+                        break;
+                    }
+                    if (pos == ii.position && !ii.scrolling) {
+                        mItems.remove(itemIndex);
+                        mAdapter.destroyItem(this, pos, ii.object);
+                        if (DEBUG) {
+                            Log.i(TAG, "populate() - destroyItem() with pos: " + pos +
+                                    " view: " + ((View) ii.object));
+                        }
+                        itemIndex--;
+                        curIndex--;
+                        ii = itemIndex >= 0 ? mItems.get(itemIndex) : null;
+                    }
+                } else if (ii != null && pos == ii.position) {
+                    extraWidthLeft += ii.widthFactor;
+                    itemIndex--;
+                    ii = itemIndex >= 0 ? mItems.get(itemIndex) : null;
+                } else {
+                    ii = addNewItem(pos, itemIndex + 1);
+                    extraWidthLeft += ii.widthFactor;
+                    curIndex++;
+                    ii = itemIndex >= 0 ? mItems.get(itemIndex) : null;
+                }
+            }
+
+            float extraWidthRight = curItem.widthFactor;
+            itemIndex = curIndex + 1;
+            if (extraWidthRight < 2.f) {
+                ii = itemIndex < mItems.size() ? mItems.get(itemIndex) : null;
+                final float rightWidthNeeded = clientWidth <= 0 ? 0 :
+                        (float) getPaddingRight() / (float) clientWidth + 2.f;
+                for (int pos = mCurItem + 1; pos < N; pos++) {
+                    if (extraWidthRight >= rightWidthNeeded && pos > endPos) {
+                        if (ii == null) {
+                            break;
+                        }
+                        if (pos == ii.position && !ii.scrolling) {
+                            mItems.remove(itemIndex);
+                            mAdapter.destroyItem(this, pos, ii.object);
+                            if (DEBUG) {
+                                Log.i(TAG, "populate() - destroyItem() with pos: " + pos +
+                                        " view: " + ((View) ii.object));
+                            }
+                            ii = itemIndex < mItems.size() ? mItems.get(itemIndex) : null;
+                        }
+                    } else if (ii != null && pos == ii.position) {
+                        extraWidthRight += ii.widthFactor;
+                        itemIndex++;
+                        ii = itemIndex < mItems.size() ? mItems.get(itemIndex) : null;
+                    } else {
+                        ii = addNewItem(pos, itemIndex);
+                        itemIndex++;
+                        extraWidthRight += ii.widthFactor;
+                        ii = itemIndex < mItems.size() ? mItems.get(itemIndex) : null;
+                    }
+                }
+            }
+
+            calculatePageOffsets(curItem, curIndex, oldCurInfo);
+        }
+{% endhighlight %}
+从注释看，说是填满至少3个页面的内容，如果需要的缓存页面更多则填满更多，代码里面getClientWidth();获取的是一个页面的宽度，这个宽度与page页面真实的宽无关，而是viewpage根据自己可显示内容区域大小来确定。
+第一个for循环，遍历当前页面的左边，break的条件是两个：extraWidthLeft(应该就是说已经创建的页面)要大于需求的宽度leftWidthNeeded；pos已经超过了需要缓存的索引，也就是pos < startPos；满足上面两个条件后发现左边还有页面对象可以实例化，但是我们不需要了，就会break。
+下面我们进入循环看看，首次进入肯定会执行最后面的分支：
+{% highlight java %}
+                    ii = addNewItem(pos, itemIndex + 1);
+                    extraWidthLeft += ii.widthFactor;
+                    curIndex++;
+                    ii = itemIndex >= 0 ? mItems.get(itemIndex) : null;
+{% endhighlight %}
+我们需要搞清楚itemIndex是什么，int itemIndex = curIndex - 1;而curIndex代表的意思是当前view应该插入的位置。在我们初始化的时候curIndex=0，因此itemIndex = -1，addNewItem传入的两个参数，第一个pos表示页面索引，第二个itemIndex表示页面在ViewPage的mItems容器中的索引，如果itemIndex的值合理则插入的索引就是itemIndex，否则直接添加到队尾。至于这个在mItems容器中的顺序有何说法我们后面再看。
+到最后一句的时候，由于itemIndex = -1，ii赋值null。然后进入第二次循环，可以看到第一个if里面的条件都成立，并且ii=null，直接跳出循环。这里我们不妨假设current！=0，并且我们的mItems里面已经缓存了很多页面的内容。不难看出我们会找到所有左边的缓存，当我们需要的缓存都找到或者创建出来后，会进入：
+{% highlight java %}
+                 if (pos == ii.position && !ii.scrolling) {
+                        mItems.remove(itemIndex);
+                        mAdapter.destroyItem(this, pos, ii.object);
+                        if (DEBUG) {
+                            Log.i(TAG, "populate() - destroyItem() with pos: " + pos +
+                                    " view: " + ((View) ii.object));
+                        }
+                        itemIndex--;
+                        curIndex--;
+                        ii = itemIndex >= 0 ? mItems.get(itemIndex) : null;
+                    }
+{% endhighlight %}
+这个分支会把所有左边多余的分支删除销毁。
+对称的，我们还需要处理当前页面的右边内容。与左边不同的是计算rightWidthNeeded的时候，我们可以看到leftWidthNeeded基本是等于1.0f的，而rightWidthNeeded确实等于2.0f，正如我们最一开始所说的，至少需要缓存3x的页面内容，但是这个分配默认是不对称的左1x右2x。
+在我们把currentItem以及左右缓存都准备好了后进入下一句：
+{% highlight java %}
+calculatePageOffsets(curItem, curIndex, oldCurInfo);
+{% endhighlight %}
+对于我们初始化来说可以直接变成：
+{% highlight java %}
+calculatePageOffsets(curItem, 0, null);
+{% endhighlight %}
+calculatePageOffsets也是一个比较复制的函数，本来我们不需要看前面第一个if里面的逻辑，因为iewomendeoldCurInfo是null。但是当我们不是初始化的时候，calculatePageOffsets又干了什么呢？
+首先判断oldCurInfo是在curItem哪一侧，这里左右其实对称的操作，我们假设是在左侧。
+然后对oldCurInfo和curItem之间(包含curItem)的item进行遍历，统计每一个item的offset(这个offset是相对oldCurInfo来计算的)。这个过程就涉及到我们上面说的如果addNewItem的pos和itemIndex不一致的情况。calculatePageOffsets函数是这么处理的：
+{% highlight java %}
+                    while (pos > ii.position && itemIndex < mItems.size() - 1) {
+                        itemIndex++;
+                        ii = mItems.get(itemIndex);
+                    }
+                    while (pos < ii.position) {
+                        // We don't have an item populated for this,
+                        // ask the adapter for an offset.
+                        offset += mAdapter.getPageWidth(pos) + marginOffset;
+                        pos++;
+                    }
+{% endhighlight %}
+第一个while按照mItems里面的顺序找到pos右边(包含pos)的一个item，第二个while判断如果找到的item的position值不是pos，这说明这两个position之间的item我们没有创建（不一定是没创建，但是如果我们在addNewItem的时候pos和itemIndex不是同升同降的话就有可能会出现这种情况，这也是为何每次dataSetChanged都会对mItems排序的原因吧），我需要问adapter如何计算offset。
+
+正当我沾沾自喜看懂了第一段代码是计算oldCurInfo和curItem的position值之间的对应的item的基于oldCurInfo的offset后，下面一段代码就像给我一大嘴巴，下面的代码正如注释所说，计算基于curItem的每个page的offset
+{% highlight java %}
+        // Base all offsets off of curItem.
+        final int itemCount = mItems.size();
+        float offset = curItem.offset;
+        int pos = curItem.position - 1;
+        mFirstOffset = curItem.position == 0 ? curItem.offset : -Float.MAX_VALUE;
+        mLastOffset = curItem.position == N - 1 ?
+                curItem.offset + curItem.widthFactor - 1 : Float.MAX_VALUE;
+        // Previous pages
+        for (int i = curIndex - 1; i >= 0; i--, pos--) {
+            final ItemInfo ii = mItems.get(i);
+            while (pos > ii.position) {
+                offset -= mAdapter.getPageWidth(pos--) + marginOffset;
+            }
+            offset -= ii.widthFactor + marginOffset;
+            ii.offset = offset;
+            if (ii.position == 0) mFirstOffset = offset;
+        }
+        offset = curItem.offset + curItem.widthFactor + marginOffset;
+        pos = curItem.position + 1;
+        // Next pages
+        for (int i = curIndex + 1; i < itemCount; i++, pos++) {
+            final ItemInfo ii = mItems.get(i);
+            while (pos < ii.position) {
+                offset += mAdapter.getPageWidth(pos++) + marginOffset;
+            }
+            if (ii.position == N - 1) {
+                mLastOffset = offset + ii.widthFactor - 1;
+            }
+            ii.offset = offset;
+            offset += ii.widthFactor + marginOffset;
+        }
+
+        mNeedCalculatePageOffsets = false;
+{% endhighlight %}
+也就是说到这儿，curItem的offset是基于oldCurInfo算出来的，然后其他的item的offset都是基于curItem算出来的。这是在弄啥咧？？我们继续回到populate的代码中去：
+{% highlight java %}
+        mAdapter.setPrimaryItem(this, mCurItem, curItem != null ? curItem.object : null);
+        mAdapter.finishUpdate(this);
+{% endhighlight %}
+默认实现为空，意思就是通知Page你已经成为了主page，即将要显示，做点什么吧。FragmentPageAdapter实现如下：
+{% highlight java %}
+    @Override
+    public void setPrimaryItem(ViewGroup container, int position, Object object) {
+        Fragment fragment = (Fragment)object;
+        if (fragment != mCurrentPrimaryItem) {
+            if (mCurrentPrimaryItem != null) {
+                mCurrentPrimaryItem.setMenuVisibility(false);
+                mCurrentPrimaryItem.setUserVisibleHint(false);
+            }
+            if (fragment != null) {
+                fragment.setMenuVisibility(true);
+                fragment.setUserVisibleHint(true);
+            }
+            mCurrentPrimaryItem = fragment;
+        }
+    }
+{% endhighlight %}
+相信大家都不陌生，设置了fragment的menu和visible状态。最后populate还有一段代码：
+{% highlight java %}
+        // Check width measurement of current pages and drawing sort order.
+        // Update LayoutParams as needed.
+        final int childCount = getChildCount();
+        for (int i = 0; i < childCount; i++) {
+            final View child = getChildAt(i);
+            final LayoutParams lp = (LayoutParams) child.getLayoutParams();
+            lp.childIndex = i;
+            if (!lp.isDecor && lp.widthFactor == 0.f) {
+                // 0 means requery the adapter for this, it doesn't have a valid width.
+                final ItemInfo ii = infoForChild(child);
+                if (ii != null) {
+                    lp.widthFactor = ii.widthFactor;
+                    lp.position = ii.position;
+                }
+            }
+        }
+        sortChildDrawingOrder();
+
+        if (hasFocus()) {
+            View currentFocused = findFocus();
+            ItemInfo ii = currentFocused != null ? infoForAnyChild(currentFocused) : null;
+            if (ii == null || ii.position != mCurItem) {
+                for (int i=0; i<getChildCount(); i++) {
+                    View child = getChildAt(i);
+                    ii = infoForChild(child);
+                    if (ii != null && ii.position == mCurItem) {
+                        if (child.requestFocus(focusDirection)) {
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+{% endhighlight %}
+第一段正如注释所说，更新当前viewpage上面所有子view的LayoutParam信息，然后对他们进行排序，这里的顺序是绘制顺序，规则就是先按照position顺序绘制page，最后绘制Decor对象，具体参见ViewPositionComparator的定义。后面一段是焦点的处理，究竟应该是谁来获得焦点，infoForAnyChild(currentFocused)很有意思，这个函数获取的应该是currentFocused这个view所在的page的iteminfo对象，这样来判断焦点是否处于同一个page没变化，否则就需要遍历所有子view来寻找下一个焦点应该在哪儿。具体寻找焦点的代码比较复杂，层级太深，这里就不跟进去了，以后有时间专门研究一次child.requestFocus(focusDirection)是怎么找到正确的应该获取焦点的view的。
+
+OK，我们终于从populate中出来了，继续回到onMeasure，onMeasure也还剩最后一段：
+{% highlight java %}
+        // Page views next.
+        size = getChildCount();
+        for (int i = 0; i < size; ++i) {
+            final View child = getChildAt(i);
+            if (child.getVisibility() != GONE) {
+                if (DEBUG) Log.v(TAG, "Measuring #" + i + " " + child
+                        + ": " + mChildWidthMeasureSpec);
+
+                final LayoutParams lp = (LayoutParams) child.getLayoutParams();
+                if (lp == null || !lp.isDecor) {
+                    final int widthSpec = MeasureSpec.makeMeasureSpec(
+                            (int) (childWidthSize * lp.widthFactor), MeasureSpec.EXACTLY);
+                    child.measure(widthSpec, mChildHeightMeasureSpec);
+                }
+            }
+        }
+{% endhighlight %}
+我百思不得其解if (lp == null || !lp.isDecor)为何不会出错，如果lp为null，里面的 lp.widthFactor不会报空指针异常的错误么，不过抛开这个疑问，代码的主要功能就是测量子view，与一般的viewgroup一致。

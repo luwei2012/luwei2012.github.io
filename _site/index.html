@@ -129,6 +129,646 @@
   <header>
     
     <div class="entry-meta">
+      <span class="entry-date date published updated"><time datetime="2016-11-07T18:42:17+08:00"><a href="/ios/ios-udp-client/">November 07, 2016</a></time></span><span class="author vcard"><span class="fn"><a href="/about/" title="About 陆 伟">陆 伟</a></span></span>
+      
+      <span class="entry-reading-time">
+        <i class="fa fa-clock-o"></i>
+        
+        Reading time ~1 minute
+      </span><!-- /.entry-reading-time -->
+      
+    </div><!-- /.entry-meta -->
+    
+      <h1 class="entry-title"><a href="/ios/ios-udp-client/" rel="bookmark" title="ios-UDP-Client" itemprop="url">ios-UDP-Client</a></h1>
+    
+  </header>
+  <div class="entry-content">
+    
+
+  </div><!-- /.entry-content -->
+</article><!-- /.hentry -->
+
+<article class="hentry">
+  <header>
+    
+    <div class="entry-meta">
+      <span class="entry-date date published updated"><time datetime="2016-11-07T18:41:39+08:00"><a href="/android/viewpage/">November 07, 2016</a></time></span><span class="author vcard"><span class="fn"><a href="/about/" title="About 陆 伟">陆 伟</a></span></span>
+      
+      <span class="entry-reading-time">
+        <i class="fa fa-clock-o"></i>
+        
+        Reading time ~24 minutes
+      </span><!-- /.entry-reading-time -->
+      
+    </div><!-- /.entry-meta -->
+    
+      <h1 class="entry-title"><a href="/android/viewpage/" rel="bookmark" title="ViewPage源代码学习(上)" itemprop="url">ViewPage源代码学习(上)</a></h1>
+    
+  </header>
+  <div class="entry-content">
+    <p>搞android开发的不可能没用过ViewPage，这个功能强大的控件是android独有的（IOS上没有这样的玩意儿，除了一些第三方的库）。一直都想研究ViewPage的源码，自己又很懒，在百度上搜了搜，
+硬是没有一家写过这个，无奈，只能自己上来啃了。ViewPage继承自ViewGroup，所以我们在看ViewPage的代码的时候还是按照ViewGroup的功能逻辑来看。</p>
+
+<p>首先自然是构造函数，没啥东西：</p>
+
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span class="kt">void</span> <span class="nf">initViewPager</span><span class="o">()</span> <span class="o">{</span>
+        <span class="n">setWillNotDraw</span><span class="o">(</span><span class="kc">false</span><span class="o">);</span>
+        <span class="n">setDescendantFocusability</span><span class="o">(</span><span class="n">FOCUS_AFTER_DESCENDANTS</span><span class="o">);</span>
+        <span class="n">setFocusable</span><span class="o">(</span><span class="kc">true</span><span class="o">);</span>
+        <span class="kd">final</span> <span class="n">Context</span> <span class="n">context</span> <span class="o">=</span> <span class="n">getContext</span><span class="o">();</span>
+        <span class="n">mScroller</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">Scroller</span><span class="o">(</span><span class="n">context</span><span class="o">,</span> <span class="n">sInterpolator</span><span class="o">);</span>
+        <span class="kd">final</span> <span class="n">ViewConfiguration</span> <span class="n">configuration</span> <span class="o">=</span> <span class="n">ViewConfiguration</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">context</span><span class="o">);</span>
+        <span class="kd">final</span> <span class="kt">float</span> <span class="n">density</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="na">getResources</span><span class="o">().</span><span class="na">getDisplayMetrics</span><span class="o">().</span><span class="na">density</span><span class="o">;</span>
+
+        <span class="n">mTouchSlop</span> <span class="o">=</span> <span class="n">ViewConfigurationCompat</span><span class="o">.</span><span class="na">getScaledPagingTouchSlop</span><span class="o">(</span><span class="n">configuration</span><span class="o">);</span>
+        <span class="n">mMinimumVelocity</span> <span class="o">=</span> <span class="o">(</span><span class="kt">int</span><span class="o">)</span> <span class="o">(</span><span class="n">MIN_FLING_VELOCITY</span> <span class="o">*</span> <span class="n">density</span><span class="o">);</span>
+        <span class="n">mMaximumVelocity</span> <span class="o">=</span> <span class="n">configuration</span><span class="o">.</span><span class="na">getScaledMaximumFlingVelocity</span><span class="o">();</span>
+        <span class="n">mLeftEdge</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">EdgeEffectCompat</span><span class="o">(</span><span class="n">context</span><span class="o">);</span>
+        <span class="n">mRightEdge</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">EdgeEffectCompat</span><span class="o">(</span><span class="n">context</span><span class="o">);</span>
+
+        <span class="n">mFlingDistance</span> <span class="o">=</span> <span class="o">(</span><span class="kt">int</span><span class="o">)</span> <span class="o">(</span><span class="n">MIN_DISTANCE_FOR_FLING</span> <span class="o">*</span> <span class="n">density</span><span class="o">);</span>
+        <span class="n">mCloseEnough</span> <span class="o">=</span> <span class="o">(</span><span class="kt">int</span><span class="o">)</span> <span class="o">(</span><span class="n">CLOSE_ENOUGH</span> <span class="o">*</span> <span class="n">density</span><span class="o">);</span>
+        <span class="n">mDefaultGutterSize</span> <span class="o">=</span> <span class="o">(</span><span class="kt">int</span><span class="o">)</span> <span class="o">(</span><span class="n">DEFAULT_GUTTER_SIZE</span> <span class="o">*</span> <span class="n">density</span><span class="o">);</span>
+
+        <span class="n">ViewCompat</span><span class="o">.</span><span class="na">setAccessibilityDelegate</span><span class="o">(</span><span class="k">this</span><span class="o">,</span> <span class="k">new</span> <span class="nf">MyAccessibilityDelegate</span><span class="o">());</span>
+
+        <span class="k">if</span> <span class="o">(</span><span class="n">ViewCompat</span><span class="o">.</span><span class="na">getImportantForAccessibility</span><span class="o">(</span><span class="k">this</span><span class="o">)</span>
+                <span class="o">==</span> <span class="n">ViewCompat</span><span class="o">.</span><span class="na">IMPORTANT_FOR_ACCESSIBILITY_AUTO</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">ViewCompat</span><span class="o">.</span><span class="na">setImportantForAccessibility</span><span class="o">(</span><span class="k">this</span><span class="o">,</span>
+                    <span class="n">ViewCompat</span><span class="o">.</span><span class="na">IMPORTANT_FOR_ACCESSIBILITY_YES</span><span class="o">);</span>
+        <span class="o">}</span>
+    <span class="o">}</span></code></pre></div>
+
+<p>第一句话意思根据android官方注释：如果这个view自己没有做任何的draw就设置这个为true，可以优化性能。默认为false，也就是需要调用onDraw方法。如果你覆写的onDraw，则必须清除(也就是false)这个标志。</p>
+
+<p>第二句话设置焦点获取规则，这个就不详细说了，默认规则就是儿子都不要老子才要。</p>
+
+<p>接下来创建了一个Scroller，用来处理滚动事件，这个需要先储备一下Scroller的用法和作用。</p>
+
+<p>再接着感觉比较重要的就是ViewCompat.setAccessibilityDelegate(this, new MyAccessibilityDelegate());，这个具体作用现在还不清除，后面再看。
+其他的就是一些变量的初始化，我们进入下一步。在进入下一步之前我们需要知道ViewPage下一步是做什么？</p>
+
+<p>一般来说一个activity或者fragment使用ViewPage，都是在XML文件或者new出来之后添加到父View中，接着就是设置Adapter和监听器，甚至可以设置初始页面的索引。最后在View将要绘制的时候才进入View的绘制消息传递(包含measure和layout传递等)。
+所以ViewPage第二个触发的应该是跟Adapter有关的函数。</p>
+
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span class="cm">/**</span>
+<span class="cm">     * Set a PagerAdapter that will supply views for this pager as needed.</span>
+<span class="cm">     *</span>
+<span class="cm">     * @param adapter Adapter to use</span>
+<span class="cm">     */</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">setAdapter</span><span class="o">(</span><span class="n">PagerAdapter</span> <span class="n">adapter</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">mAdapter</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">mAdapter</span><span class="o">.</span><span class="na">unregisterDataSetObserver</span><span class="o">(</span><span class="n">mObserver</span><span class="o">);</span>
+            <span class="n">mAdapter</span><span class="o">.</span><span class="na">startUpdate</span><span class="o">(</span><span class="k">this</span><span class="o">);</span>
+            <span class="k">for</span> <span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">mItems</span><span class="o">.</span><span class="na">size</span><span class="o">();</span> <span class="n">i</span><span class="o">++)</span> <span class="o">{</span>
+                <span class="kd">final</span> <span class="n">ItemInfo</span> <span class="n">ii</span> <span class="o">=</span> <span class="n">mItems</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">i</span><span class="o">);</span>
+                <span class="n">mAdapter</span><span class="o">.</span><span class="na">destroyItem</span><span class="o">(</span><span class="k">this</span><span class="o">,</span> <span class="n">ii</span><span class="o">.</span><span class="na">position</span><span class="o">,</span> <span class="n">ii</span><span class="o">.</span><span class="na">object</span><span class="o">);</span>
+            <span class="o">}</span>
+            <span class="n">mAdapter</span><span class="o">.</span><span class="na">finishUpdate</span><span class="o">(</span><span class="k">this</span><span class="o">);</span>
+            <span class="n">mItems</span><span class="o">.</span><span class="na">clear</span><span class="o">();</span>
+            <span class="n">removeNonDecorViews</span><span class="o">();</span>
+            <span class="n">mCurItem</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span>
+            <span class="n">scrollTo</span><span class="o">(</span><span class="mi">0</span><span class="o">,</span> <span class="mi">0</span><span class="o">);</span>
+        <span class="o">}</span>
+
+        <span class="kd">final</span> <span class="n">PagerAdapter</span> <span class="n">oldAdapter</span> <span class="o">=</span> <span class="n">mAdapter</span><span class="o">;</span>
+        <span class="n">mAdapter</span> <span class="o">=</span> <span class="n">adapter</span><span class="o">;</span>
+        <span class="n">mExpectedAdapterCount</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span>
+
+        <span class="k">if</span> <span class="o">(</span><span class="n">mAdapter</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+            <span class="k">if</span> <span class="o">(</span><span class="n">mObserver</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+                <span class="n">mObserver</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">PagerObserver</span><span class="o">();</span>
+            <span class="o">}</span>
+            <span class="n">mAdapter</span><span class="o">.</span><span class="na">registerDataSetObserver</span><span class="o">(</span><span class="n">mObserver</span><span class="o">);</span>
+            <span class="n">mPopulatePending</span> <span class="o">=</span> <span class="kc">false</span><span class="o">;</span>
+            <span class="kd">final</span> <span class="kt">boolean</span> <span class="n">wasFirstLayout</span> <span class="o">=</span> <span class="n">mFirstLayout</span><span class="o">;</span>
+            <span class="n">mFirstLayout</span> <span class="o">=</span> <span class="kc">true</span><span class="o">;</span>
+            <span class="n">mExpectedAdapterCount</span> <span class="o">=</span> <span class="n">mAdapter</span><span class="o">.</span><span class="na">getCount</span><span class="o">();</span>
+            <span class="k">if</span> <span class="o">(</span><span class="n">mRestoredCurItem</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="o">)</span> <span class="o">{</span>
+                <span class="n">mAdapter</span><span class="o">.</span><span class="na">restoreState</span><span class="o">(</span><span class="n">mRestoredAdapterState</span><span class="o">,</span> <span class="n">mRestoredClassLoader</span><span class="o">);</span>
+                <span class="n">setCurrentItemInternal</span><span class="o">(</span><span class="n">mRestoredCurItem</span><span class="o">,</span> <span class="kc">false</span><span class="o">,</span> <span class="kc">true</span><span class="o">);</span>
+                <span class="n">mRestoredCurItem</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="o">;</span>
+                <span class="n">mRestoredAdapterState</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
+                <span class="n">mRestoredClassLoader</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
+            <span class="o">}</span> <span class="k">else</span> <span class="nf">if</span> <span class="o">(!</span><span class="n">wasFirstLayout</span><span class="o">)</span> <span class="o">{</span>
+                <span class="n">populate</span><span class="o">();</span>
+            <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+                <span class="n">requestLayout</span><span class="o">();</span>
+            <span class="o">}</span>
+        <span class="o">}</span>
+
+        <span class="k">if</span> <span class="o">(</span><span class="n">mAdapterChangeListener</span> <span class="o">!=</span> <span class="kc">null</span> <span class="o">&amp;&amp;</span> <span class="n">oldAdapter</span> <span class="o">!=</span> <span class="n">adapter</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">mAdapterChangeListener</span><span class="o">.</span><span class="na">onAdapterChanged</span><span class="o">(</span><span class="n">oldAdapter</span><span class="o">,</span> <span class="n">adapter</span><span class="o">);</span>
+        <span class="o">}</span>
+    <span class="o">}</span></code></pre></div>
+
+<p>PageAdapter是一个抽象类，常用的一般是FragmentPageAdapter。PageAdapter里面有个DataSetObservable对象，而ViewPage中有个DataSetObserver的实现：PageObserver对象，然后就把这个对象注册到PageAdapter的DataSetObservable对象中去，PageAdapter在调用notifyDataSetChanged的时候就会通知所以观察者调用onChange方法，在ViewPage中实现就是：</p>
+
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span class="kd">private</span> <span class="kd">class</span> <span class="nc">PagerObserver</span> <span class="kd">extends</span> <span class="n">DataSetObserver</span> <span class="o">{</span>
+        <span class="nd">@Override</span>
+        <span class="kd">public</span> <span class="kt">void</span> <span class="nf">onChanged</span><span class="o">()</span> <span class="o">{</span>
+            <span class="n">dataSetChanged</span><span class="o">();</span>
+        <span class="o">}</span>
+        <span class="nd">@Override</span>
+        <span class="kd">public</span> <span class="kt">void</span> <span class="nf">onInvalidated</span><span class="o">()</span> <span class="o">{</span>
+            <span class="n">dataSetChanged</span><span class="o">();</span>
+        <span class="o">}</span>
+    <span class="o">}</span></code></pre></div>
+
+<p>前面if里面的一段代码，都是重置状态，startUpdate事实上啥都没做，android官方注释：当已经显示的页面将要有改变产生的时候调用。然而PageAdapter中并没有任何实现，FragmentPageAdapter也是如此。接着一个循环，首次进入必然不会执行。然后是finishUpdate，与startUpdate成对出现，这个在抽象类中没有任何卵用，但是在FragmentPageAdapter覆写了，总结一下就是这个方法里面应该把页面变换的动画立马执行结束。然后是移除所有非Decor的View，也可以忽略，接着默认页面索引为0，滚动到0,0也就是原点位置。
+接着才是初始化操作，注册PagerObserver，初始化一些状态变量。需要注意的是mRestoredCurItem里面的逻辑不会走，而是会进入requestLayout();再后面的mAdapterChangeListener这个没怎么用过，直接忽略，根据字面意思和调用时机可以判断是对adapter变化的监听(这里的变化是指adapter对象的变化)。
+我们跟着调用逻辑走下去，进入requestLayout();额……具体代码就不看了，反正意思就是要发起一次layout传递。由此也就解释了为何首次设置adapter后不需要调用notifiydatachanged方法。</p>
+
+<p>下面应该就是进入measure方法了。额……没找到，没关系，measure里面会调用onMeasure，这个才是android真正让用户自定义测量的地方。</p>
+
+<p>第一句话自然是setMeasuredDimension(getDefaultSize(0, widthMeasureSpec),getDefaultSize(0, heightMeasureSpec));，获取父亲给自己在measure中计算出的大小，然后就是一系列计算儿子的大小：</p>
+
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span class="cm">/*</span>
+<span class="cm">         * Make sure all children have been properly measured. Decor views first.</span>
+<span class="cm">         * Right now we cheat and make this less complicated by assuming decor</span>
+<span class="cm">         * views won&#39;t intersect. We will pin to edges based on gravity.</span>
+<span class="cm">         */</span>
+        <span class="kt">int</span> <span class="n">size</span> <span class="o">=</span> <span class="n">getChildCount</span><span class="o">();</span>
+        <span class="k">for</span> <span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">size</span><span class="o">;</span> <span class="o">++</span><span class="n">i</span><span class="o">)</span> <span class="o">{</span>
+            <span class="kd">final</span> <span class="n">View</span> <span class="n">child</span> <span class="o">=</span> <span class="n">getChildAt</span><span class="o">(</span><span class="n">i</span><span class="o">);</span>
+            <span class="k">if</span> <span class="o">(</span><span class="n">child</span><span class="o">.</span><span class="na">getVisibility</span><span class="o">()</span> <span class="o">!=</span> <span class="n">GONE</span><span class="o">)</span> <span class="o">{</span>
+                <span class="kd">final</span> <span class="n">LayoutParams</span> <span class="n">lp</span> <span class="o">=</span> <span class="o">(</span><span class="n">LayoutParams</span><span class="o">)</span> <span class="n">child</span><span class="o">.</span><span class="na">getLayoutParams</span><span class="o">();</span>
+                <span class="k">if</span> <span class="o">(</span><span class="n">lp</span> <span class="o">!=</span> <span class="kc">null</span> <span class="o">&amp;&amp;</span> <span class="n">lp</span><span class="o">.</span><span class="na">isDecor</span><span class="o">)</span> <span class="o">{</span>
+                    <span class="kd">final</span> <span class="kt">int</span> <span class="n">hgrav</span> <span class="o">=</span> <span class="n">lp</span><span class="o">.</span><span class="na">gravity</span> <span class="o">&amp;</span> <span class="n">Gravity</span><span class="o">.</span><span class="na">HORIZONTAL_GRAVITY_MASK</span><span class="o">;</span>
+                    <span class="kd">final</span> <span class="kt">int</span> <span class="n">vgrav</span> <span class="o">=</span> <span class="n">lp</span><span class="o">.</span><span class="na">gravity</span> <span class="o">&amp;</span> <span class="n">Gravity</span><span class="o">.</span><span class="na">VERTICAL_GRAVITY_MASK</span><span class="o">;</span>
+                    <span class="kt">int</span> <span class="n">widthMode</span> <span class="o">=</span> <span class="n">MeasureSpec</span><span class="o">.</span><span class="na">AT_MOST</span><span class="o">;</span>
+                    <span class="kt">int</span> <span class="n">heightMode</span> <span class="o">=</span> <span class="n">MeasureSpec</span><span class="o">.</span><span class="na">AT_MOST</span><span class="o">;</span>
+                    <span class="kt">boolean</span> <span class="n">consumeVertical</span> <span class="o">=</span> <span class="n">vgrav</span> <span class="o">==</span> <span class="n">Gravity</span><span class="o">.</span><span class="na">TOP</span> <span class="o">||</span> <span class="n">vgrav</span> <span class="o">==</span> <span class="n">Gravity</span><span class="o">.</span><span class="na">BOTTOM</span><span class="o">;</span>
+                    <span class="kt">boolean</span> <span class="n">consumeHorizontal</span> <span class="o">=</span> <span class="n">hgrav</span> <span class="o">==</span> <span class="n">Gravity</span><span class="o">.</span><span class="na">LEFT</span> <span class="o">||</span> <span class="n">hgrav</span> <span class="o">==</span> <span class="n">Gravity</span><span class="o">.</span><span class="na">RIGHT</span><span class="o">;</span>
+
+                    <span class="k">if</span> <span class="o">(</span><span class="n">consumeVertical</span><span class="o">)</span> <span class="o">{</span>
+                        <span class="n">widthMode</span> <span class="o">=</span> <span class="n">MeasureSpec</span><span class="o">.</span><span class="na">EXACTLY</span><span class="o">;</span>
+                    <span class="o">}</span> <span class="k">else</span> <span class="nf">if</span> <span class="o">(</span><span class="n">consumeHorizontal</span><span class="o">)</span> <span class="o">{</span>
+                        <span class="n">heightMode</span> <span class="o">=</span> <span class="n">MeasureSpec</span><span class="o">.</span><span class="na">EXACTLY</span><span class="o">;</span>
+                    <span class="o">}</span>
+
+                    <span class="kt">int</span> <span class="n">widthSize</span> <span class="o">=</span> <span class="n">childWidthSize</span><span class="o">;</span>
+                    <span class="kt">int</span> <span class="n">heightSize</span> <span class="o">=</span> <span class="n">childHeightSize</span><span class="o">;</span>
+                    <span class="k">if</span> <span class="o">(</span><span class="n">lp</span><span class="o">.</span><span class="na">width</span> <span class="o">!=</span> <span class="n">LayoutParams</span><span class="o">.</span><span class="na">WRAP_CONTENT</span><span class="o">)</span> <span class="o">{</span>
+                        <span class="n">widthMode</span> <span class="o">=</span> <span class="n">MeasureSpec</span><span class="o">.</span><span class="na">EXACTLY</span><span class="o">;</span>
+                        <span class="k">if</span> <span class="o">(</span><span class="n">lp</span><span class="o">.</span><span class="na">width</span> <span class="o">!=</span> <span class="n">LayoutParams</span><span class="o">.</span><span class="na">FILL_PARENT</span><span class="o">)</span> <span class="o">{</span>
+                            <span class="n">widthSize</span> <span class="o">=</span> <span class="n">lp</span><span class="o">.</span><span class="na">width</span><span class="o">;</span>
+                        <span class="o">}</span>
+                    <span class="o">}</span>
+                    <span class="k">if</span> <span class="o">(</span><span class="n">lp</span><span class="o">.</span><span class="na">height</span> <span class="o">!=</span> <span class="n">LayoutParams</span><span class="o">.</span><span class="na">WRAP_CONTENT</span><span class="o">)</span> <span class="o">{</span>
+                        <span class="n">heightMode</span> <span class="o">=</span> <span class="n">MeasureSpec</span><span class="o">.</span><span class="na">EXACTLY</span><span class="o">;</span>
+                        <span class="k">if</span> <span class="o">(</span><span class="n">lp</span><span class="o">.</span><span class="na">height</span> <span class="o">!=</span> <span class="n">LayoutParams</span><span class="o">.</span><span class="na">FILL_PARENT</span><span class="o">)</span> <span class="o">{</span>
+                            <span class="n">heightSize</span> <span class="o">=</span> <span class="n">lp</span><span class="o">.</span><span class="na">height</span><span class="o">;</span>
+                        <span class="o">}</span>
+                    <span class="o">}</span>
+                    <span class="kd">final</span> <span class="kt">int</span> <span class="n">widthSpec</span> <span class="o">=</span> <span class="n">MeasureSpec</span><span class="o">.</span><span class="na">makeMeasureSpec</span><span class="o">(</span><span class="n">widthSize</span><span class="o">,</span> <span class="n">widthMode</span><span class="o">);</span>
+                    <span class="kd">final</span> <span class="kt">int</span> <span class="n">heightSpec</span> <span class="o">=</span> <span class="n">MeasureSpec</span><span class="o">.</span><span class="na">makeMeasureSpec</span><span class="o">(</span><span class="n">heightSize</span><span class="o">,</span> <span class="n">heightMode</span><span class="o">);</span>
+                    <span class="n">child</span><span class="o">.</span><span class="na">measure</span><span class="o">(</span><span class="n">widthSpec</span><span class="o">,</span> <span class="n">heightSpec</span><span class="o">);</span>
+
+                    <span class="k">if</span> <span class="o">(</span><span class="n">consumeVertical</span><span class="o">)</span> <span class="o">{</span>
+                        <span class="n">childHeightSize</span> <span class="o">-=</span> <span class="n">child</span><span class="o">.</span><span class="na">getMeasuredHeight</span><span class="o">();</span>
+                    <span class="o">}</span> <span class="k">else</span> <span class="nf">if</span> <span class="o">(</span><span class="n">consumeHorizontal</span><span class="o">)</span> <span class="o">{</span>
+                        <span class="n">childWidthSize</span> <span class="o">-=</span> <span class="n">child</span><span class="o">.</span><span class="na">getMeasuredWidth</span><span class="o">();</span>
+                    <span class="o">}</span>
+                <span class="o">}</span>
+            <span class="o">}</span>
+        <span class="o">}</span></code></pre></div>
+
+<p>看这段代码的逻辑隐约猜测这不是真正的在计算viewpage内容的大小，而是在计算viewpage出去其他控件后可供作为page页面容器的空间大小。因为getChildCount这个时候返回的只是已经添加进viewpage的子view个数，而我们这个时候page页面还没有加进去。先暂时摆在一边，继续看下去：</p>
+
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span class="n">mChildWidthMeasureSpec</span> <span class="o">=</span> <span class="n">MeasureSpec</span><span class="o">.</span><span class="na">makeMeasureSpec</span><span class="o">(</span><span class="n">childWidthSize</span><span class="o">,</span> <span class="n">MeasureSpec</span><span class="o">.</span><span class="na">EXACTLY</span><span class="o">);</span>
+        <span class="n">mChildHeightMeasureSpec</span> <span class="o">=</span> <span class="n">MeasureSpec</span><span class="o">.</span><span class="na">makeMeasureSpec</span><span class="o">(</span><span class="n">childHeightSize</span><span class="o">,</span> <span class="n">MeasureSpec</span><span class="o">.</span><span class="na">EXACTLY</span><span class="o">);</span>
+
+        <span class="c1">// Make sure we have created all fragments that we need to have shown.</span>
+        <span class="n">mInLayout</span> <span class="o">=</span> <span class="kc">true</span><span class="o">;</span>
+        <span class="n">populate</span><span class="o">();</span>
+        <span class="n">mInLayout</span> <span class="o">=</span> <span class="kc">false</span><span class="o">;</span></code></pre></div>
+
+<p>正如我所说，减去了已经存在的子view的控件后，剩下的才是page的空间，populate应该会涉及到adapter的一些接口了。我跟进去发现populate调用了populate(mCurItem);意思应该是只对当前显示的页面做populate处理，这段代码比较长，我们需要分段来看：</p>
+
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span class="n">ItemInfo</span> <span class="n">oldCurInfo</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
+        <span class="kt">int</span> <span class="n">focusDirection</span> <span class="o">=</span> <span class="n">View</span><span class="o">.</span><span class="na">FOCUS_FORWARD</span><span class="o">;</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">mCurItem</span> <span class="o">!=</span> <span class="n">newCurrentItem</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">focusDirection</span> <span class="o">=</span> <span class="n">mCurItem</span> <span class="o">&lt;</span> <span class="n">newCurrentItem</span> <span class="o">?</span> <span class="n">View</span><span class="o">.</span><span class="na">FOCUS_RIGHT</span> <span class="o">:</span> <span class="n">View</span><span class="o">.</span><span class="na">FOCUS_LEFT</span><span class="o">;</span>
+            <span class="n">oldCurInfo</span> <span class="o">=</span> <span class="n">infoForPosition</span><span class="o">(</span><span class="n">mCurItem</span><span class="o">);</span>
+            <span class="n">mCurItem</span> <span class="o">=</span> <span class="n">newCurrentItem</span><span class="o">;</span>
+        <span class="o">}</span>
+         <span class="k">if</span> <span class="o">(</span><span class="n">mAdapter</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">sortChildDrawingOrder</span><span class="o">();</span>
+            <span class="k">return</span><span class="o">;</span>
+        <span class="o">}</span></code></pre></div>
+
+<p>由于我们是初始化，所以第一个if里面不会进去。然后判断adapter是否会空，如果是空就把现有的子view排序，规则参见ViewPositionComparator。一般情况下这个排序也是白扯，我们不会在viewpage里面添加什么装饰view(就是继承了ViewPage内部定义的接口的类，反正我是没见过有这样的view)：</p>
+
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span class="cm">/**</span>
+<span class="cm">     * Used internally to tag special types of child views that should be added as</span>
+<span class="cm">     * pager decorations by default.</span>
+<span class="cm">     */</span>
+    <span class="kd">interface</span> <span class="nc">Decor</span> <span class="o">{}</span></code></pre></div>
+
+<p>再接着就比较难理解了，这里还是把android的注释一起贴出来：</p>
+
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span class="c1">// Bail now if we are waiting to populate.  This is to hold off</span>
+        <span class="c1">// on creating views from the time the user releases their finger to</span>
+        <span class="c1">// fling to a new position until we have finished the scroll to</span>
+        <span class="c1">// that position, avoiding glitches from happening at that point.</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">mPopulatePending</span><span class="o">)</span> <span class="o">{</span>
+            <span class="k">if</span> <span class="o">(</span><span class="n">DEBUG</span><span class="o">)</span> <span class="n">Log</span><span class="o">.</span><span class="na">i</span><span class="o">(</span><span class="n">TAG</span><span class="o">,</span> <span class="s">&quot;populate is pending, skipping for now...&quot;</span><span class="o">);</span>
+            <span class="n">sortChildDrawingOrder</span><span class="o">();</span>
+            <span class="k">return</span><span class="o">;</span>
+        <span class="o">}</span>
+
+        <span class="c1">// Also, don&#39;t populate until we are attached to a window.  This is to</span>
+        <span class="c1">// avoid trying to populate before we have restored our view hierarchy</span>
+        <span class="c1">// state and conflicting with what is restored.</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">getWindowToken</span><span class="o">()</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+            <span class="k">return</span><span class="o">;</span>
+        <span class="o">}</span>
+
+        <span class="n">mAdapter</span><span class="o">.</span><span class="na">startUpdate</span><span class="o">(</span><span class="k">this</span><span class="o">);</span></code></pre></div>
+
+<p>找了半天mPopulatePending，发现只有在处理ACTION_UP事件和endFakeDrag函数中才会被设置为true。endFakeDrag的只能需要看beginFakeDrag的注释，大概用途就是同步与其他可滑动页面的状态。比如我们有两个viewpage，想要达到同时滑动的效果，就在其中一个viewpage滑动的时候调用另一个viewpage的fakedrag系列方法以达到同步效果。但是不管是ACTION_UP还是endFakeDrag都是表示滑动停止，滑动停止后我们的populate函数就沦为了排序？写到这里的时候我也没找到答案，隐约感觉不对劲，但是还是继续往下走。
+下面的意思就是在view还没有添加到窗口上时就不走下去了，这里我们需要知道一个view的生命周期：
+构造View –&gt; onFinishInflate –&gt; onAttachedToWindow –&gt; onMeasure –&gt; onSizeChanged –&gt; onLayout –&gt; onDraw –&gt; onDetackedFromWindow
+再接着 mAdapter.startUpdate(this)这句代码我们上面就说过，并没有什么卵用。</p>
+
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span class="kd">final</span> <span class="kt">int</span> <span class="n">pageLimit</span> <span class="o">=</span> <span class="n">mOffscreenPageLimit</span><span class="o">;</span>
+        <span class="kd">final</span> <span class="kt">int</span> <span class="n">startPos</span> <span class="o">=</span> <span class="n">Math</span><span class="o">.</span><span class="na">max</span><span class="o">(</span><span class="mi">0</span><span class="o">,</span> <span class="n">mCurItem</span> <span class="o">-</span> <span class="n">pageLimit</span><span class="o">);</span>
+        <span class="kd">final</span> <span class="kt">int</span> <span class="n">N</span> <span class="o">=</span> <span class="n">mAdapter</span><span class="o">.</span><span class="na">getCount</span><span class="o">();</span>
+        <span class="kd">final</span> <span class="kt">int</span> <span class="n">endPos</span> <span class="o">=</span> <span class="n">Math</span><span class="o">.</span><span class="na">min</span><span class="o">(</span><span class="n">N</span><span class="o">-</span><span class="mi">1</span><span class="o">,</span> <span class="n">mCurItem</span> <span class="o">+</span> <span class="n">pageLimit</span><span class="o">);</span>
+
+        <span class="k">if</span> <span class="o">(</span><span class="n">N</span> <span class="o">!=</span> <span class="n">mExpectedAdapterCount</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">String</span> <span class="n">resName</span><span class="o">;</span>
+            <span class="k">try</span> <span class="o">{</span>
+                <span class="n">resName</span> <span class="o">=</span> <span class="n">getResources</span><span class="o">().</span><span class="na">getResourceName</span><span class="o">(</span><span class="n">getId</span><span class="o">());</span>
+            <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">Resources</span><span class="o">.</span><span class="na">NotFoundException</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
+                <span class="n">resName</span> <span class="o">=</span> <span class="n">Integer</span><span class="o">.</span><span class="na">toHexString</span><span class="o">(</span><span class="n">getId</span><span class="o">());</span>
+            <span class="o">}</span>
+            <span class="k">throw</span> <span class="k">new</span> <span class="nf">IllegalStateException</span><span class="o">(</span><span class="s">&quot;The application&#39;s PagerAdapter changed the adapter&#39;s&quot;</span> <span class="o">+</span>
+                    <span class="s">&quot; contents without calling PagerAdapter#notifyDataSetChanged!&quot;</span> <span class="o">+</span>
+                    <span class="s">&quot; Expected adapter item count: &quot;</span> <span class="o">+</span> <span class="n">mExpectedAdapterCount</span> <span class="o">+</span> <span class="s">&quot;, found: &quot;</span> <span class="o">+</span> <span class="n">N</span> <span class="o">+</span>
+                    <span class="s">&quot; Pager id: &quot;</span> <span class="o">+</span> <span class="n">resName</span> <span class="o">+</span>
+                    <span class="s">&quot; Pager class: &quot;</span> <span class="o">+</span> <span class="n">getClass</span><span class="o">()</span> <span class="o">+</span>
+                    <span class="s">&quot; Problematic adapter: &quot;</span> <span class="o">+</span> <span class="n">mAdapter</span><span class="o">.</span><span class="na">getClass</span><span class="o">());</span>
+        <span class="o">}</span></code></pre></div>
+
+<p>这一段获取正确的需要初始化的页面起始位置和结束位置。根据我们设置的缓存大小，最大初始化不超过N个页面。然后if里面的错误原因说明很清晰了，改了adapter的数据而没有调用notifyDataSetChanged方法就有可能出现。</p>
+
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span class="c1">// Locate the currently focused item or add it if needed.</span>
+        <span class="kt">int</span> <span class="n">curIndex</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="o">;</span>
+        <span class="n">ItemInfo</span> <span class="n">curItem</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
+        <span class="k">for</span> <span class="o">(</span><span class="n">curIndex</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span> <span class="n">curIndex</span> <span class="o">&lt;</span> <span class="n">mItems</span><span class="o">.</span><span class="na">size</span><span class="o">();</span> <span class="n">curIndex</span><span class="o">++)</span> <span class="o">{</span>
+            <span class="kd">final</span> <span class="n">ItemInfo</span> <span class="n">ii</span> <span class="o">=</span> <span class="n">mItems</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">curIndex</span><span class="o">);</span>
+            <span class="k">if</span> <span class="o">(</span><span class="n">ii</span><span class="o">.</span><span class="na">position</span> <span class="o">&gt;=</span> <span class="n">mCurItem</span><span class="o">)</span> <span class="o">{</span>
+                <span class="k">if</span> <span class="o">(</span><span class="n">ii</span><span class="o">.</span><span class="na">position</span> <span class="o">==</span> <span class="n">mCurItem</span><span class="o">)</span> <span class="n">curItem</span> <span class="o">=</span> <span class="n">ii</span><span class="o">;</span>
+                <span class="k">break</span><span class="o">;</span>
+            <span class="o">}</span>
+        <span class="o">}</span>
+
+        <span class="k">if</span> <span class="o">(</span><span class="n">curItem</span> <span class="o">==</span> <span class="kc">null</span> <span class="o">&amp;&amp;</span> <span class="n">N</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">curItem</span> <span class="o">=</span> <span class="n">addNewItem</span><span class="o">(</span><span class="n">mCurItem</span><span class="o">,</span> <span class="n">curIndex</span><span class="o">);</span>
+        <span class="o">}</span></code></pre></div>
+
+<p>正如注释所说，找到当前获得焦点的页面对象，没有就添加进去，很显然，咱们的页面初始化代码出现了。</p>
+
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span class="n">ItemInfo</span> <span class="nf">addNewItem</span><span class="o">(</span><span class="kt">int</span> <span class="n">position</span><span class="o">,</span> <span class="kt">int</span> <span class="n">index</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">ItemInfo</span> <span class="n">ii</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">ItemInfo</span><span class="o">();</span>
+        <span class="n">ii</span><span class="o">.</span><span class="na">position</span> <span class="o">=</span> <span class="n">position</span><span class="o">;</span>
+        <span class="n">ii</span><span class="o">.</span><span class="na">object</span> <span class="o">=</span> <span class="n">mAdapter</span><span class="o">.</span><span class="na">instantiateItem</span><span class="o">(</span><span class="k">this</span><span class="o">,</span> <span class="n">position</span><span class="o">);</span>
+        <span class="n">ii</span><span class="o">.</span><span class="na">widthFactor</span> <span class="o">=</span> <span class="n">mAdapter</span><span class="o">.</span><span class="na">getPageWidth</span><span class="o">(</span><span class="n">position</span><span class="o">);</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">index</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="o">||</span> <span class="n">index</span> <span class="o">&gt;=</span> <span class="n">mItems</span><span class="o">.</span><span class="na">size</span><span class="o">())</span> <span class="o">{</span>
+            <span class="n">mItems</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="n">ii</span><span class="o">);</span>
+        <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+            <span class="n">mItems</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="n">index</span><span class="o">,</span> <span class="n">ii</span><span class="o">);</span>
+        <span class="o">}</span>
+        <span class="k">return</span> <span class="n">ii</span><span class="o">;</span>
+    <span class="o">}</span></code></pre></div>
+
+<p>最核心的就是mAdapter.instantiateItem(this, position);和mAdapter.getPageWidth(position);这两个函数了，mAdapter.getPageWidth(position);比较简单，意思是页面占用viewpage的宽度的百分比，默认都是100%，然后看instantiateItem这个函数。instantiateItem是adapter必须实现的方法，默认实现：</p>
+
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span class="cm">/**</span>
+<span class="cm">     * Create the page for the given position.  The adapter is responsible</span>
+<span class="cm">     * for adding the view to the container given here, although it only</span>
+<span class="cm">     * must ensure this is done by the time it returns from</span>
+<span class="cm">     * {@link #finishUpdate(ViewGroup)}.</span>
+<span class="cm">     *</span>
+<span class="cm">     * @param container The containing View in which the page will be shown.</span>
+<span class="cm">     * @param position The page position to be instantiated.</span>
+<span class="cm">     * @return Returns an Object representing the new page.  This does not</span>
+<span class="cm">     * need to be a View, but can be some other container of the page.</span>
+<span class="cm">     */</span>
+    <span class="kd">public</span> <span class="n">Object</span> <span class="nf">instantiateItem</span><span class="o">(</span><span class="n">ViewGroup</span> <span class="n">container</span><span class="o">,</span> <span class="kt">int</span> <span class="n">position</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="nf">instantiateItem</span><span class="o">((</span><span class="n">View</span><span class="o">)</span> <span class="n">container</span><span class="o">,</span> <span class="n">position</span><span class="o">);</span>
+    <span class="o">}</span>
+    <span class="cm">/**</span>
+<span class="cm">     * Create the page for the given position.  The adapter is responsible</span>
+<span class="cm">     * for adding the view to the container given here, although it only</span>
+<span class="cm">     * must ensure this is done by the time it returns from</span>
+<span class="cm">     * {@link #finishUpdate(ViewGroup)}.</span>
+<span class="cm">     *</span>
+<span class="cm">     * @param container The containing View in which the page will be shown.</span>
+<span class="cm">     * @param position The page position to be instantiated.</span>
+<span class="cm">     * @return Returns an Object representing the new page.  This does not</span>
+<span class="cm">     * need to be a View, but can be some other container of the page.</span>
+<span class="cm">     *</span>
+<span class="cm">     * @deprecated Use {@link #instantiateItem(ViewGroup, int)}</span>
+<span class="cm">     */</span>
+    <span class="kd">public</span> <span class="n">Object</span> <span class="nf">instantiateItem</span><span class="o">(</span><span class="n">View</span> <span class="n">container</span><span class="o">,</span> <span class="kt">int</span> <span class="n">position</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">throw</span> <span class="k">new</span> <span class="nf">UnsupportedOperationException</span><span class="o">(</span>
+                <span class="s">&quot;Required method instantiateItem was not overridden&quot;</span><span class="o">);</span>
+    <span class="o">}</span></code></pre></div>
+
+<p>简直没天理，直接报错……而且让我们使用instantiateItem(ViewGroup, int)，好在我们常用的FragmentPageAdapter里已经实现了：</p>
+
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="n">Object</span> <span class="nf">instantiateItem</span><span class="o">(</span><span class="n">ViewGroup</span> <span class="n">container</span><span class="o">,</span> <span class="kt">int</span> <span class="n">position</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">mCurTransaction</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">mCurTransaction</span> <span class="o">=</span> <span class="n">mFragmentManager</span><span class="o">.</span><span class="na">beginTransaction</span><span class="o">();</span>
+        <span class="o">}</span>
+
+        <span class="kd">final</span> <span class="kt">long</span> <span class="n">itemId</span> <span class="o">=</span> <span class="n">getItemId</span><span class="o">(</span><span class="n">position</span><span class="o">);</span>
+
+        <span class="c1">// Do we already have this fragment?</span>
+        <span class="n">String</span> <span class="n">name</span> <span class="o">=</span> <span class="n">makeFragmentName</span><span class="o">(</span><span class="n">container</span><span class="o">.</span><span class="na">getId</span><span class="o">(),</span> <span class="n">itemId</span><span class="o">);</span>
+        <span class="n">Fragment</span> <span class="n">fragment</span> <span class="o">=</span> <span class="n">mFragmentManager</span><span class="o">.</span><span class="na">findFragmentByTag</span><span class="o">(</span><span class="n">name</span><span class="o">);</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">fragment</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+            <span class="k">if</span> <span class="o">(</span><span class="n">DEBUG</span><span class="o">)</span> <span class="n">Log</span><span class="o">.</span><span class="na">v</span><span class="o">(</span><span class="n">TAG</span><span class="o">,</span> <span class="s">&quot;Attaching item #&quot;</span> <span class="o">+</span> <span class="n">itemId</span> <span class="o">+</span> <span class="s">&quot;: f=&quot;</span> <span class="o">+</span> <span class="n">fragment</span><span class="o">);</span>
+            <span class="n">mCurTransaction</span><span class="o">.</span><span class="na">attach</span><span class="o">(</span><span class="n">fragment</span><span class="o">);</span>
+        <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+            <span class="n">fragment</span> <span class="o">=</span> <span class="n">getItem</span><span class="o">(</span><span class="n">position</span><span class="o">);</span>
+            <span class="k">if</span> <span class="o">(</span><span class="n">DEBUG</span><span class="o">)</span> <span class="n">Log</span><span class="o">.</span><span class="na">v</span><span class="o">(</span><span class="n">TAG</span><span class="o">,</span> <span class="s">&quot;Adding item #&quot;</span> <span class="o">+</span> <span class="n">itemId</span> <span class="o">+</span> <span class="s">&quot;: f=&quot;</span> <span class="o">+</span> <span class="n">fragment</span><span class="o">);</span>
+            <span class="n">mCurTransaction</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="n">container</span><span class="o">.</span><span class="na">getId</span><span class="o">(),</span> <span class="n">fragment</span><span class="o">,</span>
+                    <span class="n">makeFragmentName</span><span class="o">(</span><span class="n">container</span><span class="o">.</span><span class="na">getId</span><span class="o">(),</span> <span class="n">itemId</span><span class="o">));</span>
+        <span class="o">}</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">fragment</span> <span class="o">!=</span> <span class="n">mCurrentPrimaryItem</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">fragment</span><span class="o">.</span><span class="na">setMenuVisibility</span><span class="o">(</span><span class="kc">false</span><span class="o">);</span>
+            <span class="n">fragment</span><span class="o">.</span><span class="na">setUserVisibleHint</span><span class="o">(</span><span class="kc">false</span><span class="o">);</span>
+        <span class="o">}</span>
+
+        <span class="k">return</span> <span class="n">fragment</span><span class="o">;</span>
+    <span class="o">}</span></code></pre></div>
+
+<p>这个实现只是适合Fragment，出现了fragment特有的manager和transaction对象，但是中心思想还是一致的，就是也创建一个页面的容器对象，根据android官方注释，生成并返回的这个对象，需要添加到ViewGroup中去，可以看到代码里确实有这句：mCurTransaction.add(container.getId(), fragment, makeFragmentName(container.getId(), itemId));这里也解释了我心中的疑问，这个函数并没有限制返回对象一定需要是view或者fragment，所以理论上我们可以任意创建对象。
+接着走我们的populate函数：</p>
+
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span class="c1">// Fill 3x the available width or up to the number of offscreen</span>
+        <span class="c1">// pages requested to either side, whichever is larger.</span>
+        <span class="c1">// If we have no current item we have no work to do.</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">curItem</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+            <span class="kt">float</span> <span class="n">extraWidthLeft</span> <span class="o">=</span> <span class="mi">0</span><span class="o">.</span><span class="na">f</span><span class="o">;</span>
+            <span class="kt">int</span> <span class="n">itemIndex</span> <span class="o">=</span> <span class="n">curIndex</span> <span class="o">-</span> <span class="mi">1</span><span class="o">;</span>
+            <span class="n">ItemInfo</span> <span class="n">ii</span> <span class="o">=</span> <span class="n">itemIndex</span> <span class="o">&gt;=</span> <span class="mi">0</span> <span class="o">?</span> <span class="n">mItems</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">itemIndex</span><span class="o">)</span> <span class="o">:</span> <span class="kc">null</span><span class="o">;</span>
+            <span class="kd">final</span> <span class="kt">int</span> <span class="n">clientWidth</span> <span class="o">=</span> <span class="n">getClientWidth</span><span class="o">();</span>
+            <span class="kd">final</span> <span class="kt">float</span> <span class="n">leftWidthNeeded</span> <span class="o">=</span> <span class="n">clientWidth</span> <span class="o">&lt;=</span> <span class="mi">0</span> <span class="o">?</span> <span class="mi">0</span> <span class="o">:</span>
+                    <span class="mi">2</span><span class="o">.</span><span class="na">f</span> <span class="o">-</span> <span class="n">curItem</span><span class="o">.</span><span class="na">widthFactor</span> <span class="o">+</span> <span class="o">(</span><span class="kt">float</span><span class="o">)</span> <span class="n">getPaddingLeft</span><span class="o">()</span> <span class="o">/</span> <span class="o">(</span><span class="kt">float</span><span class="o">)</span> <span class="n">clientWidth</span><span class="o">;</span>
+            <span class="k">for</span> <span class="o">(</span><span class="kt">int</span> <span class="n">pos</span> <span class="o">=</span> <span class="n">mCurItem</span> <span class="o">-</span> <span class="mi">1</span><span class="o">;</span> <span class="n">pos</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="o">;</span> <span class="n">pos</span><span class="o">--)</span> <span class="o">{</span>
+                <span class="k">if</span> <span class="o">(</span><span class="n">extraWidthLeft</span> <span class="o">&gt;=</span> <span class="n">leftWidthNeeded</span> <span class="o">&amp;&amp;</span> <span class="n">pos</span> <span class="o">&lt;</span> <span class="n">startPos</span><span class="o">)</span> <span class="o">{</span>
+                    <span class="k">if</span> <span class="o">(</span><span class="n">ii</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+                        <span class="k">break</span><span class="o">;</span>
+                    <span class="o">}</span>
+                    <span class="k">if</span> <span class="o">(</span><span class="n">pos</span> <span class="o">==</span> <span class="n">ii</span><span class="o">.</span><span class="na">position</span> <span class="o">&amp;&amp;</span> <span class="o">!</span><span class="n">ii</span><span class="o">.</span><span class="na">scrolling</span><span class="o">)</span> <span class="o">{</span>
+                        <span class="n">mItems</span><span class="o">.</span><span class="na">remove</span><span class="o">(</span><span class="n">itemIndex</span><span class="o">);</span>
+                        <span class="n">mAdapter</span><span class="o">.</span><span class="na">destroyItem</span><span class="o">(</span><span class="k">this</span><span class="o">,</span> <span class="n">pos</span><span class="o">,</span> <span class="n">ii</span><span class="o">.</span><span class="na">object</span><span class="o">);</span>
+                        <span class="k">if</span> <span class="o">(</span><span class="n">DEBUG</span><span class="o">)</span> <span class="o">{</span>
+                            <span class="n">Log</span><span class="o">.</span><span class="na">i</span><span class="o">(</span><span class="n">TAG</span><span class="o">,</span> <span class="s">&quot;populate() - destroyItem() with pos: &quot;</span> <span class="o">+</span> <span class="n">pos</span> <span class="o">+</span>
+                                    <span class="s">&quot; view: &quot;</span> <span class="o">+</span> <span class="o">((</span><span class="n">View</span><span class="o">)</span> <span class="n">ii</span><span class="o">.</span><span class="na">object</span><span class="o">));</span>
+                        <span class="o">}</span>
+                        <span class="n">itemIndex</span><span class="o">--;</span>
+                        <span class="n">curIndex</span><span class="o">--;</span>
+                        <span class="n">ii</span> <span class="o">=</span> <span class="n">itemIndex</span> <span class="o">&gt;=</span> <span class="mi">0</span> <span class="o">?</span> <span class="n">mItems</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">itemIndex</span><span class="o">)</span> <span class="o">:</span> <span class="kc">null</span><span class="o">;</span>
+                    <span class="o">}</span>
+                <span class="o">}</span> <span class="k">else</span> <span class="nf">if</span> <span class="o">(</span><span class="n">ii</span> <span class="o">!=</span> <span class="kc">null</span> <span class="o">&amp;&amp;</span> <span class="n">pos</span> <span class="o">==</span> <span class="n">ii</span><span class="o">.</span><span class="na">position</span><span class="o">)</span> <span class="o">{</span>
+                    <span class="n">extraWidthLeft</span> <span class="o">+=</span> <span class="n">ii</span><span class="o">.</span><span class="na">widthFactor</span><span class="o">;</span>
+                    <span class="n">itemIndex</span><span class="o">--;</span>
+                    <span class="n">ii</span> <span class="o">=</span> <span class="n">itemIndex</span> <span class="o">&gt;=</span> <span class="mi">0</span> <span class="o">?</span> <span class="n">mItems</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">itemIndex</span><span class="o">)</span> <span class="o">:</span> <span class="kc">null</span><span class="o">;</span>
+                <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+                    <span class="n">ii</span> <span class="o">=</span> <span class="n">addNewItem</span><span class="o">(</span><span class="n">pos</span><span class="o">,</span> <span class="n">itemIndex</span> <span class="o">+</span> <span class="mi">1</span><span class="o">);</span>
+                    <span class="n">extraWidthLeft</span> <span class="o">+=</span> <span class="n">ii</span><span class="o">.</span><span class="na">widthFactor</span><span class="o">;</span>
+                    <span class="n">curIndex</span><span class="o">++;</span>
+                    <span class="n">ii</span> <span class="o">=</span> <span class="n">itemIndex</span> <span class="o">&gt;=</span> <span class="mi">0</span> <span class="o">?</span> <span class="n">mItems</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">itemIndex</span><span class="o">)</span> <span class="o">:</span> <span class="kc">null</span><span class="o">;</span>
+                <span class="o">}</span>
+            <span class="o">}</span>
+
+            <span class="kt">float</span> <span class="n">extraWidthRight</span> <span class="o">=</span> <span class="n">curItem</span><span class="o">.</span><span class="na">widthFactor</span><span class="o">;</span>
+            <span class="n">itemIndex</span> <span class="o">=</span> <span class="n">curIndex</span> <span class="o">+</span> <span class="mi">1</span><span class="o">;</span>
+            <span class="k">if</span> <span class="o">(</span><span class="n">extraWidthRight</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="o">.</span><span class="na">f</span><span class="o">)</span> <span class="o">{</span>
+                <span class="n">ii</span> <span class="o">=</span> <span class="n">itemIndex</span> <span class="o">&lt;</span> <span class="n">mItems</span><span class="o">.</span><span class="na">size</span><span class="o">()</span> <span class="o">?</span> <span class="n">mItems</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">itemIndex</span><span class="o">)</span> <span class="o">:</span> <span class="kc">null</span><span class="o">;</span>
+                <span class="kd">final</span> <span class="kt">float</span> <span class="n">rightWidthNeeded</span> <span class="o">=</span> <span class="n">clientWidth</span> <span class="o">&lt;=</span> <span class="mi">0</span> <span class="o">?</span> <span class="mi">0</span> <span class="o">:</span>
+                        <span class="o">(</span><span class="kt">float</span><span class="o">)</span> <span class="n">getPaddingRight</span><span class="o">()</span> <span class="o">/</span> <span class="o">(</span><span class="kt">float</span><span class="o">)</span> <span class="n">clientWidth</span> <span class="o">+</span> <span class="mi">2</span><span class="o">.</span><span class="na">f</span><span class="o">;</span>
+                <span class="k">for</span> <span class="o">(</span><span class="kt">int</span> <span class="n">pos</span> <span class="o">=</span> <span class="n">mCurItem</span> <span class="o">+</span> <span class="mi">1</span><span class="o">;</span> <span class="n">pos</span> <span class="o">&lt;</span> <span class="n">N</span><span class="o">;</span> <span class="n">pos</span><span class="o">++)</span> <span class="o">{</span>
+                    <span class="k">if</span> <span class="o">(</span><span class="n">extraWidthRight</span> <span class="o">&gt;=</span> <span class="n">rightWidthNeeded</span> <span class="o">&amp;&amp;</span> <span class="n">pos</span> <span class="o">&gt;</span> <span class="n">endPos</span><span class="o">)</span> <span class="o">{</span>
+                        <span class="k">if</span> <span class="o">(</span><span class="n">ii</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+                            <span class="k">break</span><span class="o">;</span>
+                        <span class="o">}</span>
+                        <span class="k">if</span> <span class="o">(</span><span class="n">pos</span> <span class="o">==</span> <span class="n">ii</span><span class="o">.</span><span class="na">position</span> <span class="o">&amp;&amp;</span> <span class="o">!</span><span class="n">ii</span><span class="o">.</span><span class="na">scrolling</span><span class="o">)</span> <span class="o">{</span>
+                            <span class="n">mItems</span><span class="o">.</span><span class="na">remove</span><span class="o">(</span><span class="n">itemIndex</span><span class="o">);</span>
+                            <span class="n">mAdapter</span><span class="o">.</span><span class="na">destroyItem</span><span class="o">(</span><span class="k">this</span><span class="o">,</span> <span class="n">pos</span><span class="o">,</span> <span class="n">ii</span><span class="o">.</span><span class="na">object</span><span class="o">);</span>
+                            <span class="k">if</span> <span class="o">(</span><span class="n">DEBUG</span><span class="o">)</span> <span class="o">{</span>
+                                <span class="n">Log</span><span class="o">.</span><span class="na">i</span><span class="o">(</span><span class="n">TAG</span><span class="o">,</span> <span class="s">&quot;populate() - destroyItem() with pos: &quot;</span> <span class="o">+</span> <span class="n">pos</span> <span class="o">+</span>
+                                        <span class="s">&quot; view: &quot;</span> <span class="o">+</span> <span class="o">((</span><span class="n">View</span><span class="o">)</span> <span class="n">ii</span><span class="o">.</span><span class="na">object</span><span class="o">));</span>
+                            <span class="o">}</span>
+                            <span class="n">ii</span> <span class="o">=</span> <span class="n">itemIndex</span> <span class="o">&lt;</span> <span class="n">mItems</span><span class="o">.</span><span class="na">size</span><span class="o">()</span> <span class="o">?</span> <span class="n">mItems</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">itemIndex</span><span class="o">)</span> <span class="o">:</span> <span class="kc">null</span><span class="o">;</span>
+                        <span class="o">}</span>
+                    <span class="o">}</span> <span class="k">else</span> <span class="nf">if</span> <span class="o">(</span><span class="n">ii</span> <span class="o">!=</span> <span class="kc">null</span> <span class="o">&amp;&amp;</span> <span class="n">pos</span> <span class="o">==</span> <span class="n">ii</span><span class="o">.</span><span class="na">position</span><span class="o">)</span> <span class="o">{</span>
+                        <span class="n">extraWidthRight</span> <span class="o">+=</span> <span class="n">ii</span><span class="o">.</span><span class="na">widthFactor</span><span class="o">;</span>
+                        <span class="n">itemIndex</span><span class="o">++;</span>
+                        <span class="n">ii</span> <span class="o">=</span> <span class="n">itemIndex</span> <span class="o">&lt;</span> <span class="n">mItems</span><span class="o">.</span><span class="na">size</span><span class="o">()</span> <span class="o">?</span> <span class="n">mItems</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">itemIndex</span><span class="o">)</span> <span class="o">:</span> <span class="kc">null</span><span class="o">;</span>
+                    <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+                        <span class="n">ii</span> <span class="o">=</span> <span class="n">addNewItem</span><span class="o">(</span><span class="n">pos</span><span class="o">,</span> <span class="n">itemIndex</span><span class="o">);</span>
+                        <span class="n">itemIndex</span><span class="o">++;</span>
+                        <span class="n">extraWidthRight</span> <span class="o">+=</span> <span class="n">ii</span><span class="o">.</span><span class="na">widthFactor</span><span class="o">;</span>
+                        <span class="n">ii</span> <span class="o">=</span> <span class="n">itemIndex</span> <span class="o">&lt;</span> <span class="n">mItems</span><span class="o">.</span><span class="na">size</span><span class="o">()</span> <span class="o">?</span> <span class="n">mItems</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">itemIndex</span><span class="o">)</span> <span class="o">:</span> <span class="kc">null</span><span class="o">;</span>
+                    <span class="o">}</span>
+                <span class="o">}</span>
+            <span class="o">}</span>
+
+            <span class="n">calculatePageOffsets</span><span class="o">(</span><span class="n">curItem</span><span class="o">,</span> <span class="n">curIndex</span><span class="o">,</span> <span class="n">oldCurInfo</span><span class="o">);</span>
+        <span class="o">}</span></code></pre></div>
+
+<p>从注释看，说是填满至少3个页面的内容，如果需要的缓存页面更多则填满更多，代码里面getClientWidth();获取的是一个页面的宽度，这个宽度与page页面真实的宽无关，而是viewpage根据自己可显示内容区域大小来确定。
+第一个for循环，遍历当前页面的左边，break的条件是两个：extraWidthLeft(应该就是说已经创建的页面)要大于需求的宽度leftWidthNeeded；pos已经超过了需要缓存的索引，也就是pos &lt; startPos；满足上面两个条件后发现左边还有页面对象可以实例化，但是我们不需要了，就会break。
+下面我们进入循环看看，首次进入肯定会执行最后面的分支：</p>
+
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span class="n">ii</span> <span class="o">=</span> <span class="n">addNewItem</span><span class="o">(</span><span class="n">pos</span><span class="o">,</span> <span class="n">itemIndex</span> <span class="o">+</span> <span class="mi">1</span><span class="o">);</span>
+                    <span class="n">extraWidthLeft</span> <span class="o">+=</span> <span class="n">ii</span><span class="o">.</span><span class="na">widthFactor</span><span class="o">;</span>
+                    <span class="n">curIndex</span><span class="o">++;</span>
+                    <span class="n">ii</span> <span class="o">=</span> <span class="n">itemIndex</span> <span class="o">&gt;=</span> <span class="mi">0</span> <span class="o">?</span> <span class="n">mItems</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">itemIndex</span><span class="o">)</span> <span class="o">:</span> <span class="kc">null</span><span class="o">;</span></code></pre></div>
+
+<p>我们需要搞清楚itemIndex是什么，int itemIndex = curIndex - 1;而curIndex代表的意思是当前view应该插入的位置。在我们初始化的时候curIndex=0，因此itemIndex = -1，addNewItem传入的两个参数，第一个pos表示页面索引，第二个itemIndex表示页面在ViewPage的mItems容器中的索引，如果itemIndex的值合理则插入的索引就是itemIndex，否则直接添加到队尾。至于这个在mItems容器中的顺序有何说法我们后面再看。
+到最后一句的时候，由于itemIndex = -1，ii赋值null。然后进入第二次循环，可以看到第一个if里面的条件都成立，并且ii=null，直接跳出循环。这里我们不妨假设current！=0，并且我们的mItems里面已经缓存了很多页面的内容。不难看出我们会找到所有左边的缓存，当我们需要的缓存都找到或者创建出来后，会进入：</p>
+
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span class="k">if</span> <span class="o">(</span><span class="n">pos</span> <span class="o">==</span> <span class="n">ii</span><span class="o">.</span><span class="na">position</span> <span class="o">&amp;&amp;</span> <span class="o">!</span><span class="n">ii</span><span class="o">.</span><span class="na">scrolling</span><span class="o">)</span> <span class="o">{</span>
+                        <span class="n">mItems</span><span class="o">.</span><span class="na">remove</span><span class="o">(</span><span class="n">itemIndex</span><span class="o">);</span>
+                        <span class="n">mAdapter</span><span class="o">.</span><span class="na">destroyItem</span><span class="o">(</span><span class="k">this</span><span class="o">,</span> <span class="n">pos</span><span class="o">,</span> <span class="n">ii</span><span class="o">.</span><span class="na">object</span><span class="o">);</span>
+                        <span class="k">if</span> <span class="o">(</span><span class="n">DEBUG</span><span class="o">)</span> <span class="o">{</span>
+                            <span class="n">Log</span><span class="o">.</span><span class="na">i</span><span class="o">(</span><span class="n">TAG</span><span class="o">,</span> <span class="s">&quot;populate() - destroyItem() with pos: &quot;</span> <span class="o">+</span> <span class="n">pos</span> <span class="o">+</span>
+                                    <span class="s">&quot; view: &quot;</span> <span class="o">+</span> <span class="o">((</span><span class="n">View</span><span class="o">)</span> <span class="n">ii</span><span class="o">.</span><span class="na">object</span><span class="o">));</span>
+                        <span class="o">}</span>
+                        <span class="n">itemIndex</span><span class="o">--;</span>
+                        <span class="n">curIndex</span><span class="o">--;</span>
+                        <span class="n">ii</span> <span class="o">=</span> <span class="n">itemIndex</span> <span class="o">&gt;=</span> <span class="mi">0</span> <span class="o">?</span> <span class="n">mItems</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">itemIndex</span><span class="o">)</span> <span class="o">:</span> <span class="kc">null</span><span class="o">;</span>
+                    <span class="o">}</span></code></pre></div>
+
+<p>这个分支会把所有左边多余的分支删除销毁。
+对称的，我们还需要处理当前页面的右边内容。与左边不同的是计算rightWidthNeeded的时候，我们可以看到leftWidthNeeded基本是等于1.0f的，而rightWidthNeeded确实等于2.0f，正如我们最一开始所说的，至少需要缓存3x的页面内容，但是这个分配默认是不对称的左1x右2x。
+在我们把currentItem以及左右缓存都准备好了后进入下一句：</p>
+
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span class="n">calculatePageOffsets</span><span class="o">(</span><span class="n">curItem</span><span class="o">,</span> <span class="n">curIndex</span><span class="o">,</span> <span class="n">oldCurInfo</span><span class="o">);</span></code></pre></div>
+
+<p>对于我们初始化来说可以直接变成：</p>
+
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span class="n">calculatePageOffsets</span><span class="o">(</span><span class="n">curItem</span><span class="o">,</span> <span class="mi">0</span><span class="o">,</span> <span class="kc">null</span><span class="o">);</span></code></pre></div>
+
+<p>calculatePageOffsets也是一个比较复制的函数，本来我们不需要看前面第一个if里面的逻辑，因为iewomendeoldCurInfo是null。但是当我们不是初始化的时候，calculatePageOffsets又干了什么呢？
+首先判断oldCurInfo是在curItem哪一侧，这里左右其实对称的操作，我们假设是在左侧。
+然后对oldCurInfo和curItem之间(包含curItem)的item进行遍历，统计每一个item的offset(这个offset是相对oldCurInfo来计算的)。这个过程就涉及到我们上面说的如果addNewItem的pos和itemIndex不一致的情况。calculatePageOffsets函数是这么处理的：</p>
+
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span class="k">while</span> <span class="o">(</span><span class="n">pos</span> <span class="o">&gt;</span> <span class="n">ii</span><span class="o">.</span><span class="na">position</span> <span class="o">&amp;&amp;</span> <span class="n">itemIndex</span> <span class="o">&lt;</span> <span class="n">mItems</span><span class="o">.</span><span class="na">size</span><span class="o">()</span> <span class="o">-</span> <span class="mi">1</span><span class="o">)</span> <span class="o">{</span>
+                        <span class="n">itemIndex</span><span class="o">++;</span>
+                        <span class="n">ii</span> <span class="o">=</span> <span class="n">mItems</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">itemIndex</span><span class="o">);</span>
+                    <span class="o">}</span>
+                    <span class="k">while</span> <span class="o">(</span><span class="n">pos</span> <span class="o">&lt;</span> <span class="n">ii</span><span class="o">.</span><span class="na">position</span><span class="o">)</span> <span class="o">{</span>
+                        <span class="c1">// We don&#39;t have an item populated for this,</span>
+                        <span class="c1">// ask the adapter for an offset.</span>
+                        <span class="n">offset</span> <span class="o">+=</span> <span class="n">mAdapter</span><span class="o">.</span><span class="na">getPageWidth</span><span class="o">(</span><span class="n">pos</span><span class="o">)</span> <span class="o">+</span> <span class="n">marginOffset</span><span class="o">;</span>
+                        <span class="n">pos</span><span class="o">++;</span>
+                    <span class="o">}</span></code></pre></div>
+
+<p>第一个while按照mItems里面的顺序找到pos右边(包含pos)的一个item，第二个while判断如果找到的item的position值不是pos，这说明这两个position之间的item我们没有创建（不一定是没创建，但是如果我们在addNewItem的时候pos和itemIndex不是同升同降的话就有可能会出现这种情况，这也是为何每次dataSetChanged都会对mItems排序的原因吧），我需要问adapter如何计算offset。</p>
+
+<p>正当我沾沾自喜看懂了第一段代码是计算oldCurInfo和curItem的position值之间的对应的item的基于oldCurInfo的offset后，下面一段代码就像给我一大嘴巴，下面的代码正如注释所说，计算基于curItem的每个page的offset</p>
+
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span class="c1">// Base all offsets off of curItem.</span>
+        <span class="kd">final</span> <span class="kt">int</span> <span class="n">itemCount</span> <span class="o">=</span> <span class="n">mItems</span><span class="o">.</span><span class="na">size</span><span class="o">();</span>
+        <span class="kt">float</span> <span class="n">offset</span> <span class="o">=</span> <span class="n">curItem</span><span class="o">.</span><span class="na">offset</span><span class="o">;</span>
+        <span class="kt">int</span> <span class="n">pos</span> <span class="o">=</span> <span class="n">curItem</span><span class="o">.</span><span class="na">position</span> <span class="o">-</span> <span class="mi">1</span><span class="o">;</span>
+        <span class="n">mFirstOffset</span> <span class="o">=</span> <span class="n">curItem</span><span class="o">.</span><span class="na">position</span> <span class="o">==</span> <span class="mi">0</span> <span class="o">?</span> <span class="n">curItem</span><span class="o">.</span><span class="na">offset</span> <span class="o">:</span> <span class="o">-</span><span class="n">Float</span><span class="o">.</span><span class="na">MAX_VALUE</span><span class="o">;</span>
+        <span class="n">mLastOffset</span> <span class="o">=</span> <span class="n">curItem</span><span class="o">.</span><span class="na">position</span> <span class="o">==</span> <span class="n">N</span> <span class="o">-</span> <span class="mi">1</span> <span class="o">?</span>
+                <span class="n">curItem</span><span class="o">.</span><span class="na">offset</span> <span class="o">+</span> <span class="n">curItem</span><span class="o">.</span><span class="na">widthFactor</span> <span class="o">-</span> <span class="mi">1</span> <span class="o">:</span> <span class="n">Float</span><span class="o">.</span><span class="na">MAX_VALUE</span><span class="o">;</span>
+        <span class="c1">// Previous pages</span>
+        <span class="k">for</span> <span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="n">curIndex</span> <span class="o">-</span> <span class="mi">1</span><span class="o">;</span> <span class="n">i</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="o">;</span> <span class="n">i</span><span class="o">--,</span> <span class="n">pos</span><span class="o">--)</span> <span class="o">{</span>
+            <span class="kd">final</span> <span class="n">ItemInfo</span> <span class="n">ii</span> <span class="o">=</span> <span class="n">mItems</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">i</span><span class="o">);</span>
+            <span class="k">while</span> <span class="o">(</span><span class="n">pos</span> <span class="o">&gt;</span> <span class="n">ii</span><span class="o">.</span><span class="na">position</span><span class="o">)</span> <span class="o">{</span>
+                <span class="n">offset</span> <span class="o">-=</span> <span class="n">mAdapter</span><span class="o">.</span><span class="na">getPageWidth</span><span class="o">(</span><span class="n">pos</span><span class="o">--)</span> <span class="o">+</span> <span class="n">marginOffset</span><span class="o">;</span>
+            <span class="o">}</span>
+            <span class="n">offset</span> <span class="o">-=</span> <span class="n">ii</span><span class="o">.</span><span class="na">widthFactor</span> <span class="o">+</span> <span class="n">marginOffset</span><span class="o">;</span>
+            <span class="n">ii</span><span class="o">.</span><span class="na">offset</span> <span class="o">=</span> <span class="n">offset</span><span class="o">;</span>
+            <span class="k">if</span> <span class="o">(</span><span class="n">ii</span><span class="o">.</span><span class="na">position</span> <span class="o">==</span> <span class="mi">0</span><span class="o">)</span> <span class="n">mFirstOffset</span> <span class="o">=</span> <span class="n">offset</span><span class="o">;</span>
+        <span class="o">}</span>
+        <span class="n">offset</span> <span class="o">=</span> <span class="n">curItem</span><span class="o">.</span><span class="na">offset</span> <span class="o">+</span> <span class="n">curItem</span><span class="o">.</span><span class="na">widthFactor</span> <span class="o">+</span> <span class="n">marginOffset</span><span class="o">;</span>
+        <span class="n">pos</span> <span class="o">=</span> <span class="n">curItem</span><span class="o">.</span><span class="na">position</span> <span class="o">+</span> <span class="mi">1</span><span class="o">;</span>
+        <span class="c1">// Next pages</span>
+        <span class="k">for</span> <span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="n">curIndex</span> <span class="o">+</span> <span class="mi">1</span><span class="o">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">itemCount</span><span class="o">;</span> <span class="n">i</span><span class="o">++,</span> <span class="n">pos</span><span class="o">++)</span> <span class="o">{</span>
+            <span class="kd">final</span> <span class="n">ItemInfo</span> <span class="n">ii</span> <span class="o">=</span> <span class="n">mItems</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">i</span><span class="o">);</span>
+            <span class="k">while</span> <span class="o">(</span><span class="n">pos</span> <span class="o">&lt;</span> <span class="n">ii</span><span class="o">.</span><span class="na">position</span><span class="o">)</span> <span class="o">{</span>
+                <span class="n">offset</span> <span class="o">+=</span> <span class="n">mAdapter</span><span class="o">.</span><span class="na">getPageWidth</span><span class="o">(</span><span class="n">pos</span><span class="o">++)</span> <span class="o">+</span> <span class="n">marginOffset</span><span class="o">;</span>
+            <span class="o">}</span>
+            <span class="k">if</span> <span class="o">(</span><span class="n">ii</span><span class="o">.</span><span class="na">position</span> <span class="o">==</span> <span class="n">N</span> <span class="o">-</span> <span class="mi">1</span><span class="o">)</span> <span class="o">{</span>
+                <span class="n">mLastOffset</span> <span class="o">=</span> <span class="n">offset</span> <span class="o">+</span> <span class="n">ii</span><span class="o">.</span><span class="na">widthFactor</span> <span class="o">-</span> <span class="mi">1</span><span class="o">;</span>
+            <span class="o">}</span>
+            <span class="n">ii</span><span class="o">.</span><span class="na">offset</span> <span class="o">=</span> <span class="n">offset</span><span class="o">;</span>
+            <span class="n">offset</span> <span class="o">+=</span> <span class="n">ii</span><span class="o">.</span><span class="na">widthFactor</span> <span class="o">+</span> <span class="n">marginOffset</span><span class="o">;</span>
+        <span class="o">}</span>
+
+        <span class="n">mNeedCalculatePageOffsets</span> <span class="o">=</span> <span class="kc">false</span><span class="o">;</span></code></pre></div>
+
+<p>也就是说到这儿，curItem的offset是基于oldCurInfo算出来的，然后其他的item的offset都是基于curItem算出来的。这是在弄啥咧？？我们继续回到populate的代码中去：</p>
+
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span class="n">mAdapter</span><span class="o">.</span><span class="na">setPrimaryItem</span><span class="o">(</span><span class="k">this</span><span class="o">,</span> <span class="n">mCurItem</span><span class="o">,</span> <span class="n">curItem</span> <span class="o">!=</span> <span class="kc">null</span> <span class="o">?</span> <span class="n">curItem</span><span class="o">.</span><span class="na">object</span> <span class="o">:</span> <span class="kc">null</span><span class="o">);</span>
+        <span class="n">mAdapter</span><span class="o">.</span><span class="na">finishUpdate</span><span class="o">(</span><span class="k">this</span><span class="o">);</span></code></pre></div>
+
+<p>默认实现为空，意思就是通知Page你已经成为了主page，即将要显示，做点什么吧。FragmentPageAdapter实现如下：</p>
+
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">setPrimaryItem</span><span class="o">(</span><span class="n">ViewGroup</span> <span class="n">container</span><span class="o">,</span> <span class="kt">int</span> <span class="n">position</span><span class="o">,</span> <span class="n">Object</span> <span class="n">object</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">Fragment</span> <span class="n">fragment</span> <span class="o">=</span> <span class="o">(</span><span class="n">Fragment</span><span class="o">)</span><span class="n">object</span><span class="o">;</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">fragment</span> <span class="o">!=</span> <span class="n">mCurrentPrimaryItem</span><span class="o">)</span> <span class="o">{</span>
+            <span class="k">if</span> <span class="o">(</span><span class="n">mCurrentPrimaryItem</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+                <span class="n">mCurrentPrimaryItem</span><span class="o">.</span><span class="na">setMenuVisibility</span><span class="o">(</span><span class="kc">false</span><span class="o">);</span>
+                <span class="n">mCurrentPrimaryItem</span><span class="o">.</span><span class="na">setUserVisibleHint</span><span class="o">(</span><span class="kc">false</span><span class="o">);</span>
+            <span class="o">}</span>
+            <span class="k">if</span> <span class="o">(</span><span class="n">fragment</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+                <span class="n">fragment</span><span class="o">.</span><span class="na">setMenuVisibility</span><span class="o">(</span><span class="kc">true</span><span class="o">);</span>
+                <span class="n">fragment</span><span class="o">.</span><span class="na">setUserVisibleHint</span><span class="o">(</span><span class="kc">true</span><span class="o">);</span>
+            <span class="o">}</span>
+            <span class="n">mCurrentPrimaryItem</span> <span class="o">=</span> <span class="n">fragment</span><span class="o">;</span>
+        <span class="o">}</span>
+    <span class="o">}</span></code></pre></div>
+
+<p>相信大家都不陌生，设置了fragment的menu和visible状态。最后populate还有一段代码：</p>
+
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span class="c1">// Check width measurement of current pages and drawing sort order.</span>
+        <span class="c1">// Update LayoutParams as needed.</span>
+        <span class="kd">final</span> <span class="kt">int</span> <span class="n">childCount</span> <span class="o">=</span> <span class="n">getChildCount</span><span class="o">();</span>
+        <span class="k">for</span> <span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">childCount</span><span class="o">;</span> <span class="n">i</span><span class="o">++)</span> <span class="o">{</span>
+            <span class="kd">final</span> <span class="n">View</span> <span class="n">child</span> <span class="o">=</span> <span class="n">getChildAt</span><span class="o">(</span><span class="n">i</span><span class="o">);</span>
+            <span class="kd">final</span> <span class="n">LayoutParams</span> <span class="n">lp</span> <span class="o">=</span> <span class="o">(</span><span class="n">LayoutParams</span><span class="o">)</span> <span class="n">child</span><span class="o">.</span><span class="na">getLayoutParams</span><span class="o">();</span>
+            <span class="n">lp</span><span class="o">.</span><span class="na">childIndex</span> <span class="o">=</span> <span class="n">i</span><span class="o">;</span>
+            <span class="k">if</span> <span class="o">(!</span><span class="n">lp</span><span class="o">.</span><span class="na">isDecor</span> <span class="o">&amp;&amp;</span> <span class="n">lp</span><span class="o">.</span><span class="na">widthFactor</span> <span class="o">==</span> <span class="mi">0</span><span class="o">.</span><span class="na">f</span><span class="o">)</span> <span class="o">{</span>
+                <span class="c1">// 0 means requery the adapter for this, it doesn&#39;t have a valid width.</span>
+                <span class="kd">final</span> <span class="n">ItemInfo</span> <span class="n">ii</span> <span class="o">=</span> <span class="n">infoForChild</span><span class="o">(</span><span class="n">child</span><span class="o">);</span>
+                <span class="k">if</span> <span class="o">(</span><span class="n">ii</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+                    <span class="n">lp</span><span class="o">.</span><span class="na">widthFactor</span> <span class="o">=</span> <span class="n">ii</span><span class="o">.</span><span class="na">widthFactor</span><span class="o">;</span>
+                    <span class="n">lp</span><span class="o">.</span><span class="na">position</span> <span class="o">=</span> <span class="n">ii</span><span class="o">.</span><span class="na">position</span><span class="o">;</span>
+                <span class="o">}</span>
+            <span class="o">}</span>
+        <span class="o">}</span>
+        <span class="n">sortChildDrawingOrder</span><span class="o">();</span>
+
+        <span class="k">if</span> <span class="o">(</span><span class="n">hasFocus</span><span class="o">())</span> <span class="o">{</span>
+            <span class="n">View</span> <span class="n">currentFocused</span> <span class="o">=</span> <span class="n">findFocus</span><span class="o">();</span>
+            <span class="n">ItemInfo</span> <span class="n">ii</span> <span class="o">=</span> <span class="n">currentFocused</span> <span class="o">!=</span> <span class="kc">null</span> <span class="o">?</span> <span class="n">infoForAnyChild</span><span class="o">(</span><span class="n">currentFocused</span><span class="o">)</span> <span class="o">:</span> <span class="kc">null</span><span class="o">;</span>
+            <span class="k">if</span> <span class="o">(</span><span class="n">ii</span> <span class="o">==</span> <span class="kc">null</span> <span class="o">||</span> <span class="n">ii</span><span class="o">.</span><span class="na">position</span> <span class="o">!=</span> <span class="n">mCurItem</span><span class="o">)</span> <span class="o">{</span>
+                <span class="k">for</span> <span class="o">(</span><span class="kt">int</span> <span class="n">i</span><span class="o">=</span><span class="mi">0</span><span class="o">;</span> <span class="n">i</span><span class="o">&lt;</span><span class="n">getChildCount</span><span class="o">();</span> <span class="n">i</span><span class="o">++)</span> <span class="o">{</span>
+                    <span class="n">View</span> <span class="n">child</span> <span class="o">=</span> <span class="n">getChildAt</span><span class="o">(</span><span class="n">i</span><span class="o">);</span>
+                    <span class="n">ii</span> <span class="o">=</span> <span class="n">infoForChild</span><span class="o">(</span><span class="n">child</span><span class="o">);</span>
+                    <span class="k">if</span> <span class="o">(</span><span class="n">ii</span> <span class="o">!=</span> <span class="kc">null</span> <span class="o">&amp;&amp;</span> <span class="n">ii</span><span class="o">.</span><span class="na">position</span> <span class="o">==</span> <span class="n">mCurItem</span><span class="o">)</span> <span class="o">{</span>
+                        <span class="k">if</span> <span class="o">(</span><span class="n">child</span><span class="o">.</span><span class="na">requestFocus</span><span class="o">(</span><span class="n">focusDirection</span><span class="o">))</span> <span class="o">{</span>
+                            <span class="k">break</span><span class="o">;</span>
+                        <span class="o">}</span>
+                    <span class="o">}</span>
+                <span class="o">}</span>
+            <span class="o">}</span>
+        <span class="o">}</span></code></pre></div>
+
+<p>第一段正如注释所说，更新当前viewpage上面所有子view的LayoutParam信息，然后对他们进行排序，这里的顺序是绘制顺序，规则就是先按照position顺序绘制page，最后绘制Decor对象，具体参见ViewPositionComparator的定义。后面一段是焦点的处理，究竟应该是谁来获得焦点，infoForAnyChild(currentFocused)很有意思，这个函数获取的应该是currentFocused这个view所在的page的iteminfo对象，这样来判断焦点是否处于同一个page没变化，否则就需要遍历所有子view来寻找下一个焦点应该在哪儿。具体寻找焦点的代码比较复杂，层级太深，这里就不跟进去了，以后有时间专门研究一次child.requestFocus(focusDirection)是怎么找到正确的应该获取焦点的view的。</p>
+
+<p>OK，我们终于从populate中出来了，继续回到onMeasure，onMeasure也还剩最后一段：</p>
+
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span class="c1">// Page views next.</span>
+        <span class="n">size</span> <span class="o">=</span> <span class="n">getChildCount</span><span class="o">();</span>
+        <span class="k">for</span> <span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">size</span><span class="o">;</span> <span class="o">++</span><span class="n">i</span><span class="o">)</span> <span class="o">{</span>
+            <span class="kd">final</span> <span class="n">View</span> <span class="n">child</span> <span class="o">=</span> <span class="n">getChildAt</span><span class="o">(</span><span class="n">i</span><span class="o">);</span>
+            <span class="k">if</span> <span class="o">(</span><span class="n">child</span><span class="o">.</span><span class="na">getVisibility</span><span class="o">()</span> <span class="o">!=</span> <span class="n">GONE</span><span class="o">)</span> <span class="o">{</span>
+                <span class="k">if</span> <span class="o">(</span><span class="n">DEBUG</span><span class="o">)</span> <span class="n">Log</span><span class="o">.</span><span class="na">v</span><span class="o">(</span><span class="n">TAG</span><span class="o">,</span> <span class="s">&quot;Measuring #&quot;</span> <span class="o">+</span> <span class="n">i</span> <span class="o">+</span> <span class="s">&quot; &quot;</span> <span class="o">+</span> <span class="n">child</span>
+                        <span class="o">+</span> <span class="s">&quot;: &quot;</span> <span class="o">+</span> <span class="n">mChildWidthMeasureSpec</span><span class="o">);</span>
+
+                <span class="kd">final</span> <span class="n">LayoutParams</span> <span class="n">lp</span> <span class="o">=</span> <span class="o">(</span><span class="n">LayoutParams</span><span class="o">)</span> <span class="n">child</span><span class="o">.</span><span class="na">getLayoutParams</span><span class="o">();</span>
+                <span class="k">if</span> <span class="o">(</span><span class="n">lp</span> <span class="o">==</span> <span class="kc">null</span> <span class="o">||</span> <span class="o">!</span><span class="n">lp</span><span class="o">.</span><span class="na">isDecor</span><span class="o">)</span> <span class="o">{</span>
+                    <span class="kd">final</span> <span class="kt">int</span> <span class="n">widthSpec</span> <span class="o">=</span> <span class="n">MeasureSpec</span><span class="o">.</span><span class="na">makeMeasureSpec</span><span class="o">(</span>
+                            <span class="o">(</span><span class="kt">int</span><span class="o">)</span> <span class="o">(</span><span class="n">childWidthSize</span> <span class="o">*</span> <span class="n">lp</span><span class="o">.</span><span class="na">widthFactor</span><span class="o">),</span> <span class="n">MeasureSpec</span><span class="o">.</span><span class="na">EXACTLY</span><span class="o">);</span>
+                    <span class="n">child</span><span class="o">.</span><span class="na">measure</span><span class="o">(</span><span class="n">widthSpec</span><span class="o">,</span> <span class="n">mChildHeightMeasureSpec</span><span class="o">);</span>
+                <span class="o">}</span>
+            <span class="o">}</span>
+        <span class="o">}</span></code></pre></div>
+
+<table>
+  <tbody>
+    <tr>
+      <td>我百思不得其解if (lp == null</td>
+      <td> </td>
+      <td>!lp.isDecor)为何不会出错，如果lp为null，里面的 lp.widthFactor不会报空指针异常的错误么，不过抛开这个疑问，代码的主要功能就是测量子view，与一般的viewgroup一致。</td>
+    </tr>
+  </tbody>
+</table>
+
+  </div><!-- /.entry-content -->
+</article><!-- /.hentry -->
+
+<article class="hentry">
+  <header>
+    
+    <div class="entry-meta">
       <span class="entry-date date published updated"><time datetime="2016-06-23T09:19:36+08:00"><a href="/android/android-udp/">June 23, 2016</a></time></span><span class="author vcard"><span class="fn"><a href="/about/" title="About 陆 伟">陆 伟</a></span></span>
       
       <span class="entry-reading-time">
@@ -196,137 +836,137 @@ communication using NIO. KryoNet uses the Kryo serialization library to automati
 这样就知道了如果搭建一个简单地UDP服务器了。
 这些最基础的UDP连接，对应封装在UDPConnection类中：</p>
 
-<div class="highlight"><pre><code class="language-logos" data-lang="logos"><span class="k">public</span> <span class="k">class</span> <span class="n">UDPConnection</span> <span class="p">{</span>
-    <span class="n">InetSocketAddress</span> <span class="n">connectedAddress</span><span class="p">;</span>
-    <span class="n">DatagramChannel</span> <span class="n">datagramChannel</span><span class="p">;</span>
-    <span class="k">final</span> <span class="n">ByteBuffer</span> <span class="n">readBuffer</span><span class="p">,</span> <span class="n">writeBuffer</span><span class="p">;</span>
-    <span class="k">private</span> <span class="k">final</span> <span class="n">Serialization</span> <span class="n">serialization</span><span class="p">;</span>
-    <span class="k">private</span> <span class="n">SelectionKey</span> <span class="n">selectionKey</span><span class="p">;</span>
-    <span class="k">private</span> <span class="k">final</span> <span class="n">Object</span> <span class="n">writeLock</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Object</span><span class="p">();</span>
-    <span class="p">......</span>
-<span class="p">}</span></code></pre></div>
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span class="kd">public</span> <span class="kd">class</span> <span class="nc">UDPConnection</span> <span class="o">{</span>
+    <span class="n">InetSocketAddress</span> <span class="n">connectedAddress</span><span class="o">;</span>
+    <span class="n">DatagramChannel</span> <span class="n">datagramChannel</span><span class="o">;</span>
+    <span class="kd">final</span> <span class="n">ByteBuffer</span> <span class="n">readBuffer</span><span class="o">,</span> <span class="n">writeBuffer</span><span class="o">;</span>
+    <span class="kd">private</span> <span class="kd">final</span> <span class="n">Serialization</span> <span class="n">serialization</span><span class="o">;</span>
+    <span class="kd">private</span> <span class="n">SelectionKey</span> <span class="n">selectionKey</span><span class="o">;</span>
+    <span class="kd">private</span> <span class="kd">final</span> <span class="n">Object</span> <span class="n">writeLock</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">Object</span><span class="o">();</span>
+    <span class="o">......</span>
+<span class="o">}</span></code></pre></div>
 
-<p>从成员变量里面就可以看出来，与NIO的教程里面说的一样有三个角色：<code>buffer</code>、<code>Channel</code>和<code>SelectionKey</code>。同时还有另一个角色：<code>Serialization</code>，也就是我们下面着重会讲的数据解析协议，这个类规定了</p>
+<p>从成员变量里面就可以看出来，与NIO的教程里面说的一样有三个角色：buffer、Channel和SelectionKey。同时还有另一个角色：Serialization，也就是我们下面着重会讲的数据解析协议，这个类规定了</p>
 
 <ol>
   <li>如何从ByteBuffer转化为我们需要的Java对象</li>
   <li>如何从Java对象转化为ByteBuffer</li>
 </ol>
 
-<div class="highlight"><pre><code class="language-logos" data-lang="logos"><span class="k">public</span> <span class="nf">UDPConnection</span><span class="p">(</span><span class="n">Serialization</span> <span class="n">serialization</span><span class="p">,</span> <span class="kt">int</span> <span class="n">writeBufferSize</span><span class="p">,</span> <span class="kt">int</span> <span class="n">objectBufferSize</span><span class="p">)</span> <span class="p">{</span>
-        <span class="k">this</span><span class="p">.</span><span class="n">serialization</span> <span class="o">=</span> <span class="n">serialization</span><span class="p">;</span>
-        <span class="n">readBuffer</span> <span class="o">=</span> <span class="n">ByteBuffer</span><span class="p">.</span><span class="n">allocate</span><span class="p">(</span><span class="n">objectBufferSize</span><span class="p">);</span>
-        <span class="n">writeBuffer</span> <span class="o">=</span> <span class="n">ByteBuffer</span><span class="p">.</span><span class="n">allocateDirect</span><span class="p">(</span><span class="n">writeBufferSize</span><span class="p">);</span>
-    <span class="p">}</span>
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span class="kd">public</span> <span class="nf">UDPConnection</span><span class="o">(</span><span class="n">Serialization</span> <span class="n">serialization</span><span class="o">,</span> <span class="kt">int</span> <span class="n">writeBufferSize</span><span class="o">,</span> <span class="kt">int</span> <span class="n">objectBufferSize</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">serialization</span> <span class="o">=</span> <span class="n">serialization</span><span class="o">;</span>
+        <span class="n">readBuffer</span> <span class="o">=</span> <span class="n">ByteBuffer</span><span class="o">.</span><span class="na">allocate</span><span class="o">(</span><span class="n">objectBufferSize</span><span class="o">);</span>
+        <span class="n">writeBuffer</span> <span class="o">=</span> <span class="n">ByteBuffer</span><span class="o">.</span><span class="na">allocateDirect</span><span class="o">(</span><span class="n">writeBufferSize</span><span class="o">);</span>
+    <span class="o">}</span>
 
-    <span class="k">public</span> <span class="kt">void</span> <span class="nf">bind</span><span class="p">(</span><span class="n">Selector</span> <span class="n">selector</span><span class="p">,</span> <span class="n">InetSocketAddress</span> <span class="n">localPort</span><span class="p">)</span> <span class="k">throws</span> <span class="n">IOException</span> <span class="p">{</span>
-        <span class="n">close</span><span class="p">();</span>
-        <span class="n">readBuffer</span><span class="p">.</span><span class="n">clear</span><span class="p">();</span>
-        <span class="n">writeBuffer</span><span class="p">.</span><span class="n">clear</span><span class="p">();</span>
-        <span class="n">try</span> <span class="p">{</span>
-            <span class="n">datagramChannel</span> <span class="o">=</span> <span class="n">selector</span><span class="p">.</span><span class="n">provider</span><span class="p">().</span><span class="n">openDatagramChannel</span><span class="p">();</span>
-            <span class="n">datagramChannel</span><span class="p">.</span><span class="n">socket</span><span class="p">().</span><span class="n">bind</span><span class="p">(</span><span class="n">localPort</span><span class="p">);</span>
-            <span class="n">datagramChannel</span><span class="p">.</span><span class="n">configureBlocking</span><span class="p">(</span><span class="nb">false</span><span class="p">);</span>
-            <span class="n">selectionKey</span> <span class="o">=</span> <span class="n">datagramChannel</span><span class="p">.</span><span class="k">register</span><span class="p">(</span><span class="n">selector</span><span class="p">,</span> <span class="n">SelectionKey</span><span class="p">.</span><span class="n">OP_READ</span><span class="p">);</span>
-        <span class="p">}</span> <span class="k">catch</span> <span class="p">(</span><span class="n">IOException</span> <span class="n">ex</span><span class="p">)</span> <span class="p">{</span>
-            <span class="n">close</span><span class="p">();</span>
-            <span class="k">throw</span> <span class="n">ex</span><span class="p">;</span>
-        <span class="p">}</span>
-    <span class="p">}</span></code></pre></div>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">bind</span><span class="o">(</span><span class="n">Selector</span> <span class="n">selector</span><span class="o">,</span> <span class="n">InetSocketAddress</span> <span class="n">localPort</span><span class="o">)</span> <span class="kd">throws</span> <span class="n">IOException</span> <span class="o">{</span>
+        <span class="n">close</span><span class="o">();</span>
+        <span class="n">readBuffer</span><span class="o">.</span><span class="na">clear</span><span class="o">();</span>
+        <span class="n">writeBuffer</span><span class="o">.</span><span class="na">clear</span><span class="o">();</span>
+        <span class="k">try</span> <span class="o">{</span>
+            <span class="n">datagramChannel</span> <span class="o">=</span> <span class="n">selector</span><span class="o">.</span><span class="na">provider</span><span class="o">().</span><span class="na">openDatagramChannel</span><span class="o">();</span>
+            <span class="n">datagramChannel</span><span class="o">.</span><span class="na">socket</span><span class="o">().</span><span class="na">bind</span><span class="o">(</span><span class="n">localPort</span><span class="o">);</span>
+            <span class="n">datagramChannel</span><span class="o">.</span><span class="na">configureBlocking</span><span class="o">(</span><span class="kc">false</span><span class="o">);</span>
+            <span class="n">selectionKey</span> <span class="o">=</span> <span class="n">datagramChannel</span><span class="o">.</span><span class="na">register</span><span class="o">(</span><span class="n">selector</span><span class="o">,</span> <span class="n">SelectionKey</span><span class="o">.</span><span class="na">OP_READ</span><span class="o">);</span>
+        <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">IOException</span> <span class="n">ex</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">close</span><span class="o">();</span>
+            <span class="k">throw</span> <span class="n">ex</span><span class="o">;</span>
+        <span class="o">}</span>
+    <span class="o">}</span></code></pre></div>
 
-<p>先看构造函数和bind。构造函数中传入了具体的<code>Serialization</code>，以及各个缓存的大小。
-bind函数作用就是在给定的端口上监听UDP报文，这里使用<code>selector.provider().openDatagramChannel()</code>而不是<code>DatagramChannel.open()</code>还是有一点区别的，方便了我们扩展代码。</p>
+<p>先看构造函数和bind。构造函数中传入了具体的Serialization，以及各个缓存的大小。
+bind函数作用就是在给定的端口上监听UDP报文，这里使用selector.provider().openDatagramChannel()而不是DatagramChannel.open()还是有一点区别的，方便了我们扩展代码。</p>
 
-<div class="highlight"><pre><code class="language-logos" data-lang="logos"><span class="k">public</span> <span class="kt">void</span> <span class="nf">connect</span><span class="p">(</span><span class="n">Selector</span> <span class="n">selector</span><span class="p">,</span> <span class="n">InetSocketAddress</span> <span class="n">remoteAddress</span><span class="p">)</span> <span class="k">throws</span> <span class="n">IOException</span> <span class="p">{</span>
-        <span class="n">close</span><span class="p">();</span>
-        <span class="n">readBuffer</span><span class="p">.</span><span class="n">clear</span><span class="p">();</span>
-        <span class="n">writeBuffer</span><span class="p">.</span><span class="n">clear</span><span class="p">();</span>
-        <span class="n">try</span> <span class="p">{</span>
-            <span class="n">datagramChannel</span> <span class="o">=</span> <span class="n">selector</span><span class="p">.</span><span class="n">provider</span><span class="p">().</span><span class="n">openDatagramChannel</span><span class="p">();</span>
-            <span class="n">datagramChannel</span><span class="p">.</span><span class="n">configureBlocking</span><span class="p">(</span><span class="nb">false</span><span class="p">);</span>
-            <span class="n">datagramChannel</span><span class="p">.</span><span class="n">socket</span><span class="p">().</span><span class="n">bind</span><span class="p">(</span><span class="n">null</span><span class="p">);</span>
-            <span class="n">datagramChannel</span><span class="p">.</span><span class="n">socket</span><span class="p">().</span><span class="n">connect</span><span class="p">(</span><span class="n">remoteAddress</span><span class="p">);</span>
-            <span class="n">selectionKey</span> <span class="o">=</span> <span class="n">datagramChannel</span><span class="p">.</span><span class="k">register</span><span class="p">(</span><span class="n">selector</span><span class="p">,</span> <span class="n">SelectionKey</span><span class="p">.</span><span class="n">OP_READ</span><span class="p">);</span>
-            <span class="n">connectedAddress</span> <span class="o">=</span> <span class="n">remoteAddress</span><span class="p">;</span>
-        <span class="p">}</span> <span class="k">catch</span> <span class="p">(</span><span class="n">Exception</span> <span class="n">ex</span><span class="p">)</span> <span class="p">{</span>
-            <span class="n">close</span><span class="p">();</span>
-            <span class="n">IOException</span> <span class="n">ioEx</span> <span class="o">=</span> <span class="k">new</span> <span class="n">IOException</span><span class="p">(</span><span class="s">&quot;Unable to connect to: &quot;</span> <span class="o">+</span> <span class="n">remoteAddress</span><span class="p">);</span>
-            <span class="n">ioEx</span><span class="p">.</span><span class="n">initCause</span><span class="p">(</span><span class="n">ex</span><span class="p">);</span>
-            <span class="k">throw</span> <span class="n">ioEx</span><span class="p">;</span>
-        <span class="p">}</span>
-    <span class="p">}</span></code></pre></div>
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span class="kd">public</span> <span class="kt">void</span> <span class="nf">connect</span><span class="o">(</span><span class="n">Selector</span> <span class="n">selector</span><span class="o">,</span> <span class="n">InetSocketAddress</span> <span class="n">remoteAddress</span><span class="o">)</span> <span class="kd">throws</span> <span class="n">IOException</span> <span class="o">{</span>
+        <span class="n">close</span><span class="o">();</span>
+        <span class="n">readBuffer</span><span class="o">.</span><span class="na">clear</span><span class="o">();</span>
+        <span class="n">writeBuffer</span><span class="o">.</span><span class="na">clear</span><span class="o">();</span>
+        <span class="k">try</span> <span class="o">{</span>
+            <span class="n">datagramChannel</span> <span class="o">=</span> <span class="n">selector</span><span class="o">.</span><span class="na">provider</span><span class="o">().</span><span class="na">openDatagramChannel</span><span class="o">();</span>
+            <span class="n">datagramChannel</span><span class="o">.</span><span class="na">configureBlocking</span><span class="o">(</span><span class="kc">false</span><span class="o">);</span>
+            <span class="n">datagramChannel</span><span class="o">.</span><span class="na">socket</span><span class="o">().</span><span class="na">bind</span><span class="o">(</span><span class="kc">null</span><span class="o">);</span>
+            <span class="n">datagramChannel</span><span class="o">.</span><span class="na">socket</span><span class="o">().</span><span class="na">connect</span><span class="o">(</span><span class="n">remoteAddress</span><span class="o">);</span>
+            <span class="n">selectionKey</span> <span class="o">=</span> <span class="n">datagramChannel</span><span class="o">.</span><span class="na">register</span><span class="o">(</span><span class="n">selector</span><span class="o">,</span> <span class="n">SelectionKey</span><span class="o">.</span><span class="na">OP_READ</span><span class="o">);</span>
+            <span class="n">connectedAddress</span> <span class="o">=</span> <span class="n">remoteAddress</span><span class="o">;</span>
+        <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">Exception</span> <span class="n">ex</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">close</span><span class="o">();</span>
+            <span class="n">IOException</span> <span class="n">ioEx</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">IOException</span><span class="o">(</span><span class="s">&quot;Unable to connect to: &quot;</span> <span class="o">+</span> <span class="n">remoteAddress</span><span class="o">);</span>
+            <span class="n">ioEx</span><span class="o">.</span><span class="na">initCause</span><span class="o">(</span><span class="n">ex</span><span class="o">);</span>
+            <span class="k">throw</span> <span class="n">ioEx</span><span class="o">;</span>
+        <span class="o">}</span>
+    <span class="o">}</span></code></pre></div>
 
 <p>看到这个方法可能会让人有点困惑，UDP是无连接的，为何还会有connect方法？这里的connect并不是TCP中的建立连接的意思，而是把Channel与该地址绑定，这样以后写数据的时候就会默认写给connect中传入的地址。具体描述可参见<a href="http://tool.oschina.net/uploads/apidocs/jdk-zh/java/nio/channels/DatagramChannel.html#connect(java.net.SocketAddress)">官方文档</a></p>
 
-<div class="highlight"><pre><code class="language-logos" data-lang="logos"><span class="k">public</span> <span class="n">InetSocketAddress</span> <span class="n">readFromAddress</span><span class="p">()</span> <span class="k">throws</span> <span class="n">IOException</span> <span class="p">{</span>
-            <span class="n">DatagramChannel</span> <span class="n">datagramChannel</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="n">datagramChannel</span><span class="p">;</span>
-            <span class="k">if</span> <span class="p">(</span><span class="n">datagramChannel</span> <span class="o">==</span> <span class="n">null</span><span class="p">)</span> <span class="k">throw</span> <span class="k">new</span> <span class="n">SocketException</span><span class="p">(</span><span class="s">&quot;ConnectionWrapper is closed.&quot;</span><span class="p">);</span>
-            <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">datagramChannel</span><span class="p">.</span><span class="n">isConnected</span><span class="p">())</span>
-                <span class="k">return</span> <span class="p">(</span><span class="n">InetSocketAddress</span><span class="p">)</span> <span class="n">datagramChannel</span><span class="p">.</span><span class="n">receive</span><span class="p">(</span><span class="n">readBuffer</span><span class="p">);</span> <span class="c1">// always null on Android &gt;= 5.0</span>
-            <span class="n">datagramChannel</span><span class="p">.</span><span class="n">read</span><span class="p">(</span><span class="n">readBuffer</span><span class="p">);</span>
-            <span class="k">return</span> <span class="n">connectedAddress</span><span class="p">;</span>
-        <span class="p">}</span>
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span class="kd">public</span> <span class="n">InetSocketAddress</span> <span class="nf">readFromAddress</span><span class="o">()</span> <span class="kd">throws</span> <span class="n">IOException</span> <span class="o">{</span>
+            <span class="n">DatagramChannel</span> <span class="n">datagramChannel</span> <span class="o">=</span> <span class="k">this</span><span class="o">.</span><span class="na">datagramChannel</span><span class="o">;</span>
+            <span class="k">if</span> <span class="o">(</span><span class="n">datagramChannel</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span> <span class="k">throw</span> <span class="k">new</span> <span class="nf">SocketException</span><span class="o">(</span><span class="s">&quot;ConnectionWrapper is closed.&quot;</span><span class="o">);</span>
+            <span class="k">if</span> <span class="o">(!</span><span class="n">datagramChannel</span><span class="o">.</span><span class="na">isConnected</span><span class="o">())</span>
+                <span class="k">return</span> <span class="o">(</span><span class="n">InetSocketAddress</span><span class="o">)</span> <span class="n">datagramChannel</span><span class="o">.</span><span class="na">receive</span><span class="o">(</span><span class="n">readBuffer</span><span class="o">);</span> <span class="c1">// always null on Android &gt;= 5.0</span>
+            <span class="n">datagramChannel</span><span class="o">.</span><span class="na">read</span><span class="o">(</span><span class="n">readBuffer</span><span class="o">);</span>
+            <span class="k">return</span> <span class="n">connectedAddress</span><span class="o">;</span>
+        <span class="o">}</span>
     
-        <span class="k">public</span> <span class="n">PacketMessage</span> <span class="n">readObject</span><span class="p">()</span> <span class="p">{</span>
-            <span class="n">readBuffer</span><span class="p">.</span><span class="n">flip</span><span class="p">();</span>
-            <span class="n">try</span> <span class="p">{</span>
-                <span class="n">try</span> <span class="p">{</span>
-                    <span class="n">PacketMessage</span> <span class="n">object</span> <span class="o">=</span> <span class="n">serialization</span><span class="p">.</span><span class="n">read</span><span class="p">(</span><span class="n">readBuffer</span><span class="p">);</span>
-                    <span class="k">if</span> <span class="p">(</span><span class="n">readBuffer</span><span class="p">.</span><span class="n">hasRemaining</span><span class="p">())</span>
-                        <span class="k">throw</span> <span class="k">new</span> <span class="n">Exception</span><span class="p">(</span><span class="s">&quot;Incorrect number of bytes (&quot;</span> <span class="o">+</span> <span class="n">readBuffer</span><span class="p">.</span><span class="n">remaining</span><span class="p">()</span>
-                                <span class="o">+</span> <span class="s">&quot; remaining) used to deserialize object: &quot;</span> <span class="o">+</span> <span class="n">object</span><span class="p">);</span>
-                    <span class="k">if</span> <span class="p">(</span><span class="n">DEBUG</span><span class="p">)</span> <span class="n">info</span><span class="p">(</span><span class="s">&quot;readObject object : &quot;</span> <span class="o">+</span> <span class="n">object</span><span class="p">.</span><span class="n">getClass</span><span class="p">().</span><span class="n">getName</span><span class="p">());</span>
-                    <span class="k">return</span> <span class="n">object</span><span class="p">;</span>
-                <span class="p">}</span> <span class="k">catch</span> <span class="p">(</span><span class="n">Exception</span> <span class="n">ex</span><span class="p">)</span> <span class="p">{</span>
-                    <span class="k">throw</span> <span class="k">new</span> <span class="n">RuntimeException</span><span class="p">(</span><span class="s">&quot;Error during deserialization.&quot;</span><span class="p">,</span> <span class="n">ex</span><span class="p">);</span>
-                <span class="p">}</span>
-            <span class="p">}</span> <span class="n">finally</span> <span class="p">{</span>
-                <span class="n">readBuffer</span><span class="p">.</span><span class="n">clear</span><span class="p">();</span>
-            <span class="p">}</span>
-        <span class="p">}</span>
+        <span class="kd">public</span> <span class="n">PacketMessage</span> <span class="nf">readObject</span><span class="o">()</span> <span class="o">{</span>
+            <span class="n">readBuffer</span><span class="o">.</span><span class="na">flip</span><span class="o">();</span>
+            <span class="k">try</span> <span class="o">{</span>
+                <span class="k">try</span> <span class="o">{</span>
+                    <span class="n">PacketMessage</span> <span class="n">object</span> <span class="o">=</span> <span class="n">serialization</span><span class="o">.</span><span class="na">read</span><span class="o">(</span><span class="n">readBuffer</span><span class="o">);</span>
+                    <span class="k">if</span> <span class="o">(</span><span class="n">readBuffer</span><span class="o">.</span><span class="na">hasRemaining</span><span class="o">())</span>
+                        <span class="k">throw</span> <span class="k">new</span> <span class="nf">Exception</span><span class="o">(</span><span class="s">&quot;Incorrect number of bytes (&quot;</span> <span class="o">+</span> <span class="n">readBuffer</span><span class="o">.</span><span class="na">remaining</span><span class="o">()</span>
+                                <span class="o">+</span> <span class="s">&quot; remaining) used to deserialize object: &quot;</span> <span class="o">+</span> <span class="n">object</span><span class="o">);</span>
+                    <span class="k">if</span> <span class="o">(</span><span class="n">DEBUG</span><span class="o">)</span> <span class="n">info</span><span class="o">(</span><span class="s">&quot;readObject object : &quot;</span> <span class="o">+</span> <span class="n">object</span><span class="o">.</span><span class="na">getClass</span><span class="o">().</span><span class="na">getName</span><span class="o">());</span>
+                    <span class="k">return</span> <span class="n">object</span><span class="o">;</span>
+                <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">Exception</span> <span class="n">ex</span><span class="o">)</span> <span class="o">{</span>
+                    <span class="k">throw</span> <span class="k">new</span> <span class="nf">RuntimeException</span><span class="o">(</span><span class="s">&quot;Error during deserialization.&quot;</span><span class="o">,</span> <span class="n">ex</span><span class="o">);</span>
+                <span class="o">}</span>
+            <span class="o">}</span> <span class="k">finally</span> <span class="o">{</span>
+                <span class="n">readBuffer</span><span class="o">.</span><span class="na">clear</span><span class="o">();</span>
+            <span class="o">}</span>
+        <span class="o">}</span>
     
         <span class="cm">/**</span>
 <span class="cm">         * This method is thread safe.</span>
 <span class="cm">         */</span>
-        <span class="k">public</span> <span class="kt">int</span> <span class="n">send</span><span class="p">(</span><span class="n">PacketMessage</span> <span class="n">object</span><span class="p">,</span> <span class="n">SocketAddress</span> <span class="n">address</span><span class="p">)</span> <span class="k">throws</span> <span class="n">IOException</span> <span class="p">{</span>
-            <span class="n">DatagramChannel</span> <span class="n">datagramChannel</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="n">datagramChannel</span><span class="p">;</span>
-            <span class="k">if</span> <span class="p">(</span><span class="n">datagramChannel</span> <span class="o">==</span> <span class="n">null</span><span class="p">)</span> <span class="k">throw</span> <span class="k">new</span> <span class="n">SocketException</span><span class="p">(</span><span class="s">&quot;ConnectionWrapper is closed.&quot;</span><span class="p">);</span>
-            <span class="n">synchronized</span> <span class="p">(</span><span class="n">writeLock</span><span class="p">)</span> <span class="p">{</span>
-                <span class="n">try</span> <span class="p">{</span>
-                    <span class="n">try</span> <span class="p">{</span>
-                        <span class="k">if</span> <span class="p">(</span><span class="n">DEBUG</span><span class="p">)</span> <span class="n">info</span><span class="p">(</span><span class="s">&quot;send object : &quot;</span> <span class="o">+</span> <span class="n">object</span><span class="p">.</span><span class="n">getClass</span><span class="p">().</span><span class="n">getName</span><span class="p">());</span>
-                        <span class="n">serialization</span><span class="p">.</span><span class="n">write</span><span class="p">(</span><span class="n">writeBuffer</span><span class="p">,</span> <span class="n">object</span><span class="p">);</span>
-                    <span class="p">}</span> <span class="k">catch</span> <span class="p">(</span><span class="n">Exception</span> <span class="n">ex</span><span class="p">)</span> <span class="p">{</span>
-                        <span class="k">throw</span> <span class="k">new</span> <span class="n">RuntimeException</span><span class="p">(</span><span class="s">&quot;Error serializing object of type: &quot;</span> <span class="o">+</span> <span class="n">object</span><span class="p">.</span><span class="n">getClass</span><span class="p">().</span><span class="n">getName</span><span class="p">(),</span> <span class="n">ex</span><span class="p">);</span>
-                    <span class="p">}</span>
-                    <span class="n">writeBuffer</span><span class="p">.</span><span class="n">flip</span><span class="p">();</span>
-                    <span class="kt">int</span> <span class="n">length</span> <span class="o">=</span> <span class="n">writeBuffer</span><span class="p">.</span><span class="n">limit</span><span class="p">();</span>
-                    <span class="n">datagramChannel</span><span class="p">.</span><span class="n">send</span><span class="p">(</span><span class="n">writeBuffer</span><span class="p">,</span> <span class="n">address</span><span class="p">);</span>
-                    <span class="n">boolean</span> <span class="n">wasFullWrite</span> <span class="o">=</span> <span class="o">!</span><span class="n">writeBuffer</span><span class="p">.</span><span class="n">hasRemaining</span><span class="p">();</span>
-                    <span class="k">return</span> <span class="n">wasFullWrite</span> <span class="o">?</span> <span class="nl">length</span> <span class="p">:</span> <span class="o">-</span><span class="mi">1</span><span class="p">;</span>
-                <span class="p">}</span> <span class="n">finally</span> <span class="p">{</span>
-                    <span class="n">writeBuffer</span><span class="p">.</span><span class="n">clear</span><span class="p">();</span>
-                <span class="p">}</span>
-            <span class="p">}</span>
-        <span class="p">}</span></code></pre></div>
+        <span class="kd">public</span> <span class="kt">int</span> <span class="nf">send</span><span class="o">(</span><span class="n">PacketMessage</span> <span class="n">object</span><span class="o">,</span> <span class="n">SocketAddress</span> <span class="n">address</span><span class="o">)</span> <span class="kd">throws</span> <span class="n">IOException</span> <span class="o">{</span>
+            <span class="n">DatagramChannel</span> <span class="n">datagramChannel</span> <span class="o">=</span> <span class="k">this</span><span class="o">.</span><span class="na">datagramChannel</span><span class="o">;</span>
+            <span class="k">if</span> <span class="o">(</span><span class="n">datagramChannel</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span> <span class="k">throw</span> <span class="k">new</span> <span class="nf">SocketException</span><span class="o">(</span><span class="s">&quot;ConnectionWrapper is closed.&quot;</span><span class="o">);</span>
+            <span class="kd">synchronized</span> <span class="o">(</span><span class="n">writeLock</span><span class="o">)</span> <span class="o">{</span>
+                <span class="k">try</span> <span class="o">{</span>
+                    <span class="k">try</span> <span class="o">{</span>
+                        <span class="k">if</span> <span class="o">(</span><span class="n">DEBUG</span><span class="o">)</span> <span class="n">info</span><span class="o">(</span><span class="s">&quot;send object : &quot;</span> <span class="o">+</span> <span class="n">object</span><span class="o">.</span><span class="na">getClass</span><span class="o">().</span><span class="na">getName</span><span class="o">());</span>
+                        <span class="n">serialization</span><span class="o">.</span><span class="na">write</span><span class="o">(</span><span class="n">writeBuffer</span><span class="o">,</span> <span class="n">object</span><span class="o">);</span>
+                    <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">Exception</span> <span class="n">ex</span><span class="o">)</span> <span class="o">{</span>
+                        <span class="k">throw</span> <span class="k">new</span> <span class="nf">RuntimeException</span><span class="o">(</span><span class="s">&quot;Error serializing object of type: &quot;</span> <span class="o">+</span> <span class="n">object</span><span class="o">.</span><span class="na">getClass</span><span class="o">().</span><span class="na">getName</span><span class="o">(),</span> <span class="n">ex</span><span class="o">);</span>
+                    <span class="o">}</span>
+                    <span class="n">writeBuffer</span><span class="o">.</span><span class="na">flip</span><span class="o">();</span>
+                    <span class="kt">int</span> <span class="n">length</span> <span class="o">=</span> <span class="n">writeBuffer</span><span class="o">.</span><span class="na">limit</span><span class="o">();</span>
+                    <span class="n">datagramChannel</span><span class="o">.</span><span class="na">send</span><span class="o">(</span><span class="n">writeBuffer</span><span class="o">,</span> <span class="n">address</span><span class="o">);</span>
+                    <span class="kt">boolean</span> <span class="n">wasFullWrite</span> <span class="o">=</span> <span class="o">!</span><span class="n">writeBuffer</span><span class="o">.</span><span class="na">hasRemaining</span><span class="o">();</span>
+                    <span class="k">return</span> <span class="n">wasFullWrite</span> <span class="o">?</span> <span class="n">length</span> <span class="o">:</span> <span class="o">-</span><span class="mi">1</span><span class="o">;</span>
+                <span class="o">}</span> <span class="k">finally</span> <span class="o">{</span>
+                    <span class="n">writeBuffer</span><span class="o">.</span><span class="na">clear</span><span class="o">();</span>
+                <span class="o">}</span>
+            <span class="o">}</span>
+        <span class="o">}</span></code></pre></div>
 
-<p>这三个方法中<code>readFromAddress</code>是从通道中读取数据到<code>ByteBuffer</code>，<code>readObject</code>使用规定的<code>Serialization</code>从<code>ByteBuffer</code>转为Java对象，<code>send</code>将Java对象写入通道。有了这些基础方法后就可以在上层设计UDP连接框架了。</p>
+<p>这三个方法中readFromAddress是从通道中读取数据到ByteBuffer，readObject使用规定的Serialization从ByteBuffer转为Java对象，send将Java对象写入通道。有了这些基础方法后就可以在上层设计UDP连接框架了。</p>
 
-<p>这里使用了静态代理的设计思路，<code>UDPConnection</code>是<code>IConnection</code>的一个实现，<code>ConnectionWrapper</code>是<code>IConnection</code>的一个代理；<code>ConnectionWrapper</code>中使用的是<code>UDPConnection</code>的实现。<code>ConnectionWrapper</code>中还有一个属性是<code>EndPoint</code>类型的对象，<code>ConnectionWrapper</code>中主要使用的是<code>EndPoint</code>的<code>reconnect</code>实现。</p>
+<p>这里使用了静态代理的设计思路，UDPConnection是IConnection的一个实现，ConnectionWrapper是IConnection的一个代理；ConnectionWrapper中使用的是UDPConnection的实现。ConnectionWrapper中还有一个属性是EndPoint类型的对象，ConnectionWrapper中主要使用的是EndPoint的reconnect实现。</p>
 
 <p>EndPoint定义了一个UDP端的控制接口。</p>
 
 <ol>
-  <li><code>Serialization getSerialization();</code> 获取数据序列化的实现</li>
-  <li><code>addListener(Listener listener);</code> 添加上面所说的五中状态的监听</li>
-  <li><code>removeListener(Listener listener);</code>删除状态监听</li>
-  <li><code>run();</code>继承的<code>Runnable</code>，读取消息的循环，运行在独立线程中</li>
-  <li><code>reconnect();</code>重连</li>
-  <li><code>start();</code>开启一个线程运行<code>run()</code></li>
-  <li><code>stop();</code>停止run()并重置Selector状态</li>
-  <li><code>close();</code>状态置为关闭，关闭通道，重置<code>Selector</code></li>
-  <li><code>update(int timeout);</code>读取一次数据的实现，<code>run</code>中会循环调用该方法</li>
-  <li><code>getUpdateThread();</code>获取读取数据的线程，这是为了判断建立连接的线程与读取数据的线程是否相同，建立连接的过程会block线程，因此不能使用同一个线程，否则会卡死。</li>
+  <li>Serialization getSerialization(); 获取数据序列化的实现</li>
+  <li>addListener(Listener listener); 添加上面所说的五中状态的监听</li>
+  <li>removeListener(Listener listener);删除状态监听</li>
+  <li>run();继承的Runnable，读取消息的循环，运行在独立线程中</li>
+  <li>reconnect();重连</li>
+  <li>start();开启一个线程运行run()</li>
+  <li>stop();停止run()并重置Selector状态</li>
+  <li>close();状态置为关闭，关闭通道，重置Selector</li>
+  <li>update(int timeout);读取一次数据的实现，run中会循环调用该方法</li>
+  <li>getUpdateThread();获取读取数据的线程，这是为了判断建立连接的线程与读取数据的线程是否相同，建立连接的过程会block线程，因此不能使用同一个线程，否则会卡死。</li>
 </ol>
 
 <p>这些接口里面只有1、2、3、5、6、7、8是提供给外部控制Client状态的。</p>
@@ -337,30 +977,30 @@ bind函数作用就是在给定的端口上监听UDP报文，这里使用<code>s
   <li>
     <p>创建Client</p>
 
-    <p><code>client = new Client() {};</code></p>
+    <p>client = new Client() {};</p>
   </li>
   <li>
     <p>配置状态回调，启动Client，开始监听UDP报文</p>
 
-    <p><code>client.start();</code></p>
+    <p>client.start();</p>
 
-    <p><code>client.addListener(new com.transport.Listener());</code></p>
+    <p>client.addListener(new com.transport.Listener());</p>
   </li>
   <li>
     <p>开启另一个线程开始连接服务器</p>
   </li>
 </ol>
 
-<div class="highlight"><pre><code class="language-logos" data-lang="logos"><span class="k">new</span> <span class="nf">Thread</span><span class="p">(</span><span class="s">&quot;Connect&quot;</span><span class="p">)</span> <span class="p">{</span>
-       <span class="k">public</span> <span class="kt">void</span> <span class="n">run</span><span class="p">()</span> <span class="p">{</span>
-           <span class="n">try</span> <span class="p">{</span>
-               <span class="n">client</span><span class="p">.</span><span class="n">connect</span><span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="n">Integer</span><span class="p">.</span><span class="n">parseInt</span><span class="p">(</span><span class="n">port</span><span class="p">));</span> 
-           <span class="p">}</span> <span class="k">catch</span> <span class="p">(</span><span class="n">IOException</span> <span class="n">ex</span><span class="p">)</span> <span class="p">{</span>
-               <span class="n">ex</span><span class="p">.</span><span class="n">printStackTrace</span><span class="p">();</span>
-               <span class="n">System</span><span class="p">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
-           <span class="p">}</span>
-       <span class="p">}</span>
-   <span class="p">}.</span><span class="n">start</span><span class="p">();</span></code></pre></div>
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span class="k">new</span> <span class="nf">Thread</span><span class="o">(</span><span class="s">&quot;Connect&quot;</span><span class="o">)</span> <span class="o">{</span>
+       <span class="kd">public</span> <span class="kt">void</span> <span class="nf">run</span><span class="o">()</span> <span class="o">{</span>
+           <span class="k">try</span> <span class="o">{</span>
+               <span class="n">client</span><span class="o">.</span><span class="na">connect</span><span class="o">(</span><span class="n">host</span><span class="o">,</span> <span class="n">Integer</span><span class="o">.</span><span class="na">parseInt</span><span class="o">(</span><span class="n">port</span><span class="o">));</span> 
+           <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">IOException</span> <span class="n">ex</span><span class="o">)</span> <span class="o">{</span>
+               <span class="n">ex</span><span class="o">.</span><span class="na">printStackTrace</span><span class="o">();</span>
+               <span class="n">System</span><span class="o">.</span><span class="na">exit</span><span class="o">(</span><span class="mi">1</span><span class="o">);</span>
+           <span class="o">}</span>
+       <span class="o">}</span>
+   <span class="o">}.</span><span class="na">start</span><span class="o">();</span></code></pre></div>
 
 <p>需要注意的是必须要先启动Client后在建立连接，因为我们这里建立连接做的事情是1.给Channel绑定服务器的地址 2.给服务器发送一个心跳包，然后block线程，等待心跳ACK，超时断开连接；收到ACK唤醒线程，通知状态监听</p>
 
@@ -370,19 +1010,19 @@ bind函数作用就是在给定的端口上监听UDP报文，这里使用<code>s
   <li>
     <p>创建Server</p>
 
-    <p><code>server = new Server() {};</code></p>
+    <p>server = new Server() {};</p>
   </li>
   <li>
     <p>配置状态回调，启动Client，开始监听UDP报文，收到报文后默认返回ACK</p>
 
-    <p><code>server.addListener(new Listener());</code></p>
+    <p>server.addListener(new Listener());</p>
 
-    <p><code>server.start();</code></p>
+    <p>server.start();</p>
   </li>
   <li>
     <p>绑定端口，服务器没有建立连接的步骤，不会造成线程block</p>
 
-    <p><code>server.bind(54555);</code></p>
+    <p>server.bind(54555);</p>
   </li>
 </ol>
 
@@ -400,13 +1040,13 @@ bind函数作用就是在给定的端口上监听UDP报文，这里使用<code>s
   <li>发送数据包失败。与1一样，认为数据通道破坏了。</li>
 </ol>
 
-<p>对应的代码调用可以全局搜索<code>reconnect();</code>的调用</p>
+<p>对应的代码调用可以全局搜索reconnect();的调用</p>
 
 <h4 id="section-2">超时重发</h4>
-<p>上面在介绍<code>EndPoint</code>的时候说过了<code>update(int timeout)</code>，运行在独立的线程中，这个方法做了3件事情：</p>
+<p>上面在介绍EndPoint的时候说过了update(int timeout)，运行在独立的线程中，这个方法做了3件事情：</p>
 
 <ol>
-  <li>检测<code>Selector</code>是否有数据通道处于ready状态，如果有，进入读取数据的逻辑。</li>
+  <li>检测Selector是否有数据通道处于ready状态，如果有，进入读取数据的逻辑。</li>
   <li>检测并发送心跳包。</li>
   <li>检测等待ACK的包，是否有等待的包超时了，有并且已经超出重发次数上线，重连；没有超出重发次数上线则重发数据包，并将该数据包移出等待ACK的列表。</li>
 </ol>
@@ -415,7 +1055,7 @@ bind函数作用就是在给定的端口上监听UDP报文，这里使用<code>s
 
 <h4 id="section-3">心跳</h4>
 
-<p>心跳也是在<code>update</code>函数中检测的，目前定义的是一分钟一次，在update函数中判断距离上次发送心跳的时间，到了一分钟就发送一次心跳，然后重置最近一次发送心跳的时间。这里需要注意的
+<p>心跳也是在update函数中检测的，目前定义的是一分钟一次，在update函数中判断距离上次发送心跳的时间，到了一分钟就发送一次心跳，然后重置最近一次发送心跳的时间。这里需要注意的
 是重置发送心跳的时间是写在发送数据包的函数中的，因为我们有可能会出现心跳包重发的情况，因此在发送数据包的时候来判断是否属心跳包，以此为依据来更新最新一次数据包的发送时间。
 重连的时候不会发送还在等待ACK的心跳包，心跳包会直接抛弃。</p>
 
@@ -423,24 +1063,24 @@ bind函数作用就是在给定的端口上监听UDP报文，这里使用<code>s
 
 <p>首先需要看下序列化接口的定义：</p>
 
-<div class="highlight"><pre><code class="language-logos" data-lang="logos"><span class="k">public</span> <span class="n">interface</span> <span class="n">Serialization</span> <span class="p">{</span>
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span class="kd">public</span> <span class="kd">interface</span> <span class="nc">Serialization</span> <span class="o">{</span>
 
-    <span class="kt">void</span> <span class="n">write</span><span class="p">(</span><span class="n">ByteBuffer</span> <span class="n">buffer</span><span class="p">,</span> <span class="n">PacketMessage</span> <span class="n">packet</span><span class="p">);</span>
+    <span class="kt">void</span> <span class="nf">write</span><span class="o">(</span><span class="n">ByteBuffer</span> <span class="n">buffer</span><span class="o">,</span> <span class="n">PacketMessage</span> <span class="n">packet</span><span class="o">);</span>
 
-    <span class="n">PacketMessage</span> <span class="nf">read</span><span class="p">(</span><span class="n">ByteBuffer</span> <span class="n">buffer</span><span class="p">);</span>
+    <span class="n">PacketMessage</span> <span class="nf">read</span><span class="o">(</span><span class="n">ByteBuffer</span> <span class="n">buffer</span><span class="o">);</span>
 
     <span class="cm">/**</span>
 <span class="cm">     * The fixed number of bytes that will be written by {@link #writeLength(ByteBuffer, int)} and read by</span>
 <span class="cm">     * {@link #readLength(ByteBuffer)}.</span>
 <span class="cm">     */</span>
-    <span class="kt">int</span> <span class="nf">getLengthLength</span><span class="p">();</span>
+    <span class="kt">int</span> <span class="nf">getLengthLength</span><span class="o">();</span>
 
-    <span class="kt">void</span> <span class="nf">writeLength</span><span class="p">(</span><span class="n">ByteBuffer</span> <span class="n">buffer</span><span class="p">,</span> <span class="kt">int</span> <span class="n">length</span><span class="p">);</span>
+    <span class="kt">void</span> <span class="nf">writeLength</span><span class="o">(</span><span class="n">ByteBuffer</span> <span class="n">buffer</span><span class="o">,</span> <span class="kt">int</span> <span class="n">length</span><span class="o">);</span>
 
-    <span class="kt">int</span> <span class="nf">readLength</span><span class="p">(</span><span class="n">ByteBuffer</span> <span class="n">buffer</span><span class="p">);</span>
-<span class="p">}</span></code></pre></div>
+    <span class="kt">int</span> <span class="nf">readLength</span><span class="o">(</span><span class="n">ByteBuffer</span> <span class="n">buffer</span><span class="o">);</span>
+<span class="o">}</span></code></pre></div>
 
-<p>这里我们规定了<code>ByteBuffer</code>与<code>PacketMessage</code>之间的互相转化接口，具体实现写在<code>PacketSerialization</code>中。这里不太想赘述了，代码中已经写得很详细了。</p>
+<p>这里我们规定了ByteBuffer与PacketMessage之间的互相转化接口，具体实现写在PacketSerialization中。这里不太想赘述了，代码中已经写得很详细了。</p>
 
 <h3 id="demo">如何运行Demo</h3>
 
@@ -1326,322 +1966,6 @@ _YYModelPropertyMeta把YYClassPropertyInfo中的get和set方法名转化成了SE
 
 <h4 id="section-9">处理横竖屏切换</h4>
 <p>这个很简单，横竖屏切换会触发layoutSubviews方法，在layoutSubviews方法里重绘即可。</p>
-
-  </div><!-- /.entry-content -->
-</article><!-- /.hentry -->
-
-<article class="hentry">
-  <header>
-    
-    <div class="entry-meta">
-      <span class="entry-date date published updated"><time datetime="2015-10-22T17:10:07+08:00"><a href="/ios/record/scrollview/">October 22, 2015</a></time></span><span class="author vcard"><span class="fn"><a href="/about/" title="About 陆 伟">陆 伟</a></span></span>
-      
-      <span class="entry-reading-time">
-        <i class="fa fa-clock-o"></i>
-        
-        Reading time ~2 minutes
-      </span><!-- /.entry-reading-time -->
-      
-    </div><!-- /.entry-meta -->
-    
-      <h1 class="entry-title"><a href="/ios/record/scrollview/" rel="bookmark" title="关于ScrollView的学习" itemprop="url">关于ScrollView的学习</a></h1>
-    
-  </header>
-  <div class="entry-content">
-    <h3 id="section">写在前面的话</h3>
-<hr />
-<p>ScrollView应该是ios里面最常用的控件之一了，前两天在项目<a href="https://www.9panart.com/html/passport/passport_login.html?ran=19406317709945142">泛艺术App</a>里面寻找一个UI的解决方案的时候曾经想过使用ScrollView，
-虽然最后使用的是它的儿子TableView，中间还是在ScrollView上吃了点苦头，
-于是才决定写个demo好好研究下ScrollView。</p>
-
-<h3 id="scrollview">ScrollView的探究过程</h3>
-<hr />
-<p>ScrollView的特性相信大家都知道，有几个非常重要的属性：frame，contentSize，contentOffset，contentInset</p>
-
-<div class="highlight"><pre><code class="language-logos" data-lang="logos"><span class="p">-(</span><span class="bp">UIScrollView</span> <span class="o">*</span><span class="p">)</span><span class="nf">scrollView</span><span class="p">{</span>
-    <span class="k">if</span> <span class="p">(</span><span class="n">_scrollView</span> <span class="o">==</span> <span class="nb">nil</span><span class="p">)</span> <span class="p">{</span>
-        <span class="n">_scrollView</span>                 <span class="o">=</span> <span class="p">[[</span><span class="bp">UIScrollView</span> <span class="n">alloc</span><span class="p">]</span> <span class="n">init</span><span class="p">];</span>
-        <span class="n">_scrollView</span><span class="p">.</span><span class="n">delegate</span>        <span class="o">=</span> <span class="nb">self</span><span class="p">;</span>
-        <span class="n">_scrollView</span><span class="p">.</span><span class="n">scrollEnabled</span>   <span class="o">=</span> <span class="nb">true</span><span class="p">;</span>
-        <span class="n">_scrollView</span><span class="p">.</span><span class="n">bounces</span>         <span class="o">=</span> <span class="nb">true</span><span class="p">;</span>
-        <span class="n">_scrollView</span><span class="p">.</span><span class="n">showsHorizontalScrollIndicator</span>  <span class="o">=</span> <span class="nb">false</span><span class="p">;</span>
-        <span class="n">_scrollView</span><span class="p">.</span><span class="n">showsVerticalScrollIndicator</span>    <span class="o">=</span> <span class="nb">true</span><span class="p">;</span>
-        <span class="n">_scrollView</span><span class="p">.</span><span class="n">userInteractionEnabled</span>          <span class="o">=</span> <span class="nb">YES</span><span class="p">;</span>
-        <span class="n">_scrollView</span><span class="p">.</span><span class="n">backgroundColor</span>                 <span class="o">=</span> <span class="p">[</span><span class="bp">UIColor</span> <span class="n">blueColor</span><span class="p">];</span>
-        <span class="n">_scrollView</span><span class="p">.</span><span class="n">contentInset</span>                    <span class="o">=</span> <span class="n">UIEdgeInsetsMake</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
-        <span class="p">[</span><span class="nb">self</span><span class="p">.</span><span class="n">view</span> <span class="nl">addSubview</span><span class="p">:</span><span class="n">_scrollView</span><span class="p">];</span>
-        <span class="p">[</span><span class="n">_scrollView</span> <span class="nl">mas_makeConstraints</span><span class="p">:</span><span class="o">^</span><span class="p">(</span><span class="n">MASConstraintMaker</span> <span class="o">*</span><span class="n">make</span><span class="p">)</span> <span class="p">{</span>
-            <span class="n">make</span><span class="p">.</span><span class="n">left</span><span class="p">.</span><span class="n">equalTo</span><span class="p">(</span><span class="nb">self</span><span class="p">.</span><span class="n">view</span><span class="p">.</span><span class="n">mas_left</span><span class="p">);</span>
-            <span class="n">make</span><span class="p">.</span><span class="n">top</span><span class="p">.</span><span class="n">equalTo</span><span class="p">(</span><span class="nb">self</span><span class="p">.</span><span class="n">view</span><span class="p">.</span><span class="n">mas_top</span><span class="p">);</span>
-            <span class="n">make</span><span class="p">.</span><span class="n">right</span><span class="p">.</span><span class="n">equalTo</span><span class="p">(</span><span class="nb">self</span><span class="p">.</span><span class="n">view</span><span class="p">.</span><span class="n">mas_right</span><span class="p">);</span>
-            <span class="n">make</span><span class="p">.</span><span class="n">bottom</span><span class="p">.</span><span class="n">equalTo</span><span class="p">(</span><span class="nb">self</span><span class="p">.</span><span class="n">view</span><span class="p">.</span><span class="n">mas_bottom</span><span class="p">);</span>
-        
-  
-    <span class="k">return</span> <span class="n">_scrollView</span><span class="p">;</span>
-<span class="p">}</span>
-<span class="o">-</span><span class="p">(</span><span class="bp">UIView</span> <span class="o">*</span><span class="p">)</span><span class="n">containerView</span><span class="p">{</span>
-    <span class="k">if</span> <span class="p">(</span><span class="n">_containerView</span> <span class="o">==</span> <span class="nb">nil</span><span class="p">)</span> <span class="p">{</span>
-        <span class="n">_containerView</span> <span class="o">=</span> <span class="p">[[</span><span class="bp">UIView</span> <span class="n">alloc</span><span class="p">]</span> <span class="n">init</span><span class="p">];</span>
-        <span class="p">[</span><span class="nb">self</span><span class="p">.</span><span class="n">scrollView</span> <span class="nl">addSubview</span><span class="p">:</span><span class="n">_containerView</span><span class="p">];</span>
-        <span class="p">[</span><span class="n">_containerView</span> <span class="nl">mas_makeConstraints</span><span class="p">:</span><span class="o">^</span><span class="p">(</span><span class="n">MASConstraintMaker</span> <span class="o">*</span><span class="n">make</span><span class="p">)</span> <span class="p">{</span>
-            <span class="n">make</span><span class="p">.</span><span class="n">left</span><span class="p">.</span><span class="n">equalTo</span><span class="p">(</span><span class="nb">self</span><span class="p">.</span><span class="n">view</span><span class="p">.</span><span class="n">mas_left</span><span class="p">);</span>
-            <span class="n">make</span><span class="p">.</span><span class="n">top</span><span class="p">.</span><span class="n">equalTo</span><span class="p">(</span><span class="l">@(</span><span class="mi">0</span><span class="l">)</span><span class="p">);</span>
-            <span class="n">make</span><span class="p">.</span><span class="n">right</span><span class="p">.</span><span class="n">equalTo</span><span class="p">(</span><span class="nb">self</span><span class="p">.</span><span class="n">view</span><span class="p">.</span><span class="n">mas_right</span><span class="p">);</span>
-            <span class="n">make</span><span class="p">.</span><span class="n">height</span><span class="p">.</span><span class="n">equalTo</span><span class="p">(</span><span class="l">@(</span><span class="n">SCREEN_HEIGHT</span> <span class="o">*</span> <span class="mi">2</span><span class="l">)</span><span class="p">);</span>
-        <span class="p">}];</span>
-        <span class="nb">self</span><span class="p">.</span><span class="n">scrollView</span><span class="p">.</span><span class="n">contentSize</span> <span class="o">=</span> <span class="n">CGSizeMake</span><span class="p">(</span><span class="n">SCREEN_WIDTH</span><span class="p">,</span> <span class="n">SCREEN_HEIGHT</span> <span class="o">*</span> <span class="mi">2</span><span class="p">);</span>
-    <span class="p">}</span>
-    <span class="k">return</span> <span class="n">_containerView</span><span class="p">;</span>
-<span class="p">}</span>
-<span class="o">-</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="nl">viewDidAppear</span><span class="p">:(</span><span class="kt">BOOL</span><span class="p">)</span><span class="n">animated</span><span class="p">{</span>
-    <span class="p">[</span><span class="nb">super</span> <span class="nl">viewDidAppear</span><span class="p">:</span><span class="n">animated</span><span class="p">];</span>
-     <span class="n">NSLog</span><span class="p">(</span><span class="s">@&quot;%f %f&quot;</span><span class="p">,</span><span class="nb">self</span><span class="p">.</span><span class="n">containerView</span><span class="p">.</span><span class="n">frame</span><span class="p">.</span><span class="n">origin</span><span class="p">.</span><span class="n">x</span><span class="p">,</span><span class="nb">self</span><span class="p">.</span><span class="n">containerView</span><span class="p">.</span><span class="n">frame</span><span class="p">.</span><span class="n">origin</span><span class="p">.</span><span class="n">y</span><span class="p">);</span>
-<span class="p">}</span></code></pre></div>
-
-<ul>
-  <li>contentInset:之所以首先说contentInset这个属性是因为我自己就被网上很多不负责任的言论坑过。contentInset只是contentSize的四个边增加了一块区域，仅此而已。
-网上有人说：“contentInset是scrollView的contentView的顶点相对于scrollView的位置，例如你的contentInset = (0 ,100)，那么你的contentView就是从scrollView的(0 ,100)开始显示。”这句话完全就是在放P。
-contentInset不会对contentView产生任何影响.上面是我demo里面的一段代码，我使用了<a href="https://github.com/SnapKit/Masonry">Masonry这个库</a>在代码里面设置约束，比IOS自带的接口方便好用几百倍。
-可以看到我在scrollView中添加了一个高度为两个屏幕高度的containerView，并且设置了contentSize和contentInset。结果打印出来的containerView的坐标是(0,0)，也就是说contentInset并不会影响containerView的位置。
-这个也很合理，因为我们并不想看到contentInset，必然不能把containerView的坐标给改了，否则程序一开始显示的就会是contentInset的内容了。</li>
-  <li>frame:也是一个让我迷惑的属性。从我上面的代码里可以看到，我并没有明确的设置frame，由此可以得出结论：frame可以通过scrollView的约束条件来设置，这无疑是一个好消息。</li>
-  <li>contentSize:这个属性就更加迷惑了。我在网上看到过一篇博客，是讲如何对scrollView使用autoLayout。
-博客里面的代码很简单，一个scrollView包含一个containerView，然后在containerView里面添加子View。然后问题就简化成只需要保证containerView跟scrollView的约束正确，containerView里面的内容布局跟普通的布局一样。
-<a href="http://www.cocoachina.com/ios/20141011/9871.html">原文说：”我们知道scroll view除了自身的布局需要考虑（x, y, width, height）外，还有一个contentSize属性也必须要在布局的过程中进行确定，contentSize是UIScrollView用于确定它所 要展示的内容尺寸的大小，而这个contentSize在布局中实际上是又scroll view的子view :content view的宽和高实现的，注意：我们不能将content view的宽和高的约束设定为由scroll view决定（如和scroll view等宽、等高）,否则，Xcode会有警告：scroll view的content size不确定！在这种情况下，我们必须要对content view的布局约束引入scroll view之外其他参照物，我们拖进来一个辅助的view作为参照物or锚点。通过这个参考view，确定content view的宽度和高度，尽管content view的尺寸可以不依赖于scroll view，但我们还不得不设定content view 和其父view的关系：具体而言就是要确定content view和scroll view的top, bottom, leading和trailing contstraints，这个地方可能比较具有迷惑性，原因是苹果对于这四个约束的使用在scroll view中做了变化：它不再是确定content view尺寸的依据，而是帮助scroll view中content view四周的边界（or你可以理解为留白），进而确定scroll view的contentSize属性。”</a>
-从这些话我推测如果是通过sb文件创建出来的scrollView会自动设置contentSize大小，问题是这个大小是怎么确定的，是不是就真的是scrollView里面所有内容的大小，还是scrollView的frame大小。
-通过我写的一个demo我得出了最终结论：scrollView的contentView是根据里面所有内容的大小设定的。</li>
-  <li>contentOffset:这个属性没啥好说的，决定了scrollView显示的内容的起始点。</li>
-</ul>
-
-<h3 id="scrollview-1">ScrollView的额外问题</h3>
-<hr />
-<p>通过上面的探究过程可以知道我们可以直接在sb文件里面对scrollView使用autoLayout。由此引发了我一个疑问：能否通过修改containerView的高度约束来修改scrollView的contentSize么，还是说scrollView的contentSize在awakeFromNib的时候就定死了，只能通过手动设置重新改大小呢？
-通过demo测试发现，这个想法是可行的，但是在重新设置了约束之后需要调用<code>[self.view layoutIfNeeded];</code>这样scrollView才会重新计算contentSize。
-还有个相似的方法<code>[self.view updateConstraints];</code>这个方法不会立马更新scrollView的contentSize，而是在一定时间后更新，我猜测这个时间应该就是更新UI的动画时间。
-为了防止计算出错还是建议都使用layoutIfNeeded方法。</p>
-
-<h3 id="scrollview-2">ScrollView的总结</h3>
-<hr />
-<p>关于scrollView目前想知道的就这些，这篇博客做个总结：使用scrollView最好是只添加一个UIView作为容器View，然后再在这个容器View里面设置你的布局。
-这种方式很像Android的XML文件布局，只有一个LinearLayout作为容器。这样做的好处就是更改contentSize非常方便，直接修改容器View的高度约束，然后调用layoutIfNeeded方法就可。
-切记要给容器View设置上下左右间距以及宽高.</p>
-
-
-  </div><!-- /.entry-content -->
-</article><!-- /.hentry -->
-
-<article class="hentry">
-  <header>
-    
-      <div class="entry-image-index">
-        <a href="/ios/structure/mbxpageviewcontroller/" title="MBXPageViewController的两点优化修改"><img src="/images/photo01.jpg" alt="MBXPageViewController的两点优化修改"></a>
-      </div><!-- /.entry-image -->
-    
-    <div class="entry-meta">
-      <span class="entry-date date published updated"><time datetime="2015-10-20T19:21:56+08:00"><a href="/ios/structure/mbxpageviewcontroller/">October 20, 2015</a></time></span><span class="author vcard"><span class="fn"><a href="/about/" title="About 陆 伟">陆 伟</a></span></span>
-      
-      <span class="entry-reading-time">
-        <i class="fa fa-clock-o"></i>
-        
-        Reading time ~5 minutes
-      </span><!-- /.entry-reading-time -->
-      
-    </div><!-- /.entry-meta -->
-    
-      <h1 class="entry-title"><a href="/ios/structure/mbxpageviewcontroller/" rel="bookmark" title="MBXPageViewController的两点优化修改" itemprop="url">MBXPageViewController的两点优化修改</a></h1>
-    
-  </header>
-  <div class="entry-content">
-    <h3 id="mbxpageviewcontroller">MBXPageViewController是什么？</h3>
-<hr />
-<figure>
-	<img src="/images/IOS/structure/MBXPageViewController/scrollDelegateBefore.gif" alt="项目实例" />
-	<figcaption><a href="https://www.9panart.com/html/passport/passport_login.html?ran=19406317709945142">泛艺术客户端.</a></figcaption>
-</figure>
-<p>这里是<a href="https://github.com/Moblox/MBXPageViewController">原作者的主页</a>，Moblox也是参照的其他作者的源代码改的，为了集成更多的样式。
-这个控件是我一个同事集成到项目中来的，集成后UI那边添加了两个需求：</p>
-
-<ol>
-  <li>点击title上面的按钮需要让当前页面滚动到顶部</li>
-  <li>title下面的tabIndicator需要跟页面同步滑动。</li>
-</ol>
-
-<p>于是我不得不去研究了下MBXPageViewController的源码。</p>
-
-<p>MBXPageViewController是仿照RKSwipeBetweenViewControllers写的，通过源码可以看出并不是一个完成品，因为RKSwipeBetweenViewControllers是支持tabIndicator与页面同步滑动的。
-所以第二个问题就简单了，把MBXPageViewController完成就可以了。</p>
-
-<p>首先我对比了MBXPageViewController和RKSwipeBetweenViewControllers的优缺点。虽然MBXPageViewController的watch和fork远低于RKSwipeBetweenViewControllers，
-MBXPageViewController的使用还是远远比RKSwipeBetweenViewControllers简单清晰，而且能适应更多的特殊UI情况。</p>
-
-<p>使用MBXPageViewController.</p>
-
-<div class="highlight"><pre><code class="language-logos" data-lang="logos"><span class="n">MBXPageViewController</span> <span class="o">*</span><span class="n">MBXPageController</span> <span class="o">=</span> <span class="p">[</span><span class="n">MBXPageViewController</span> <span class="k">new</span><span class="p">];</span>
-<span class="n">MBXPageController</span><span class="p">.</span><span class="n">MBXDataSource</span> <span class="o">=</span> <span class="nb">self</span><span class="p">;</span>
-<span class="n">MBXPageController</span><span class="p">.</span><span class="n">MBXDataDelegate</span> <span class="o">=</span> <span class="nb">self</span><span class="p">;</span>
-<span class="p">[</span><span class="n">MBXPageController</span> <span class="n">reloadPages</span><span class="p">];</span></code></pre></div>
-
-<p>很简单易懂，有可能有人不理解，为什么没有看到addChildViewController或者addSubview之类的方法？其实这些都封装在了[MBXPageController reloadPages]方法里面
-进去看源码就会发现：</p>
-
-<div class="highlight"><pre><code class="language-logos" data-lang="logos"><span class="p">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="nf">loadControllerAndView</span>
-<span class="p">{</span>
-    <span class="n">NSAssert</span><span class="p">([[</span><span class="nb">self</span> <span class="n">MBXDataSource</span><span class="p">]</span> <span class="nl">isKindOfClass</span><span class="p">:[</span><span class="bp">UIViewController</span> <span class="k">class</span><span class="p">]],</span> <span class="s">@&quot;This needs to be implemented in a class that inherits from UIViewController&quot;</span><span class="p">);</span>
-    <span class="p">[(</span><span class="bp">UIViewController</span> <span class="o">*</span><span class="p">)[</span><span class="nb">self</span> <span class="n">MBXDataSource</span><span class="p">]</span> <span class="nl">addChildViewController</span><span class="p">:</span><span class="nb">self</span><span class="p">];</span>
-    <span class="p">[[[</span><span class="nb">self</span> <span class="n">MBXDataSource</span><span class="p">]</span> <span class="n">MBXPageContainer</span><span class="p">]</span> <span class="nl">addSubview</span><span class="p">:</span><span class="nb">self</span><span class="p">.</span><span class="n">view</span><span class="p">];</span>
-<span class="p">}</span></code></pre></div>
-
-<ul>
-  <li>addChildViewController我的理解就是重新设置子controller的父controller，也就是层级关系，防止后面再Push或者Present新窗口的时候出错</li>
-  <li>addSubview就更加直观了不需要多解释，没有这句话咱们就没有View可以显示了。</li>
-</ul>
-
-<p>需要注意的是[[self MBXDataSource] MBXPageContainer]这个方法，他是MBXDataSource协议里必选的方法
-说到这里就必须说说为什么我认为MBXPageViewController的使用远远比RKSwipeBetweenViewControllers简单清晰，就是因为两个协议：</p>
-
-<div class="highlight"><pre><code class="language-logos" data-lang="logos"><span class="k">@protocol</span> <span class="nc">MBXPageControllerDataSource</span> <span class="o">&amp;</span><span class="n">lt</span><span class="p">;</span><span class="bp">NSObject</span><span class="o">&amp;</span><span class="n">gt</span><span class="p">;</span>
-<span class="k">@required</span>
-<span class="o">-</span> <span class="p">(</span><span class="bp">NSArray</span> <span class="o">*</span><span class="p">)</span><span class="n">MBXPageButtons</span><span class="p">;</span>
-<span class="p">-</span> <span class="p">(</span><span class="bp">NSArray</span> <span class="o">*</span><span class="p">)</span><span class="nf">MBXPageControllers</span><span class="p">;</span>
-<span class="p">-</span> <span class="p">(</span><span class="bp">UIView</span> <span class="o">*</span><span class="p">)</span><span class="nf">MBXPageContainer</span><span class="p">;</span>
-<span class="k">@end</span>
-
-<span class="k">@protocol</span> <span class="nc">MBXPageControllerDataDelegate</span> <span class="o">&amp;</span><span class="n">lt</span><span class="p">;</span><span class="bp">NSObject</span><span class="o">&amp;</span><span class="n">gt</span><span class="p">;</span>
-<span class="k">@optional</span>
-<span class="o">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="nl">MBXPageChangedToIndex</span><span class="p">:(</span><span class="bp">NSInteger</span><span class="p">)</span><span class="n">index</span><span class="p">;</span>
-<span class="k">@end</span></code></pre></div>
-
-<ul>
-  <li>MBXPageButtons 就是标题栏上面的按钮，需要注意的是MBXPageViewController并不管按钮的显示，MBXPageViewController只负责帮我们绑定按钮的触摸事件，
-  显示正确的对应的页面</li>
-  <li>MBXPageControllers 这个就是咱们页面的数组了。</li>
-  <li>MBXPageContainer 是页面的容器，只需要返回MBXPageViewController所在的UIViewController的container就行。</li>
-  <li>MBXPageChangedToIndex 是一个提供给用户更新按钮状态的方法，当页面索引改变后就会触发这个方法，用户应该在这里跟新title
-  上面按钮和tabIndicator的状态.</li>
-</ul>
-
-<p>整个协议的完整实现大概应该是这个样子：</p>
-
-<div class="highlight"><pre><code class="language-logos" data-lang="logos"><span class="cp">#pragma mark - MBXPageViewController Data Source</span>
-
-<span class="p">-</span> <span class="p">(</span><span class="bp">NSArray</span> <span class="o">*</span><span class="p">)</span><span class="nf">MBXPageButtons</span>
-<span class="p">{</span>
-    <span class="k">return</span> <span class="l">@[</span><span class="nb">self</span><span class="p">.</span><span class="n">button1</span><span class="p">,</span> <span class="nb">self</span><span class="p">.</span><span class="n">button2</span><span class="p">,</span> <span class="nb">self</span><span class="p">.</span><span class="n">button3</span><span class="l">]</span><span class="p">;</span>
-<span class="p">}</span>
-
-<span class="p">-</span> <span class="p">(</span><span class="bp">UIView</span> <span class="o">*</span><span class="p">)</span><span class="nf">MBXPageContainer</span>
-<span class="p">{</span>
-    <span class="k">return</span> <span class="nb">self</span><span class="p">.</span><span class="n">container</span><span class="p">;</span>
-<span class="p">}</span>
-
-<span class="p">-</span> <span class="p">(</span><span class="bp">NSArray</span> <span class="o">*</span><span class="p">)</span><span class="nf">MBXPageControllers</span>
-<span class="p">{</span>
-    <span class="c1">// You can Load a VC directly from Storyboard</span>
-    <span class="bp">UIStoryboard</span><span class="o">*</span> <span class="n">mainStoryboard</span> <span class="o">=</span> <span class="p">[</span><span class="bp">UIStoryboard</span> <span class="nl">storyboardWithName</span><span class="p">:</span><span class="s">@&quot;Main&quot;</span> <span class="nl">bundle</span><span class="p">:</span><span class="nb">nil</span><span class="p">];</span>
-
-    <span class="bp">UIViewController</span> <span class="o">*</span><span class="n">demo</span>  <span class="o">=</span> <span class="p">[</span><span class="n">mainStoryboard</span> <span class="nl">instantiateViewControllerWithIdentifier</span><span class="p">:</span><span class="s">@&quot;firstController&quot;</span><span class="p">];</span>
-    <span class="bp">UIViewController</span> <span class="o">*</span><span class="n">demo2</span>  <span class="o">=</span> <span class="p">[</span><span class="n">mainStoryboard</span> <span class="nl">instantiateViewControllerWithIdentifier</span><span class="p">:</span><span class="s">@&quot;secondController&quot;</span><span class="p">];</span>
-
-    <span class="c1">// Or Load it from a xib file</span>
-    <span class="bp">UIViewController</span> <span class="o">*</span><span class="n">demo3</span> <span class="o">=</span> <span class="p">[</span><span class="bp">UIViewController</span> <span class="k">new</span><span class="p">];</span>
-    <span class="n">demo3</span><span class="p">.</span><span class="n">view</span> <span class="o">=</span> <span class="p">[[[</span><span class="bp">NSBundle</span> <span class="n">mainBundle</span><span class="p">]</span> <span class="nl">loadNibNamed</span><span class="p">:</span><span class="s">@&quot;View&quot;</span> <span class="nl">owner</span><span class="p">:</span><span class="nb">self</span> <span class="nl">options</span><span class="p">:</span><span class="nb">nil</span><span class="p">]</span> <span class="nl">objectAtIndex</span><span class="p">:</span><span class="mi">0</span><span class="p">];</span>
-
-    <span class="c1">// Or create it programatically</span>
-    <span class="bp">UIViewController</span> <span class="o">*</span><span class="n">demo4</span> <span class="o">=</span> <span class="p">[[</span><span class="bp">UIViewController</span> <span class="n">alloc</span><span class="p">]</span> <span class="n">init</span><span class="p">];</span>
-    <span class="n">demo4</span><span class="p">.</span><span class="n">view</span><span class="p">.</span><span class="n">backgroundColor</span> <span class="o">=</span> <span class="p">[</span><span class="bp">UIColor</span> <span class="n">orangeColor</span><span class="p">];</span>
-
-    <span class="bp">UILabel</span> <span class="o">*</span><span class="n">fromLabel</span> <span class="o">=</span> <span class="p">[[</span><span class="bp">UILabel</span> <span class="n">alloc</span><span class="p">]</span><span class="nl">initWithFrame</span><span class="p">:</span><span class="n">CGRectMake</span><span class="p">(</span> <span class="p">(</span><span class="nb">self</span><span class="p">.</span><span class="n">view</span><span class="p">.</span><span class="n">frame</span><span class="p">.</span><span class="n">size</span><span class="p">.</span><span class="n">width</span> <span class="o">-</span> <span class="mi">130</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span> <span class="p">,</span> <span class="mi">40</span><span class="p">,</span> <span class="mi">130</span><span class="p">,</span> <span class="mi">40</span><span class="p">)];</span>
-    <span class="n">fromLabel</span><span class="p">.</span><span class="n">text</span> <span class="o">=</span> <span class="s">@&quot;Fourth Controller&quot;</span><span class="p">;</span>
-
-    <span class="p">[</span><span class="n">demo4</span><span class="p">.</span><span class="n">view</span> <span class="nl">addSubview</span><span class="p">:</span><span class="n">fromLabel</span><span class="p">];</span>
-
-    <span class="c1">// The order matters.</span>
-    <span class="k">return</span> <span class="l">@[</span><span class="n">demo</span><span class="p">,</span><span class="n">demo2</span><span class="p">,</span> <span class="n">demo3</span><span class="l">]</span><span class="p">;</span>
-<span class="p">}</span></code></pre></div>
-
-<p>怎么样，是不是非常简单清晰。下面需要解决的就是我们UI提出的需求问题了，也很简单，修改绑定button的事件：</p>
-
-<div class="highlight"><pre><code class="language-logos" data-lang="logos"><span class="p">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="nf">controllerModeLogicForDestination:</span><span class="p">(</span><span class="bp">NSInteger</span><span class="p">)</span><span class="nv">destination</span>
-<span class="p">{</span>
-    <span class="k">__weak</span> <span class="n">__typeof</span><span class="p">(</span><span class="o">&amp;*</span><span class="nb">self</span><span class="p">)</span><span class="n">weakSelf</span> <span class="o">=</span> <span class="nb">self</span><span class="p">;</span>
-    <span class="bp">NSInteger</span> <span class="n">tempIndex</span> <span class="o">=</span> <span class="n">_currentPageIndex</span><span class="p">;</span>
-    <span class="c1">// Check to see which way are you going (Left -&gt; Right or Right -&gt; Left)</span>
-    <span class="k">if</span> <span class="p">(</span><span class="n">destination</span> <span class="o">&gt;</span> <span class="n">tempIndex</span><span class="p">)</span> <span class="p">{</span>
-        <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="p">(</span><span class="kt">int</span><span class="p">)</span><span class="n">tempIndex</span><span class="o">+</span><span class="mi">1</span><span class="p">;</span> <span class="n">i</span><span class="o">&lt;=</span><span class="n">destination</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
-            <span class="p">[</span><span class="nb">self</span> <span class="nl">setPageControllerForIndex</span><span class="p">:</span><span class="n">i</span> <span class="nl">direction</span><span class="p">:</span><span class="n">UIPageViewControllerNavigationDirectionForward</span> <span class="nl">currentMBXViewController</span><span class="p">:</span><span class="n">weakSelf</span> <span class="nl">destionation</span><span class="p">:</span><span class="n">destination</span><span class="p">];</span>
-        <span class="p">}</span>
-    <span class="p">}</span>
-
-    <span class="c1">// Right -&gt; Left</span>
-    <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">destination</span> <span class="o">&lt;</span> <span class="n">tempIndex</span><span class="p">)</span> <span class="p">{</span>
-        <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="p">(</span><span class="kt">int</span><span class="p">)</span><span class="n">tempIndex</span><span class="o">-</span><span class="mi">1</span><span class="p">;</span> <span class="n">i</span> <span class="o">&gt;=</span> <span class="n">destination</span><span class="p">;</span> <span class="n">i</span><span class="o">--</span><span class="p">)</span> <span class="p">{</span>
-            <span class="p">[</span><span class="nb">self</span> <span class="nl">setPageControllerForIndex</span><span class="p">:</span><span class="n">i</span> <span class="nl">direction</span><span class="p">:</span><span class="n">UIPageViewControllerNavigationDirectionReverse</span> <span class="nl">currentMBXViewController</span><span class="p">:</span><span class="n">weakSelf</span> <span class="nl">destionation</span><span class="p">:</span><span class="n">destination</span><span class="p">];</span>
-        <span class="p">}</span>
-    <span class="p">}</span><span class="k">else</span><span class="p">{</span>
-        <span class="p">[</span><span class="n">weakSelf</span> <span class="nl">updateCurrentPageIndex</span><span class="p">:</span><span class="n">tempIndex</span><span class="p">];</span>
-    <span class="p">}</span>
-<span class="p">}</span></code></pre></div>
-
-<p>只加了一句[weakSelf updateCurrentPageIndex:tempIndex];然后我们可以自己在updateCurrentPageIndex方法里判断，如果当前索引跟传入的索引相同则当成点击事件来处理，否则则是页面切换事件，需要跟新button的状态，
-这样我们就解决了第一个问题。第二个问题比较复杂，我到现在都还没完成搞清楚why，只知道要这么做。
-我们先把MBXPageControllerDataDelegate协议拓展一下，添加两个方法：</p>
-
-<div class="highlight"><pre><code class="language-logos" data-lang="logos"><span class="k">@protocol</span> <span class="nc">MBXPageControllerDataDelegate</span> <span class="o">&amp;</span><span class="n">lt</span><span class="p">;</span><span class="bp">NSObject</span><span class="o">&amp;</span><span class="n">gt</span><span class="p">;</span>
-<span class="k">@optional</span>
-<span class="o">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="nl">MBXPageChangedToIndex</span><span class="p">:(</span><span class="bp">NSInteger</span><span class="p">)</span><span class="n">index</span><span class="p">;</span>
-<span class="p">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="nf">MBXPageSelectdViewOffset:</span><span class="p">(</span><span class="n">CGFloat</span><span class="p">)</span><span class="nv">offset</span><span class="p">;</span>
-<span class="p">-</span> <span class="p">(</span><span class="n">CGFloat</span><span class="p">)</span><span class="nf">MBXPageTabIndicatorStartOffset:</span><span class="p">(</span><span class="bp">NSInteger</span><span class="p">)</span><span class="nv">tabIndex</span><span class="p">;</span>
-<span class="k">@end</span></code></pre></div>
-
-<ul>
-  <li>MBXPageTabIndicatorStartOffset返回tabIndex被选中时的tabIndicator的X坐标。别问我为什么要这么做，我也是一知半解。</li>
-  <li>MBXPageSelectdViewOffset就是事实跟新tabIndicator的X坐标的方法，offset就是X的新坐标。这两个接口有了之后就需要判断在那里加了。</li>
-</ul>
-
-<p>通过分析源码可以看到有个很诡异的事情：</p>
-
-<div class="highlight"><pre><code class="language-logos" data-lang="logos"><span class="p">-</span>  <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="nf">syncScrollView</span>
-<span class="p">{</span>
-    <span class="k">for</span> <span class="p">(</span><span class="bp">UIView</span><span class="o">*</span> <span class="n">view</span> <span class="k">in</span> <span class="n">_pageController</span><span class="p">.</span><span class="n">view</span><span class="p">.</span><span class="n">subviews</span><span class="p">){</span>
-        <span class="k">if</span><span class="p">([</span><span class="n">view</span> <span class="nl">isKindOfClass</span><span class="p">:[</span><span class="bp">UIScrollView</span> <span class="k">class</span><span class="p">]])</span>
-        <span class="p">{</span>
-            <span class="n">_pageScrollView</span> <span class="o">=</span> <span class="p">(</span><span class="bp">UIScrollView</span> <span class="o">*</span><span class="p">)</span><span class="n">view</span><span class="p">;</span>
-            <span class="n">_pageScrollView</span><span class="p">.</span><span class="n">delegate</span> <span class="o">=</span> <span class="nb">self</span><span class="p">;</span>
-        <span class="p">}</span>
-    <span class="p">}</span>
-<span class="p">}</span></code></pre></div>
-
-<p>_pageScrollView.delegate = self;可以整个代码里并没有实现ScrollDelegate的方法，我对比了一下RKSwipeBetweenViewControllers才发现原作者并没有copy这个delegate，原因可能是他的项目里当时不需要这个特性。
-很显然我们需要实现这个ScrollDelegate，并在滑动过程中同步调用MBXPageSelectdViewOffset来跟新tabIndicator的X坐标：</p>
-
-<div class="highlight"><pre><code class="language-logos" data-lang="logos"><span class="cp">#pragma mark - scroll view delegate</span>
-<span class="c1">//It extracts the xcoordinate from the center point and instructs the selection bar to move accordingly</span>
-<span class="p">-(</span><span class="kt">void</span><span class="p">)</span><span class="nf">scrollViewDidScroll:</span><span class="p">(</span><span class="bp">UIScrollView</span> <span class="o">*</span><span class="p">)</span><span class="nv">scrollView</span><span class="p">{</span>
-    <span class="k">if</span> <span class="p">([</span><span class="nb">self</span> <span class="n">MBXDataDelegate</span><span class="p">]</span>
-        <span class="o">&amp;&amp;</span> <span class="p">[</span><span class="nb">self</span><span class="p">.</span><span class="n">MBXDataDelegate</span> <span class="nl">respondsToSelector</span><span class="p">:</span><span class="k">@selector</span><span class="p">(</span><span class="nl">MBXPageSelectdViewOffset</span><span class="p">:)]</span>
-        <span class="o">&amp;&amp;</span> <span class="p">[</span><span class="nb">self</span><span class="p">.</span><span class="n">MBXDataDelegate</span> <span class="nl">respondsToSelector</span><span class="p">:</span><span class="k">@selector</span><span class="p">(</span><span class="nl">MBXPageTabIndicatorStartOffset</span><span class="p">:)])</span> <span class="p">{</span>
-<span class="c1">//        CGFloat offsetPercent = scrollView.contentOffset.x / scrollView.contentSize.width;</span>
-<span class="c1">//        [self.MBXDataDelegate MBXPageSelectdViewOffset:offsetPercent];</span>
-<span class="c1">//        NSLog(@&quot;Scrolled percentage: %f   %f&quot;, scrollView.contentOffset.x,scrollView.contentSize.width);</span>
-        <span class="n">CGFloat</span> <span class="n">xFromCenter</span> <span class="o">=</span> <span class="nb">self</span><span class="p">.</span><span class="n">view</span><span class="p">.</span><span class="n">frame</span><span class="p">.</span><span class="n">size</span><span class="p">.</span><span class="n">width</span><span class="o">-</span><span class="n">scrollView</span><span class="p">.</span><span class="n">contentOffset</span><span class="p">.</span><span class="n">x</span><span class="p">;</span> <span class="c1">//%%% positive for right swipe, negative for left</span>
-
-        <span class="c1">//%%% checks to see what page you are on and adjusts the xCoor accordingly.</span>
-        <span class="c1">//i.e. if you&#39;re on the second page, it makes sure that the bar starts from the frame.origin.x of the</span>
-        <span class="c1">//second tab instead of the beginning</span>
-        <span class="bp">NSInteger</span> <span class="n">xCoor</span> <span class="o">=</span> <span class="p">[</span><span class="nb">self</span><span class="p">.</span><span class="n">MBXDataDelegate</span> <span class="nl">MBXPageTabIndicatorStartOffset</span><span class="p">:</span><span class="nb">self</span><span class="p">.</span><span class="n">currentPageIndex</span><span class="p">];</span>
-        <span class="p">[</span><span class="nb">self</span><span class="p">.</span><span class="n">MBXDataDelegate</span> <span class="nl">MBXPageSelectdViewOffset</span><span class="p">:(</span><span class="n">xCoor</span><span class="o">-</span><span class="n">xFromCenter</span><span class="o">/</span><span class="p">[</span><span class="nb">self</span><span class="p">.</span><span class="n">viewControllerArray</span> <span class="n">count</span><span class="p">])];;</span>
-    <span class="p">}</span>
-<span class="p">}</span></code></pre></div>
-
-<p>必须得承认，如果没有看RKSwipeBetweenViewControllers我到死都不可能完成这个方法。了解pageController这个容器的都知道，这个容器为了节省内容，会在他认为合适的时候把看不到的子controller移除。
-这可真是个要命的特性，我刚开始的想法理所当然的认为scrollView.contentOffset.x/scrollView.contentSize.width就是滚动的比例，然后根据这个比例来更新咱们的tabIndicator。可是当我
-把scrollView.contentOffset.x和scrollView.contentSize.width打印出来后我傻眼了，简直混乱的不要不要的，完全不对头。之后在一段时间的探索后我猛然发现，原来RKSwipeBetweenViewControllers有
-同步跟新tabIndicator这个特性。。。
-下面是最后的效果图：</p>
-<figure>
-	<img src="/images/IOS/structure/MBXPageViewController/scrollDelegateAfter.gif" alt="项目实例" />
-	<figcaption><a href="https://www.9panart.com/html/passport/passport_login.html?ran=19406317709945142">泛艺术客户端.</a></figcaption>
-</figure>
 
   </div><!-- /.entry-content -->
 </article><!-- /.hentry -->

@@ -1,6 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd" xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
+    <loc>/ios/ios-udp-client/</loc>
+    <lastmod>2016-11-07T18:42:17+08:00</lastmod>
+  </url>
+  <url>
+    <loc>/android/viewpage/</loc>
+    <lastmod>2016-11-07T18:41:39+08:00</lastmod>
+  </url>
+  <url>
     <loc>/android/android-udp/</loc>
     <lastmod>2016-06-23T09:19:36+08:00</lastmod>
   </url>
@@ -25,23 +33,19 @@
     <lastmod>2015-10-20T19:16:31+08:00</lastmod>
   </url>
   <url>
-    <loc>/theme-setup/</loc>
-    <lastmod>2015-10-20T17:10:07+08:00</lastmod>
-  </url>
-  <url>
     <loc>/</loc>
-    <lastmod>2016-11-03T20:25:32+08:00</lastmod>
+    <lastmod>2016-11-07T19:15:18+08:00</lastmod>
   </url>
   <url>
     <loc>/posts/</loc>
-    <lastmod>2016-11-03T20:25:32+08:00</lastmod>
+    <lastmod>2016-11-07T19:15:18+08:00</lastmod>
   </url>
   <url>
     <loc>/tags/</loc>
-    <lastmod>2016-11-03T20:25:32+08:00</lastmod>
+    <lastmod>2016-11-07T19:15:18+08:00</lastmod>
   </url>
   <url>
     <loc>/about/</loc>
-    <lastmod>2016-11-03T20:25:32+08:00</lastmod>
+    <lastmod>2016-11-07T19:15:18+08:00</lastmod>
   </url>
 </urlset>
