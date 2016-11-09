@@ -16,9 +16,9 @@ date: 2016-11-07T18:41:39+08:00
 ---
 本文涉及的源码下载地址
 
-1. [ViewPager.java](/images/android/viewpage/ViewPager.java)
-2. [PagerAdapter.java](/images/android/viewpage/PagerAdapter.java)
-3. [FragmentPagerAdapter.java](/images/android/viewpage/FragmentPagerAdapter.java)
+1. [ViewPager.java](/source/android/viewpage/ViewPager.java)
+2. [PagerAdapter.java](/source/android/viewpage/PagerAdapter.java)
+3. [FragmentPagerAdapter.java](/source/android/viewpage/FragmentPagerAdapter.java)
 
 搞android开发的不可能没用过ViewPage，这个功能强大的控件是android独有的（IOS上没有这样的玩意儿，除了一些第三方的库）。一直都想研究ViewPage的源码，自己又很懒，
 在百度上搜了搜，硬是没有一家写过这个，无奈，只能自己上来啃了。ViewPage继承自ViewGroup，所以我们在看ViewPage的代码的时候还是按照ViewGroup的功能逻辑来看。
